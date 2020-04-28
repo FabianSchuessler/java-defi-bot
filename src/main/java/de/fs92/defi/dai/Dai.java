@@ -54,7 +54,7 @@ public class Dai {
       try {
         gasProvider.updateSlowGasPrice();
         contract.approve(address, BigNumberUtil.BIGGEST_NUMBER).send();
-        logger.debug("{}}{}", name, " UNLOCK DAI");
+        logger.debug("{} UNLOCK DAI", name);
       } catch (Exception e) {
         logger.error("Exception", e);
         circuitBreaker.add(System.currentTimeMillis());

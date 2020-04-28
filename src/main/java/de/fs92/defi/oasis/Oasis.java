@@ -1,4 +1,4 @@
-package de.fs92.defi.oasisdex;
+package de.fs92.defi.oasis;
 
 import de.fs92.defi.compounddai.CompoundDai;
 import de.fs92.defi.contractneedsprovider.CircuitBreaker;
@@ -29,7 +29,7 @@ import java.util.concurrent.TimeUnit;
 import static de.fs92.defi.util.BigNumberUtil.*;
 import static de.fs92.defi.util.ProfitCalculator.getPotentialProfit;
 
-public class OasisDex implements IContract {
+public class Oasis implements IContract {
   public static final String ADDRESS = "0x794e6e91555438aFc3ccF1c5076A74F42133d08D";
   private static final org.slf4j.Logger logger =
       LoggerFactory.getLogger(MethodHandles.lookup().lookupClass().getSimpleName());
@@ -38,16 +38,16 @@ public class OasisDex implements IContract {
   private final GasProvider gasProvider;
   private final Permissions permissions;
   private final CircuitBreaker circuitBreaker;
-  private final OasisDexContract contract;
+  private final OasisContract contract;
 
-  public OasisDex(
+  public Oasis(
       @NotNull ContractNeedsProvider contractNeedsProvider, CompoundDai compoundDai, Weth weth) {
     Web3j web3j = contractNeedsProvider.getWeb3j();
     Credentials credentials = contractNeedsProvider.getCredentials();
     permissions = contractNeedsProvider.getPermissions();
     gasProvider = contractNeedsProvider.getGasProvider();
     circuitBreaker = contractNeedsProvider.getCircuitBreaker();
-    contract = OasisDexContract.load(ADDRESS, web3j, credentials, gasProvider);
+    contract = OasisContract.load(ADDRESS, web3j, credentials, gasProvider);
     this.compoundDai = compoundDai;
     this.weth = weth;
     isContractValid();
@@ -97,13 +97,13 @@ public class OasisDex implements IContract {
 
   public void checkIfBuyDaiIsProfitableThenDoIt(@NotNull Balances balances) {
     if (balances.checkTooFewEthOrWeth()) {
-      logger.info("NOT ENOUGH WETH AND ETH TO BUY DAI ON ETH2DAI");
+      logger.info("NOT ENOUGH WETH AND ETH TO BUY DAI ON OASIS");
       return;
     }
     try {
-      logger.info("ETH2DAI BUY DAI PROFIT CALCULATION");
+      logger.info("OASIS BUY DAI PROFIT CALCULATION");
       BigDecimal medianEthereumPrice = Medianizer.getPrice();
-      OasisDexOffer bestOffer =
+      OasisOffer bestOffer =
           buyDaiSellWethIsProfitable(
               medianEthereumPrice,
               balances,
@@ -133,7 +133,7 @@ public class OasisDex implements IContract {
               medianEthereumPrice,
               balances);
         }
-        eth2DaiTakeOrder(
+        takeOrder(
             bestOffer.offerId,
             ownConstraint.min(offerConstraint).toBigInteger(),
             bestOffer.profit,
@@ -147,14 +147,14 @@ public class OasisDex implements IContract {
 
   public void checkIfSellDaiIsProfitableThenDoIt(@NotNull Balances balances) {
     if (balances.checkTooFewDaiAndDaiInCompound()) {
-      logger.info("NOT ENOUGH DAI TO SELL DAI ON ETH2DAI");
+      logger.info("NOT ENOUGH DAI TO SELL DAI ON OASIS");
       return;
     }
     try {
-      logger.trace("ETH2DAI SELL DAI PROFIT CALCULATION");
+      logger.trace("OASIS SELL DAI PROFIT CALCULATION");
       BigDecimal medianEthereumPrice = Medianizer.getPrice();
       BigDecimal maxDaiToSell = balances.getMaxDaiToSell();
-      OasisDexOffer bestOffer =
+      OasisOffer bestOffer =
           sellDaiBuyWethIsProfitable(
               medianEthereumPrice,
               maxDaiToSell,
@@ -169,7 +169,7 @@ public class OasisDex implements IContract {
             "OFFER CONSTRAINT {}", makeBigNumberHumanReadableFullPrecision(offerConstraint));
         if (compoundDai.canOtherProfitMethodsWorkWithoutCDaiConversion(
             balances, bestOffer.profit, medianEthereumPrice)) {
-          eth2DaiTakeOrder(
+          takeOrder(
               bestOffer.offerId,
               ownConstraint.min(offerConstraint).toBigInteger(),
               bestOffer.profit,
@@ -184,7 +184,7 @@ public class OasisDex implements IContract {
 
   // TODO: make both profitable methods into one
   @NotNull
-  private OasisDexOffer buyDaiSellWethIsProfitable(
+  private OasisOffer buyDaiSellWethIsProfitable(
       BigDecimal medianEthereumPrice, Balances balances, double percentageOfProfitAsFee) {
     BigInteger bestOffer = getBestOffer(Dai.ADDRESS, Weth.ADDRESS);
     logger.trace("BEST BUY-DAI-OFFER ID {}", bestOffer);
@@ -193,7 +193,7 @@ public class OasisDex implements IContract {
       offerValues = getOffer(bestOffer);
     } catch (Exception e) {
       logger.error("Exception", e);
-      return new OasisDexOffer(BigInteger.ZERO, null, null, BigDecimal.ZERO);
+      return new OasisOffer(BigInteger.ZERO, null, null, BigDecimal.ZERO);
     }
     logger.trace(
         "BUYABLE DAI AMOUNT {}{}",
@@ -204,13 +204,13 @@ public class OasisDex implements IContract {
         makeBigNumberHumanReadableFullPrecision(offerValues.get(Weth.ADDRESS)),
         " WETH");
     if (!offerValues.get(Weth.ADDRESS).equals(BigDecimal.ZERO)) {
-      BigDecimal bestOfferEthDaiRatioBuyDaiOnEth2Dai =
+      BigDecimal bestOfferEthDaiRatioBuyDai =
           divide(offerValues.get(Dai.ADDRESS), offerValues.get(Weth.ADDRESS));
       BigDecimal bestOfferMedianRatio =
-          divide(medianEthereumPrice, bestOfferEthDaiRatioBuyDaiOnEth2Dai);
+          divide(medianEthereumPrice, bestOfferEthDaiRatioBuyDai);
       logger.trace(
           "DAI PER WETH {}{}",
-          makeBigNumberHumanReadable(bestOfferEthDaiRatioBuyDaiOnEth2Dai),
+          makeBigNumberHumanReadable(bestOfferEthDaiRatioBuyDai),
           " WETH/DAI");
       logger.trace("MEDIAN-OFFER RATIO {}", makeBigNumberHumanReadable(bestOfferMedianRatio));
       BigDecimal potentialProfit =
@@ -225,21 +225,21 @@ public class OasisDex implements IContract {
                                       .getEthBalance()
                                       .subtract(Balances.MINIMUM_ETHEREUM_RESERVE_UPPER_LIMIT))))
                       .min(offerValues.get(Weth.ADDRESS))),
-                  bestOfferEthDaiRatioBuyDaiOnEth2Dai),
+                  bestOfferEthDaiRatioBuyDai),
               percentageOfProfitAsFee);
       if (potentialProfit.compareTo(balances.getMinimumTradeProfitBuyDai()) > 0) {
-        return new OasisDexOffer(
-            bestOffer, offerValues, bestOfferEthDaiRatioBuyDaiOnEth2Dai, potentialProfit);
+        return new OasisOffer(
+            bestOffer, offerValues, bestOfferEthDaiRatioBuyDai, potentialProfit);
       }
     } else {
       logger.trace("OFFER TAKEN DURING PROCESSING!");
     }
-    return new OasisDexOffer(BigInteger.ZERO, null, null, BigDecimal.ZERO);
+    return new OasisOffer(BigInteger.ZERO, null, null, BigDecimal.ZERO);
   }
 
   // Checks if selling dai is profitable.
   @NotNull
-  private OasisDexOffer sellDaiBuyWethIsProfitable(
+  private OasisOffer sellDaiBuyWethIsProfitable(
       BigDecimal medianEthereumPrice,
       BigDecimal maxDaiToSell,
       Balances balances,
@@ -251,7 +251,7 @@ public class OasisDex implements IContract {
       offerValues = getOffer(bestOffer);
     } catch (Exception e) {
       logger.error("Exception", e);
-      return new OasisDexOffer(BigInteger.ZERO, null, null, BigDecimal.ZERO);
+      return new OasisOffer(BigInteger.ZERO, null, null, BigDecimal.ZERO);
     }
     logger.trace(
         "BUYABLE WETH AMOUNT {}{}",
@@ -263,13 +263,13 @@ public class OasisDex implements IContract {
         " DAI");
 
     if (!offerValues.get(Weth.ADDRESS).equals(BigDecimal.ZERO)) {
-      BigDecimal bestOfferEthDaiRatioSellDaiOnEth2Dai =
+      BigDecimal bestOfferEthDaiRatioSellDai =
           divide(offerValues.get(Dai.ADDRESS), offerValues.get(Weth.ADDRESS));
       BigDecimal bestOfferMedianRatio =
-          divide(bestOfferEthDaiRatioSellDaiOnEth2Dai, medianEthereumPrice);
+          divide(bestOfferEthDaiRatioSellDai, medianEthereumPrice);
       logger.trace(
           "OFFER ETH PRICE {}{}",
-          makeBigNumberHumanReadable(bestOfferEthDaiRatioSellDaiOnEth2Dai),
+          makeBigNumberHumanReadable(bestOfferEthDaiRatioSellDai),
           " WETH/DAI");
       logger.trace("OFFER-MEDIAN RATIO {}", makeBigNumberHumanReadable(bestOfferMedianRatio));
       BigDecimal potentialProfit =
@@ -280,22 +280,22 @@ public class OasisDex implements IContract {
       // TODO: do constraints already here
 
       if (potentialProfit.compareTo(balances.getMinimumTradeProfitSellDai()) > 0) {
-        return new OasisDexOffer(
-            bestOffer, offerValues, bestOfferEthDaiRatioSellDaiOnEth2Dai, potentialProfit);
+        return new OasisOffer(
+            bestOffer, offerValues, bestOfferEthDaiRatioSellDai, potentialProfit);
       }
     } else {
       logger.trace("OFFER TAKEN DURING PROCESSING!");
     }
-    return new OasisDexOffer(BigInteger.ZERO, null, null, BigDecimal.ZERO);
+    return new OasisOffer(BigInteger.ZERO, null, null, BigDecimal.ZERO);
   }
 
-  private void eth2DaiTakeOrder(
+  private void takeOrder(
       BigInteger offerId,
       BigInteger amountToBuy,
       BigDecimal potentialProfit,
       BigDecimal medianEthereumPrice,
       Balances balances) {
-    if (permissions.check("ETH2DAI BUY ORDER")) {
+    if (permissions.check("OASIS BUY ORDER")) {
       try {
         gasProvider.updateFastGasPrice(medianEthereumPrice, potentialProfit);
         TransactionReceipt transferReceipt = contract.buy(offerId, amountToBuy).send();

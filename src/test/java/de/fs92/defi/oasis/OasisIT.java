@@ -1,4 +1,4 @@
-package de.fs92.defi.oasisdex;
+package de.fs92.defi.oasis;
 
 import de.fs92.defi.compounddai.CompoundDai;
 import de.fs92.defi.contractneedsprovider.*;
@@ -15,10 +15,10 @@ import java.math.BigInteger;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class OasisDexIT {
+public class OasisIT {
   private static final BigInteger minimumGasPrice = BigInteger.valueOf(1_000000000);
   private static final BigInteger maximumGasPrice = BigInteger.valueOf(200_000000000L);
-  OasisDex oasisDex;
+  Oasis oasis;
 
   @BeforeEach
   public void setUp() {
@@ -35,12 +35,12 @@ public class OasisDexIT {
         new ContractNeedsProvider(web3j, credentials, gasProvider, permissions, circuitBreaker);
     Weth weth = new Weth(contractNeedsProvider);
     CompoundDai compoundDai = new CompoundDai(contractNeedsProvider);
-    oasisDex = new OasisDex(contractNeedsProvider, compoundDai, weth);
+    oasis = new Oasis(contractNeedsProvider, compoundDai, weth);
   }
 
   @Test
   public void isContractValid_isValid_continueRunning() {
-    oasisDex.isContractValid();
+    assertDoesNotThrow(() -> oasis.isContractValid());
   }
 
   @Test
@@ -49,21 +49,21 @@ public class OasisDexIT {
   @Test
   public void getOffer_nonExistingOffer_DaiOrWethMissingException() {
     Exception exception =
-        assertThrows(DaiOrWethMissingException.class, () -> oasisDex.getOffer(BigInteger.ZERO));
+        assertThrows(DaiOrWethMissingException.class, () -> oasis.getOffer(BigInteger.ZERO));
     String actualMessage = exception.getMessage();
     assertTrue(actualMessage.contains("BOTH DAI AND WETH NEED TO BE PRESENT ONCE."));
   }
 
   @Test
   public void getBestOffer_buyDai_returnOffer() {
-    BigInteger actual = oasisDex.getBestOffer(Dai.ADDRESS, Weth.ADDRESS);
+    BigInteger actual = oasis.getBestOffer(Dai.ADDRESS, Weth.ADDRESS);
     assertNotEquals(BigInteger.ZERO, actual);
     assertNotNull(actual);
   }
 
   @Test
   public void getBestOffer_sellDai_returnOffer() {
-    BigInteger actual = oasisDex.getBestOffer(Weth.ADDRESS, Dai.ADDRESS);
+    BigInteger actual = oasis.getBestOffer(Weth.ADDRESS, Dai.ADDRESS);
     assertNotEquals(BigInteger.ZERO, actual);
     assertNotNull(actual);
   }

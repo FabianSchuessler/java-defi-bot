@@ -10,6 +10,8 @@ import org.web3j.protocol.Web3j;
 
 import java.math.BigInteger;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+
 public class FlipperIT {
   private static final BigInteger minimumGasPrice = BigInteger.valueOf(1_000000000);
   private static final BigInteger maximumGasPrice = BigInteger.valueOf(200_000000000L);
@@ -33,7 +35,7 @@ public class FlipperIT {
 
   @Test
   public void isContractValid_isValid_continueRunning() {
-    flipper.isContractValid();
+    assertDoesNotThrow(() -> flipper.isContractValid());
   }
 
   @Test

@@ -1,7 +1,8 @@
 package de.fs92.defi.gasprovider;
 
 import de.fs92.defi.compounddai.CompoundDaiContract;
-import de.fs92.defi.oasisdex.OasisDexContract;
+import de.fs92.defi.dai.DaiContract;
+import de.fs92.defi.oasis.OasisContract;
 import de.fs92.defi.uniswap.UniswapContract;
 import de.fs92.defi.util.BigNumberUtil;
 import de.fs92.defi.weth.WethContract;
@@ -54,6 +55,7 @@ public class GasProvider implements ContractGasProvider {
 
   @Override
   public BigInteger getGasLimit(@NotNull String contractFunc) {
+    // TODO: can't differentiate between contracts
     switch (contractFunc) {
       case CompoundDaiContract.FUNC_MINT:
       case CompoundDaiContract.FUNC_REDEEM:
@@ -61,14 +63,17 @@ public class GasProvider implements ContractGasProvider {
       case UniswapContract.FUNC_TOKENTOETHSWAPINPUT:
       case UniswapContract.FUNC_ETHTOTOKENSWAPINPUT:
         return BigInteger.valueOf(65_000);
-      case OasisDexContract.FUNC_BUY:
+      case OasisContract.FUNC_BUY:
         return BigInteger.valueOf(300_000);
       case WethContract.FUNC_WITHDRAW:
       case WethContract.FUNC_DEPOSIT:
         return BigInteger.valueOf(100_000);
+      case DaiContract.FUNC_APPROVE:
+        return BigInteger.valueOf(50_000);
       default:
-        logger.trace("{} FUNCTION IS NOT IMPLEMENTED", contractFunc);
-        return BigInteger.valueOf(5_300_000);
+        // TODO: estimate gas
+        logger.trace("{} FUNCTION HAS NO CUSTOMIZED GAS LIMIT YET", contractFunc);
+        return BigInteger.valueOf(500_000);
     }
   }
 

@@ -5,7 +5,7 @@ import de.fs92.defi.contractneedsprovider.*;
 import de.fs92.defi.dai.Dai;
 import de.fs92.defi.gasprovider.GasProvider;
 import de.fs92.defi.medianizer.Medianizer;
-import de.fs92.defi.oasisdex.OasisDex;
+import de.fs92.defi.oasis.Oasis;
 import de.fs92.defi.uniswap.Uniswap;
 import de.fs92.defi.util.Balances;
 import de.fs92.defi.util.Ethereum;
@@ -18,7 +18,6 @@ import org.web3j.protocol.Web3j;
 import java.lang.invoke.MethodHandles;
 import java.math.BigInteger;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 public class Main {
   private static final org.slf4j.Logger logger =
@@ -56,20 +55,20 @@ public class Main {
 
     Balances balances = new Balances(dai, weth, compoundDai, ethereum);
 
-    OasisDex oasisDex = new OasisDex(contractNeedsProvider, compoundDai, weth);
+    Oasis oasis = new Oasis(contractNeedsProvider, compoundDai, weth);
     Uniswap uniswap = new Uniswap(contractNeedsProvider, javaProperties, compoundDai, weth);
 
     dai.checkApproval(uniswap);
-    dai.checkApproval(oasisDex);
+    dai.checkApproval(oasis);
     dai.checkApproval(compoundDai);
-    weth.checkApproval(oasisDex);
+    weth.checkApproval(oasis);
 
     while (CircuitBreaker.getContinueRunning()) {
       balances.updateBalance(60);
       if (circuitBreaker.isAllowingOperations(3)) {
         balances.checkEnoughEthereumForGas();
-        oasisDex.checkIfSellDaiIsProfitableThenDoIt(balances);
-        oasisDex.checkIfBuyDaiIsProfitableThenDoIt(balances);
+        oasis.checkIfSellDaiIsProfitableThenDoIt(balances);
+        oasis.checkIfBuyDaiIsProfitableThenDoIt(balances);
         uniswap.checkIfSellDaiIsProfitableThenDoIt(balances);
         uniswap.checkIfBuyDaiIsProfitableThenDoIt(balances);
         compoundDai.lendDai(balances);
@@ -81,12 +80,12 @@ public class Main {
         gasProvider.updateFailedTransactions(failedTransactions);
       }
 
-      try {
-        TimeUnit.MILLISECONDS.sleep(4500);
-      } catch (InterruptedException e) {
-        logger.error("Exception", e);
-        Thread.currentThread().interrupt();
-      }
+//      try {
+////        TimeUnit.MILLISECONDS.sleep(4500);
+//      } catch (InterruptedException e) {
+//        logger.error("Exception", e);
+//        Thread.currentThread().interrupt();
+//      }
     }
   }
 }

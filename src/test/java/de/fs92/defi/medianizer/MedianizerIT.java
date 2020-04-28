@@ -47,7 +47,7 @@ public class MedianizerIT {
   @Test
   public void isContractValid_isValid_continueRunning() {
     Medianizer.setContract(contractNeedsProvider);
-    Medianizer.isContractValid();
+    assertDoesNotThrow(Medianizer::isContractValid);
   }
 
   @Test

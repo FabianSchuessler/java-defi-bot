@@ -33,7 +33,7 @@ uniswapSellProfitPercentage=0.5
 
 __Make sure to never commit your private information!__
 
-- Make git stop tracking your config file ```git update-index --assume-unchanged ./config.properties```
+- Make git stop tracking your config file ```git update-index --skip-worktree ./config.properties```
 
 ### Compile
 
@@ -55,8 +55,8 @@ You will find the logs in ```./logs```.
 
 ## Current features
 
-- sells DAI, if DAI > $1.00 on Oasis ```oasisDex.checkIfSellDaiIsProfitableThenDoIt(balances);```
-- buys DAI, if DAI < $1.00 on Oasis ```oasisDex.checkIfBuyDaiIsProfitableThenDoIt(balances);```
+- sells DAI, if DAI > $1.00 on Oasis ```oasis.checkIfSellDaiIsProfitableThenDoIt(balances);```
+- buys DAI, if DAI < $1.00 on Oasis ```oasis.checkIfBuyDaiIsProfitableThenDoIt(balances);```
 - sells DAI, if DAI > $1.00 on Uniswap ```uniswap.checkIfSellDaiIsProfitableThenDoIt(balances);```
 - buys DAI, if DAI < $1.00 on Uniswap ```uniswap.checkIfBuyDaiIsProfitableThenDoIt(balances);```
 - earns interest on Compound, if there is no market action ```compoundDai.lendDai(balances);```

@@ -1,16 +1,16 @@
-package de.fs92.defi.oasisdex;
+package de.fs92.defi.oasis;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Map;
 
-public class OasisDexOffer {
+public class OasisOffer {
   public final BigInteger offerId;
   public final Map<String, BigDecimal> offerValues;
   public final BigDecimal bestOfferDaiPerEth;
   public final BigDecimal profit;
 
-  public OasisDexOffer(
+  public OasisOffer(
       BigInteger offerId,
       Map<String, BigDecimal> offerValues,
       BigDecimal bestOfferDaiPerEth,

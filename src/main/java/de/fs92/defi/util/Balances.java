@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import java.lang.invoke.MethodHandles;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.math.RoundingMode;
 
 import static de.fs92.defi.util.BigNumberUtil.*;
 
@@ -39,11 +40,11 @@ public class Balances {
   private BigDecimal daiInCompound;
   private BigDecimal sumEstimatedProfits;
   private BigDecimal sumEstimatedMissedProfits;
-  private long pastTimeRatios;
+  private double totalEthRatio;
+  private double totalDaiRatio;
+  private long pastTime;
   private BigDecimal minimumTradeProfitBuyDai;
   private BigDecimal minimumTradeProfitSellDai;
-  private long currentTotalEthOwnershipRatio;
-  private long currentTotalDaiOwnershipRatio;
   private BigDecimal initialTotalUSD;
   private int initialTotalUSDCounter;
   private long pastTimeBalances;
@@ -58,14 +59,14 @@ public class Balances {
     daiInCompound = BigDecimal.ZERO;
     sumEstimatedProfits = BigDecimal.ZERO;
     sumEstimatedMissedProfits = BigDecimal.ZERO;
-    pastTimeRatios = System.currentTimeMillis();
+    pastTime = System.currentTimeMillis();
+    totalDaiRatio = 0.0;
+    totalEthRatio = 0.0;
 
     minimumTradeProfit = makeDoubleMachineReadable(1.0);
     minimumTradeProfitBuyDai = makeDoubleMachineReadable(1.0);
     minimumTradeProfitSellDai = makeDoubleMachineReadable(1.0);
 
-    currentTotalEthOwnershipRatio = 0L;
-    currentTotalDaiOwnershipRatio = 0L;
     initialTotalUSD = BigDecimal.ZERO;
     initialTotalUSDCounter = 0;
     lastSuccessfulTransaction = System.currentTimeMillis();
@@ -135,8 +136,6 @@ public class Balances {
     */
     // usingBufferedWriter("MINIMUM TRADE PROFIT          " +
     // makeBigNumberHumanReadable(minimumTradeProfit));
-
-    logger.trace("DAI TO ETH RATIO {}{}", currentOwnershipRatio(medianEthereumPrice), " %");
 
     try {
       // TODO: think about putting this method into each class such as ethereum, dai and weth
@@ -223,30 +222,35 @@ public class Balances {
       logger.error("Exception", e);
       updateBalanceInformation(medianEthereumPrice);
     }
+
+    logger.trace(
+        "DAI & CDAI TO ETH & WETH RATIO {}{}",
+        round(currentOwnershipRatio(medianEthereumPrice), 2),
+        "%");
   }
 
-  /** @return 0 if no dai was owned during the execution of the program, 100 if no eth was owned */
-  private long currentOwnershipRatio(BigDecimal medianEthereumPrice) {
+  /**
+   * @return 0 if no dai/cdai was owned during the execution of the program, 100 if no eth/weth was
+   *     owned
+   */
+  private double currentOwnershipRatio(BigDecimal medianEthereumPrice) {
     // TODO: add tests for this method
-    currentTotalDaiOwnershipRatio +=
-        (long)
-            ((System.currentTimeMillis() - pastTimeRatios)
-                * makeBigNumberHumanReadable(daiBalance)
-                / (makeBigNumberHumanReadable(multiply(ethBalance, medianEthereumPrice))
-                    + makeBigNumberHumanReadable(daiBalance)));
-    if (currentTotalDaiOwnershipRatio == 0) return 0L;
 
-    currentTotalEthOwnershipRatio +=
-        (long)
-            ((System.currentTimeMillis() - pastTimeRatios)
-                * makeBigNumberHumanReadable(multiply(ethBalance, medianEthereumPrice))
-                / (makeBigNumberHumanReadable(multiply(ethBalance, medianEthereumPrice))
-                    + makeBigNumberHumanReadable(daiBalance)));
-    long currentRatio =
-        (currentTotalDaiOwnershipRatio * 10000)
-            / ((currentTotalEthOwnershipRatio + currentTotalDaiOwnershipRatio) * 100);
-    pastTimeRatios = System.currentTimeMillis();
-    return currentRatio;
+    long timeDifference = System.currentTimeMillis() - pastTime;
+    pastTime = System.currentTimeMillis();
+
+    totalDaiRatio +=
+        timeDifference
+            * makeBigNumberHumanReadable(daiBalance.add(daiInCompound))
+            / makeBigNumberHumanReadable(usd);
+
+    totalEthRatio +=
+        timeDifference
+            * makeBigNumberHumanReadable(multiply(ethBalance.add(wethBalance), medianEthereumPrice))
+            / makeBigNumberHumanReadable(usd);
+
+    if (totalDaiRatio == 0.0) return 0.0;
+    return (totalDaiRatio * 10000) / ((totalEthRatio + totalDaiRatio) * 100);
   }
 
   public void updateBalance(int duration) {
@@ -328,5 +332,13 @@ public class Balances {
 
   public void refreshLastSuccessfulTransaction() {
     lastSuccessfulTransaction = System.currentTimeMillis();
+  }
+
+  public static double round(double value, int places) {
+    if (places < 0) throw new IllegalArgumentException();
+
+    BigDecimal bd = BigDecimal.valueOf(value);
+    bd = bd.setScale(places, RoundingMode.HALF_UP);
+    return bd.doubleValue();
   }
 }

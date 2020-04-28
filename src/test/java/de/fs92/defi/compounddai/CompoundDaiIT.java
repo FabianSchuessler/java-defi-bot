@@ -10,10 +10,12 @@ import org.web3j.protocol.Web3j;
 
 import java.math.BigInteger;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+
 public class CompoundDaiIT {
   private static final BigInteger minimumGasPrice = BigInteger.valueOf(1_000000000);
   private static final BigInteger maximumGasPrice = BigInteger.valueOf(200_000000000L);
-  CompoundDai compoundDaidai;
+  CompoundDai compoundDai;
 
   @BeforeEach
   public void setUp() {
@@ -28,12 +30,12 @@ public class CompoundDaiIT {
     Permissions permissions = new Permissions(true, true);
     ContractNeedsProvider contractNeedsProvider =
         new ContractNeedsProvider(web3j, credentials, gasProvider, permissions, circuitBreaker);
-    compoundDaidai = new CompoundDai(contractNeedsProvider);
+    compoundDai = new CompoundDai(contractNeedsProvider);
   }
 
   @Test
   public void isContractValid_isValid_continueRunning() {
-    compoundDaidai.isContractValid();
+    assertDoesNotThrow(() -> compoundDai.isContractValid());
   }
 
   @Test
