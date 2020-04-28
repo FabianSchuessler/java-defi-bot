@@ -3,7 +3,7 @@ sudo: false
 script:
   - mvn clean org.jacoco:jacoco-maven-plugin:prepare-agent install sonar:sonar -Dsonar.projectKey=FabianSchuessler_java-defi-bot -DskipITs
   - mvn test
-jdk: oraclejdk14
+jdk: oraclejdk13
 addons:
   sonarcloud:
     organization: "fabianschuessler-github"

@@ -67,7 +67,6 @@ public class MedianizerIT {
   public void getPrice_oneExecution_priceIsWithinReasonableBounds() throws MedianException {
     Medianizer.setContract(contractNeedsProvider);
     BigDecimal median = Medianizer.getPrice();
-    System.out.println(BigNumberUtil.makeBigNumberHumanReadable(median));
     assertTrue(MINIMUM_ETH_PRICE.compareTo(median) <= 0, TOO_LOW);
     assertTrue(MAXIMUM_ETH_PRICE.compareTo(median) >= 0, TOO_HIGH);
   }
@@ -93,8 +92,6 @@ public class MedianizerIT {
     BigDecimal firstMedian = Medianizer.getPrice();
     Thread.sleep(Medianizer.PRICE_UPDATE_INTERVAL);
     BigDecimal secondMedian = Medianizer.getPrice();
-    System.out.println(BigNumberUtil.makeBigNumberHumanReadable(secondMedian));
-    System.out.println(BigNumberUtil.makeBigNumberHumanReadable(firstMedian));
     assertNotEquals(firstMedian, secondMedian);
   }
 }
