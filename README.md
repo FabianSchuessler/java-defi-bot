@@ -6,7 +6,7 @@ java-defi-bot is an application that aims to do beneficial actions on the Ethere
 
 ### Prerequisites
 
-- Java >= 14.0.1
+- Java >= 13
 - Infura Project ID or Ethereum Node
 - Ethereum Wallet
 - Maven

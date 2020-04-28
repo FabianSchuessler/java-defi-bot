@@ -262,7 +262,7 @@ public class Balances {
         BigDecimal medianEthereumPrice = Medianizer.getPrice();
         updateBalanceInformation(medianEthereumPrice);
       } catch (MedianException e) {
-        logger.error("MedianIsZeroException{]", e);
+        logger.error("MedianIsZeroException", e);
       }
 
       pastTimeBalances = currentTime;
