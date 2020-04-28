@@ -17,7 +17,7 @@
         <dependency>
             <groupId>org.web3j</groupId>
             <artifactId>core</artifactId>
-            <version>4.5.17</version>
+            <version>4.5.18</version>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
@@ -53,25 +53,25 @@
         <dependency>
             <groupId>org.web3j</groupId>
             <artifactId>abi</artifactId>
-            <version>4.5.17</version>
+            <version>4.5.18</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/org.web3j/tuples -->
         <dependency>
             <groupId>org.web3j</groupId>
             <artifactId>tuples</artifactId>
-            <version>4.5.17</version>
+            <version>4.5.18</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/org.web3j/crypto -->
         <dependency>
             <groupId>org.web3j</groupId>
             <artifactId>crypto</artifactId>
-            <version>4.5.17</version>
+            <version>4.5.18</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/org.web3j/utils -->
         <dependency>
             <groupId>org.web3j</groupId>
             <artifactId>utils</artifactId>
-            <version>4.5.17</version>
+            <version>4.5.18</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/org.jetbrains/annotations -->
         <dependency>
@@ -106,7 +106,7 @@
         <dependency>
             <groupId>org.junit-pioneer</groupId>
             <artifactId>junit-pioneer</artifactId>
-            <version>0.5.6</version>
+            <version>0.6.0</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

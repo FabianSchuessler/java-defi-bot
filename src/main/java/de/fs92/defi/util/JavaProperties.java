@@ -27,12 +27,20 @@ public class JavaProperties {
       String propertiesValue = properties.getProperty(key);
       logger.trace("READ KEY {}", key);
 
-      String loggedValue = switch (key) {
-        case "password" -> "*password is not logged*";
-        case "infuraProjectId" -> "*infuraProjectId is not logged*";
-        case "myEthereumAddress" -> "*myEthereumAddress is not logged*";
-        default -> propertiesValue;
-      };
+      String loggedValue;
+      switch (key) {
+        case "password":
+          loggedValue = "*password is not logged*";
+          break;
+        case "infuraProjectId":
+          loggedValue = "*infuraProjectId is not logged*";
+          break;
+        case "myEthereumAddress":
+          loggedValue = "*myEthereumAddress is not logged*";
+          break;
+        default:
+          loggedValue = propertiesValue;
+      }
 
       logger.trace("READ VALUE {}", loggedValue);
 
