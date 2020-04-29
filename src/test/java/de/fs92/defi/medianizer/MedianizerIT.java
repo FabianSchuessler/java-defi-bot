@@ -2,7 +2,6 @@ package de.fs92.defi.medianizer;
 
 import de.fs92.defi.contractneedsprovider.*;
 import de.fs92.defi.gasprovider.GasProvider;
-import de.fs92.defi.util.BigNumberUtil;
 import de.fs92.defi.util.JavaProperties;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -18,8 +17,10 @@ import java.math.BigInteger;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class MedianizerIT {
-  private static final org.slf4j.Logger logger =
-      LoggerFactory.getLogger(MethodHandles.lookup().lookupClass().getSimpleName());
+  private static final String TRAVIS_INFURA_PROJECT_ID = "TRAVIS_INFURA_PROJECT_ID";
+  private static final String TRAVIS_WALLET = "TRAVIS_WALLET";
+  private static final String TRAVIS_PASSWORD = "TRAVIS_PASSWORD";
+
   private static final String TOO_HIGH = "Error, value is too high";
   private static final String TOO_LOW = "Error, value is too low";
   private static final BigDecimal MINIMUM_ETH_PRICE = new BigDecimal("100000000000000000000");
@@ -28,11 +29,24 @@ public class MedianizerIT {
 
   @BeforeEach
   public void setUp() {
+    String infuraProjectId;
+    String password;
+    String wallet;
+
     JavaProperties javaProperties = new JavaProperties(true);
-    Web3j web3j = new Web3jProvider(javaProperties.getValue("infuraProjectId")).web3j;
-    String ethereumAddress = javaProperties.getValue("myEthereumAddress");
-    Credentials credentials =
-        new Wallet(javaProperties.getValue("password"), ethereumAddress, true).getCredentials();
+
+    if ("true".equals(System.getenv().get("TRAVIS"))) {
+      infuraProjectId = System.getenv().get(TRAVIS_INFURA_PROJECT_ID);
+      wallet = System.getenv().get(TRAVIS_WALLET);
+      password = System.getenv().get(TRAVIS_PASSWORD);
+    } else {
+      infuraProjectId = javaProperties.getValue("infuraProjectId");
+      wallet = javaProperties.getValue("wallet");
+      password = javaProperties.getValue("password");
+    }
+
+    Web3j web3j = new Web3jProvider(infuraProjectId).web3j;
+    Credentials credentials = new Wallet(password, wallet).getCredentials();
     GasProvider gasProvider =
         new GasProvider(web3j, BigInteger.valueOf(1_000000000), BigInteger.valueOf(200_000000000L));
     Permissions permissions =
@@ -51,14 +65,12 @@ public class MedianizerIT {
   }
 
   @Test
-  public void isContractValid_isNotValid_stopRunning() {
-  }
+  public void isContractValid_isNotValid_stopRunning() {}
 
   @Test
   public void getCoinbaseProEthPrice_simpleGet_returnPrice() {
     Medianizer.setContract(contractNeedsProvider);
     BigDecimal coinbaseEthPrice = Medianizer.getCoinbaseProEthPrice();
-    logger.trace("coinbaseEthPrice: {}", coinbaseEthPrice);
     assertTrue(MINIMUM_ETH_PRICE.compareTo(coinbaseEthPrice) <= 0, TOO_LOW);
     assertTrue(MAXIMUM_ETH_PRICE.compareTo(coinbaseEthPrice) >= 0, TOO_HIGH);
   }
@@ -73,7 +85,7 @@ public class MedianizerIT {
 
   @Test
   public void getPrice_twoExecutionsWithinPriceUpdateInterval_priceIsEqual()
-          throws MedianException {
+      throws MedianException {
     Medianizer.setContract(contractNeedsProvider);
     BigDecimal firstMedian = Medianizer.getPrice();
     BigDecimal secondMedian = Medianizer.getPrice();

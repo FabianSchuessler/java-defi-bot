@@ -21,7 +21,7 @@ java-defi-bot is an application that aims to do beneficial actions on the Ethere
 
 ```
 infuraProjectId=
-myEthereumAddress=
+wallet=
 password=
 transactionsRequireConfirmation=true
 playSoundOnTransaction=true

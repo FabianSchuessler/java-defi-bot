@@ -15,6 +15,8 @@ import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class GasProviderIT {
+  private static final String TRAVIS_INFURA_PROJECT_ID = "TRAVIS_INFURA_PROJECT_ID";
+
   private static final String TOO_HIGH = "Error, value is too high";
   private static final String TOO_LOW = "Error, value is too low";
   private static final String EXCEPTION = "calculateGasPriceAsAPercentageOfProfit Exception";
@@ -25,8 +27,17 @@ public class GasProviderIT {
   @BeforeEach
   public void setUp() {
     JavaProperties javaProperties = new JavaProperties(true);
-    String infuraProjectId = javaProperties.getValue("infuraProjectId");
+
+    String infuraProjectId;
+
+    if ("true".equals(System.getenv().get("TRAVIS"))) {
+      infuraProjectId = System.getenv().get(TRAVIS_INFURA_PROJECT_ID);
+    } else {
+      infuraProjectId = javaProperties.getValue("infuraProjectId");
+    }
+
     web3j = new Web3jProvider(infuraProjectId).web3j;
+
   }
 
   @Test

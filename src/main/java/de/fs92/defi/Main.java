@@ -29,9 +29,9 @@ public class Main {
   public static void main(String[] args) {
     JavaProperties javaProperties = new JavaProperties(IS_DEVELOPMENT_ENVIRONMENT);
 
-    String ethereumAddress = javaProperties.getValue("myEthereumAddress");
     String password = javaProperties.getValue("password");
     String infuraProjectId = javaProperties.getValue("infuraProjectId");
+    String wallet = javaProperties.getValue("wallet");
     boolean playSoundOnTransaction =
         Boolean.parseBoolean(javaProperties.getValue("playSoundOnTransaction"));
     boolean transactionsRequireConfirmation =
@@ -39,8 +39,7 @@ public class Main {
 
     CircuitBreaker circuitBreaker = new CircuitBreaker();
     Web3j web3j = new Web3jProvider(infuraProjectId).web3j;
-    Credentials credentials =
-        new Wallet(password, ethereumAddress, IS_DEVELOPMENT_ENVIRONMENT).getCredentials();
+    Credentials credentials = new Wallet(password, wallet).getCredentials();
     GasProvider gasProvider = new GasProvider(web3j, minimumGasPrice, maximumGasPrice);
     Permissions permissions =
         new Permissions(transactionsRequireConfirmation, playSoundOnTransaction);
@@ -80,12 +79,12 @@ public class Main {
         gasProvider.updateFailedTransactions(failedTransactions);
       }
 
-//      try {
-////        TimeUnit.MILLISECONDS.sleep(4500);
-//      } catch (InterruptedException e) {
-//        logger.error("Exception", e);
-//        Thread.currentThread().interrupt();
-//      }
+      //      try {
+      ////        TimeUnit.MILLISECONDS.sleep(4500);
+      //      } catch (InterruptedException e) {
+      //        logger.error("Exception", e);
+      //        Thread.currentThread().interrupt();
+      //      }
     }
   }
 }

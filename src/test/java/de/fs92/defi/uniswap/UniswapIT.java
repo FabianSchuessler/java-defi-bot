@@ -22,6 +22,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
 public class UniswapIT {
+  private static final String TRAVIS_INFURA_PROJECT_ID = "TRAVIS_INFURA_PROJECT_ID";
+  private static final String TRAVIS_WALLET = "TRAVIS_WALLET";
+  private static final String TRAVIS_PASSWORD = "TRAVIS_PASSWORD";
+
   public Uniswap uniswap;
   public Balances balances;
   public ContractNeedsProvider contractNeedsProvider;
@@ -34,23 +38,32 @@ public class UniswapIT {
   @BeforeEach
   public void setUp() {
     javaProperties = new JavaProperties(true);
+
+    String infuraProjectId;
+    String password;
+    String wallet;
+
     Permissions permissions =
         new Permissions(
             Boolean.parseBoolean(javaProperties.getValue("transactionsRequireConfirmation")),
             Boolean.parseBoolean(javaProperties.getValue("soundOnTransaction")));
-    Web3j web3j = new Web3jProvider(javaProperties.getValue("infuraProjectId")).web3j;
-    CircuitBreaker circuitBreaker = new CircuitBreaker();
+
+    if ("true".equals(System.getenv().get("TRAVIS"))) {
+      infuraProjectId = System.getenv().get(TRAVIS_INFURA_PROJECT_ID);
+      wallet = System.getenv().get(TRAVIS_WALLET);
+      password = System.getenv().get(TRAVIS_PASSWORD);
+    } else {
+      infuraProjectId = javaProperties.getValue("infuraProjectId");
+      wallet = javaProperties.getValue("wallet");
+      password = javaProperties.getValue("password");
+    }
+
+    Web3j web3j = new Web3jProvider(infuraProjectId).web3j;
     GasProvider gasProvider =
         new GasProvider(
             web3j, BigInteger.valueOf(1_000000000), BigInteger.valueOf(1000_000000000L));
-    Wallet wallet =
-        new Wallet(
-            javaProperties.getValue("password"),
-            javaProperties.getValue("myEthereumAddress"),
-            true);
-
-    Credentials credentials = wallet.getCredentials();
-
+    Credentials credentials = new Wallet(password, wallet).getCredentials();
+    CircuitBreaker circuitBreaker = new CircuitBreaker();
     contractNeedsProvider =
         new ContractNeedsProvider(web3j, credentials, gasProvider, permissions, circuitBreaker);
 
