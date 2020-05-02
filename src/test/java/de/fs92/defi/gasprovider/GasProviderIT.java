@@ -48,19 +48,15 @@ public class GasProviderIT {
   }
 
   @Test
-  public void updateFastGasPrice_ZeroMedianZeroProfit_GasPriceException() {
+  public void updateFastGasPrice_ZeroMedianZeroProfit_GasPriceWithinBoundaries() {
     GasProvider gasProvider = new GasProvider(web3j, MINIMUM_GAS_PRICE, MAXIMUM_GAS_PRICE);
-    Exception exception =
-        assertThrows(
-            GasPriceException.class,
-            () -> gasProvider.updateFastGasPrice(BigDecimal.ZERO, BigDecimal.ZERO));
-    assertTrue(exception.getMessage().contains("calculateGasPriceAsAPercentageOfProfit Exception"));
+    gasProvider.updateFastGasPrice(BigDecimal.ZERO, BigDecimal.ZERO);
     assertTrue(MINIMUM_GAS_PRICE.compareTo(gasProvider.gasPrice) <= 0, TOO_LOW);
     assertTrue(MAXIMUM_GAS_PRICE.compareTo(gasProvider.gasPrice) >= 0, TOO_HIGH);
   }
 
   @Test
-  public void updateFastGasPrice_1() {
+  public void updateFastGasPrice_RealMedianAndProfit_GasPriceWithinBoundaries() {
     GasProvider gasProvider = new GasProvider(web3j, MINIMUM_GAS_PRICE, MAXIMUM_GAS_PRICE);
     gasProvider.updateFastGasPrice(
         new BigDecimal("200000000000000000000"), new BigDecimal("10000000000000000000"));
