@@ -87,11 +87,12 @@ public class MedianizerIT {
     assertTrue(MAXIMUM_ETH_PRICE.compareTo(secondMedian) >= 0, TOO_HIGH);
   }
 
+  // TODO: think about how to improve this test, so it can't fail randomly
   @RepeatFailedTest(10)
   public void getTwoExecutionsAfterPriceUpdateInterval_priceMightBeDifferent() throws Exception {
     Medianizer.setContract(contractNeedsProvider);
     BigDecimal firstMedian = Medianizer.getPrice();
-    Thread.sleep(Medianizer.PRICE_UPDATE_INTERVAL);
+    Thread.sleep(Medianizer.PRICE_UPDATE_INTERVAL * 2);
     BigDecimal secondMedian = Medianizer.getPrice();
     assertNotEquals(firstMedian, secondMedian);
   }

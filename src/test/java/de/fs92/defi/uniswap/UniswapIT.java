@@ -127,6 +127,7 @@ public class UniswapIT {
 
   @Test
   public void getSellDaiParameters_buyableAmountIsZero_Null() throws IOException {
+    // todo: test should not depend on real balances
     BigDecimal medianEthereumPrice = new BigDecimal("231690000000000000000");
     TokenToEthSwapInput tokenToEthSwapInput =
         uniswap.getSellDaiParameters(balances, medianEthereumPrice);

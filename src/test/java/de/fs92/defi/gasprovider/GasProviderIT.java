@@ -37,7 +37,6 @@ public class GasProviderIT {
     }
 
     web3j = new Web3jProvider(infuraProjectId).web3j;
-
   }
 
   @Test
@@ -49,9 +48,13 @@ public class GasProviderIT {
   }
 
   @Test
-  public void updateFastGasPrice_2() {
+  public void updateFastGasPrice_ZeroMedianZeroProfit_GasPriceException() {
     GasProvider gasProvider = new GasProvider(web3j, MINIMUM_GAS_PRICE, MAXIMUM_GAS_PRICE);
-    gasProvider.updateFastGasPrice(BigDecimal.ZERO, BigDecimal.ZERO);
+    Exception exception =
+        assertThrows(
+            GasPriceException.class,
+            () -> gasProvider.updateFastGasPrice(BigDecimal.ZERO, BigDecimal.ZERO));
+    assertTrue(exception.getMessage().contains("calculateGasPriceAsAPercentageOfProfit Exception"));
     assertTrue(MINIMUM_GAS_PRICE.compareTo(gasProvider.gasPrice) <= 0, TOO_LOW);
     assertTrue(MAXIMUM_GAS_PRICE.compareTo(gasProvider.gasPrice) >= 0, TOO_HIGH);
   }
