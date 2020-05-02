@@ -1,16 +1,15 @@
 package de.fs92.defi.maker;
 
-import de.fs92.defi.contractneedsprovider.CircuitBreaker;
 import de.fs92.defi.contractneedsprovider.ContractNeedsProvider;
 import de.fs92.defi.gasprovider.GasProvider;
 import de.fs92.defi.util.Balances;
+import de.fs92.defi.util.ContractUser;
 import org.slf4j.LoggerFactory;
 import org.web3j.crypto.Credentials;
 import org.web3j.protocol.Web3j;
 import org.web3j.tuples.generated.Tuple4;
 import org.web3j.utils.Numeric;
 
-import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -19,7 +18,7 @@ import static de.fs92.defi.util.BigNumberUtil.*;
 
 // TODO: this currently unused class has only been tested for SCD, update it to MCD
 // TODO: somehow get own cdp id
-public class Maker {
+public class Maker extends ContractUser {
   private static final org.slf4j.Logger logger =
       LoggerFactory.getLogger(MethodHandles.lookup().lookupClass().getSimpleName());
   private static final String ADDRESS = "0x448a5065aeBB8E423F0896E6c5D525C040f59af3";
@@ -36,17 +35,6 @@ public class Maker {
     Credentials credentials = contractNeedsProvider.getCredentials();
     GasProvider gasProvider = contractNeedsProvider.getGasProvider();
     contract = MakerContract.load(ADDRESS, web3j, credentials, gasProvider);
-    isContractValid();
-  }
-
-  void isContractValid() {
-    try {
-      contract.isValid();
-      logger.trace("MAKER CONTRACT IS VALID");
-    } catch (IOException e) {
-      CircuitBreaker.stopRunning();
-      logger.error("IOException", e);
-    }
   }
 
   private void updateCDPInformation(Balances balances) throws Exception {

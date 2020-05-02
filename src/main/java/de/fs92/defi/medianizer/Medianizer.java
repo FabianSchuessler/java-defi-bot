@@ -1,15 +1,14 @@
 package de.fs92.defi.medianizer;
 
-import de.fs92.defi.contractneedsprovider.CircuitBreaker;
 import de.fs92.defi.contractneedsprovider.ContractNeedsProvider;
 import de.fs92.defi.gasprovider.GasProvider;
 import de.fs92.defi.util.BigNumberUtil;
+import de.fs92.defi.util.ContractUser;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.LoggerFactory;
 import org.web3j.crypto.Credentials;
 import org.web3j.protocol.Web3j;
 
-import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -18,7 +17,7 @@ import java.net.URL;
 import java.util.Arrays;
 import java.util.Scanner;
 
-public class Medianizer {
+public class Medianizer extends ContractUser {
   private static final org.slf4j.Logger logger =
       LoggerFactory.getLogger(MethodHandles.lookup().lookupClass().getSimpleName());
   private static final String ETH_USD = " ETH/USD";
@@ -42,17 +41,6 @@ public class Medianizer {
     Credentials credentials = contractNeedsProvider.getCredentials();
     GasProvider gasProvider = contractNeedsProvider.getGasProvider();
     Medianizer.contract = MedianizerContract.load(ADDRESS, web3j, credentials, gasProvider);
-    isContractValid();
-  }
-
-  static void isContractValid() {
-    try {
-      contract.isValid();
-      logger.trace("MEDIANIZER CONTRACT IS VALID");
-    } catch (IOException e) {
-      CircuitBreaker.stopRunning();
-      logger.error("IOException", e);
-    }
   }
 
   public static BigDecimal getPrice() throws MedianException {

@@ -6,11 +6,9 @@ import de.fs92.defi.util.JavaProperties;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junitpioneer.jupiter.RepeatFailedTest;
-import org.slf4j.LoggerFactory;
 import org.web3j.crypto.Credentials;
 import org.web3j.protocol.Web3j;
 
-import java.lang.invoke.MethodHandles;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
@@ -57,15 +55,6 @@ public class MedianizerIT {
     contractNeedsProvider =
         new ContractNeedsProvider(web3j, credentials, gasProvider, permissions, circuitBreaker);
   }
-
-  @Test
-  public void isContractValid_isValid_continueRunning() {
-    Medianizer.setContract(contractNeedsProvider);
-    assertDoesNotThrow(Medianizer::isContractValid);
-  }
-
-  @Test
-  public void isContractValid_isNotValid_stopRunning() {}
 
   @Test
   public void getCoinbaseProEthPrice_simpleGet_returnPrice() {

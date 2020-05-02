@@ -9,7 +9,7 @@ import java.util.List;
 public class CircuitBreaker {
   private static final org.slf4j.Logger logger =
       LoggerFactory.getLogger(MethodHandles.lookup().lookupClass().getSimpleName());
-  private static boolean continueRunning = true;
+  private boolean continueRunning = true;
 
   final ArrayList<Long> failedTransactionsWithinTheLastTenMinutesForErrorBlockingArrayList;
 
@@ -17,11 +17,11 @@ public class CircuitBreaker {
     failedTransactionsWithinTheLastTenMinutesForErrorBlockingArrayList = new ArrayList<>();
   }
 
-  public static boolean getContinueRunning() {
+  public boolean getContinueRunning() {
     return continueRunning;
   }
 
-  public static void stopRunning() {
+  public void stopRunning() {
     continueRunning = false;
   }
 

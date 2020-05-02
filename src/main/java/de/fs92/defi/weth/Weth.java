@@ -5,6 +5,7 @@ import de.fs92.defi.contractneedsprovider.ContractNeedsProvider;
 import de.fs92.defi.contractneedsprovider.Permissions;
 import de.fs92.defi.gasprovider.GasProvider;
 import de.fs92.defi.util.Balances;
+import de.fs92.defi.util.ContractUser;
 import de.fs92.defi.util.IContract;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.LoggerFactory;
@@ -12,7 +13,6 @@ import org.web3j.crypto.Credentials;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.methods.response.TransactionReceipt;
 
-import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -20,8 +20,9 @@ import java.util.concurrent.TimeUnit;
 
 import static de.fs92.defi.util.BigNumberUtil.BIGGEST_NUMBER;
 
-public class Weth {
+public class Weth extends ContractUser {
   public static final String ADDRESS = "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2";
+  private static final String EXCEPTION = "Exception";
   private static final org.slf4j.Logger logger =
       LoggerFactory.getLogger(MethodHandles.lookup().lookupClass().getSimpleName());
   private final WethContract contract;
@@ -37,17 +38,7 @@ public class Weth {
     credentials = contractNeedsProvider.getCredentials();
     circuitBreaker = contractNeedsProvider.getCircuitBreaker();
     contract = WethContract.load(ADDRESS, web3j, credentials, gasProvider);
-    isContractValid();
-  }
-
-  void isContractValid() {
-    try {
-      contract.isValid();
-      logger.trace("WETH CONTRACT IS VALID");
-    } catch (IOException e) {
-      CircuitBreaker.stopRunning();
-      logger.error("Exception", e);
-    }
+    isContractValid(contract, circuitBreaker);
   }
 
   public void weth2Eth(
@@ -75,7 +66,7 @@ public class Weth {
 
         balances.updateBalanceInformation(medianEthereumPrice); // not really necessary?
       } catch (Exception e) {
-        logger.error("Exception", e);
+        logger.error(EXCEPTION, e);
         circuitBreaker.add(System.currentTimeMillis());
       }
     }
@@ -107,7 +98,7 @@ public class Weth {
             transferReceipt.getTransactionHash());
         balances.updateBalanceInformation(medianEthereumPrice); // not really necessary?
       } catch (Exception e) {
-        logger.error("Exception", e);
+        logger.error(EXCEPTION, e);
         circuitBreaker.add(System.currentTimeMillis());
       }
     }
@@ -121,7 +112,7 @@ public class Weth {
         logger.debug("{} UNLOCK WETH", name);
 
       } catch (Exception e) {
-        logger.error("Exception", e);
+        logger.error(EXCEPTION, e);
         circuitBreaker.add(System.currentTimeMillis());
       }
     }
@@ -135,7 +126,7 @@ public class Weth {
         approve(address, toAllowContract.getClass().getName());
       }
     } catch (Exception e) {
-      logger.error("Exception", e);
+      logger.error(EXCEPTION, e);
     }
   }
 
@@ -143,7 +134,7 @@ public class Weth {
     try {
       return new BigDecimal(contract.balanceOf(ethereumAddress).send());
     } catch (Exception e) {
-      logger.error("Exception", e);
+      logger.error(EXCEPTION, e);
     }
     return BigDecimal.ZERO;
   }

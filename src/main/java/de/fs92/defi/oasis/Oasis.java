@@ -9,6 +9,7 @@ import de.fs92.defi.gasprovider.GasProvider;
 import de.fs92.defi.medianizer.MedianException;
 import de.fs92.defi.medianizer.Medianizer;
 import de.fs92.defi.util.Balances;
+import de.fs92.defi.util.ContractUser;
 import de.fs92.defi.util.IContract;
 import de.fs92.defi.weth.Weth;
 import org.jetbrains.annotations.NotNull;
@@ -18,7 +19,6 @@ import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.web3j.tuples.generated.Tuple4;
 
-import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -29,8 +29,9 @@ import java.util.concurrent.TimeUnit;
 import static de.fs92.defi.util.BigNumberUtil.*;
 import static de.fs92.defi.util.ProfitCalculator.getPotentialProfit;
 
-public class Oasis implements IContract {
+public class Oasis extends ContractUser implements IContract {
   public static final String ADDRESS = "0x794e6e91555438aFc3ccF1c5076A74F42133d08D";
+  private static final String EXCEPTION = "Exception";
   private static final org.slf4j.Logger logger =
       LoggerFactory.getLogger(MethodHandles.lookup().lookupClass().getSimpleName());
   private final Weth weth;
@@ -40,7 +41,7 @@ public class Oasis implements IContract {
   private final CircuitBreaker circuitBreaker;
   private final OasisContract contract;
 
-  public Oasis(
+  public Oasis (
       @NotNull ContractNeedsProvider contractNeedsProvider, CompoundDai compoundDai, Weth weth) {
     Web3j web3j = contractNeedsProvider.getWeb3j();
     Credentials credentials = contractNeedsProvider.getCredentials();
@@ -50,17 +51,6 @@ public class Oasis implements IContract {
     contract = OasisContract.load(ADDRESS, web3j, credentials, gasProvider);
     this.compoundDai = compoundDai;
     this.weth = weth;
-    isContractValid();
-  }
-
-  void isContractValid() {
-    try {
-      contract.isValid();
-      logger.trace("OASISDEX CONTRACT IS VALID");
-    } catch (IOException e) {
-      CircuitBreaker.stopRunning();
-      logger.error("Exception", e);
-    }
   }
 
   // warning offerValues can be empty
@@ -90,7 +80,7 @@ public class Oasis implements IContract {
     try {
       return (contract.getBestOffer(buyAddress, sellAddress).send());
     } catch (Exception e) {
-      logger.error("Exception", e);
+      logger.error(EXCEPTION, e);
       return BigInteger.ZERO;
     }
   }
@@ -141,7 +131,7 @@ public class Oasis implements IContract {
             balances);
       }
     } catch (MedianException e) {
-      logger.error("Exception", e);
+      logger.error(EXCEPTION, e);
     }
   }
 
@@ -178,7 +168,7 @@ public class Oasis implements IContract {
         }
       }
     } catch (MedianException e) {
-      logger.error("Exception", e);
+      logger.error(EXCEPTION, e);
     }
   }
 
@@ -192,7 +182,7 @@ public class Oasis implements IContract {
     try {
       offerValues = getOffer(bestOffer);
     } catch (Exception e) {
-      logger.error("Exception", e);
+      logger.error(EXCEPTION, e);
       return new OasisOffer(BigInteger.ZERO, null, null, BigDecimal.ZERO);
     }
     logger.trace(
@@ -250,7 +240,7 @@ public class Oasis implements IContract {
     try {
       offerValues = getOffer(bestOffer);
     } catch (Exception e) {
-      logger.error("Exception", e);
+      logger.error(EXCEPTION, e);
       return new OasisOffer(BigInteger.ZERO, null, null, BigDecimal.ZERO);
     }
     logger.trace(
@@ -310,7 +300,7 @@ public class Oasis implements IContract {
       } catch (Exception e) {
         circuitBreaker.add(System.currentTimeMillis());
         balances.addToSumEstimatedMissedProfits(potentialProfit);
-        logger.error("Exception", e);
+        logger.error(EXCEPTION, e);
       }
       balances.updateBalanceInformation(medianEthereumPrice);
     }

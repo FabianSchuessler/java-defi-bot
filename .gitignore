@@ -1,6 +1,5 @@
 .idea/
 java-defi-bot.iml
-wallets/
 logs/*
 
 # Maven.gitignore https://github.com/github/gitignore/blob/master/Maven.gitignore

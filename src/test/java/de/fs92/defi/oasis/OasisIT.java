@@ -56,14 +56,6 @@ public class OasisIT {
   }
 
   @Test
-  public void isContractValid_isValid_continueRunning() {
-    assertDoesNotThrow(() -> oasis.isContractValid());
-  }
-
-  @Test
-  public void isContractValid_isNotValid_stopRunning() {}
-
-  @Test
   public void getOffer_nonExistingOffer_DaiOrWethMissingException() {
     Exception exception =
         assertThrows(DaiOrWethMissingException.class, () -> oasis.getOffer(BigInteger.ZERO));

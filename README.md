@@ -13,7 +13,7 @@ java-defi-bot is an application that aims to do beneficial actions on the Ethere
 
 ### Installing
 
-```mvn install```
+- ```mvn install```
 
 ### Configuration
 
@@ -29,20 +29,19 @@ uniswapBuyProfitPercentage=0.5
 uniswapSellProfitPercentage=0.5
 ```
 
-- Add your wallet file ```./wallets/{myEthereumAddress}```
-
-__Make sure to never commit your private information!__
+__Make sure to never commit your config file!__
 
 - Make git stop tracking your config file ```git update-index --skip-worktree ./config.properties```
 
 ### Compile
 
-```mvn clean compile assembly:single```
+- ```mvn clean compile assembly:single```
 
 ### Running the tests
 
-- Unit Tests ```mvn clean test```
-- Integration Tests
+- All Tests ```mvn clean test```
+- Unit Tests ```mvn clean test -DskipITs```
+- Integration Tests ```mvn clean failsafe:integration-test```
 
 ### Run 
 
@@ -69,7 +68,7 @@ Feel free to open merge requests.
 
 - Code Style: [Google Java Format](https://github.com/google/google-java-format/blob/master/README.md)
 - Add new smart contracts: [web3j](https://github.com/web3j/web3j)
-- SLF4J + logback is used as defined in ```./src/main/resources/logback.xml```
+- Logging: SLF4J + logback is used as defined in ```./src/main/resources/logback.xml```
 - Update Maven Dependencies: ```mvn versions:use-latest-versions```
 - Show updatable dependencies: ```mvn versions:display-dependency-updates```
 - Show unused dependencies: ```mvn dependency:analyze```

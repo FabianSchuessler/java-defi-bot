@@ -4,13 +4,10 @@ import de.fs92.defi.contractneedsprovider.*;
 import de.fs92.defi.gasprovider.GasProvider;
 import de.fs92.defi.util.JavaProperties;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import org.web3j.crypto.Credentials;
 import org.web3j.protocol.Web3j;
 
 import java.math.BigInteger;
-
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
 public class MakerIT {
   private static final String TRAVIS_INFURA_PROJECT_ID = "TRAVIS_INFURA_PROJECT_ID";
@@ -49,12 +46,4 @@ public class MakerIT {
         new ContractNeedsProvider(web3j, credentials, gasProvider, permissions, circuitBreaker);
     maker = new Maker(contractNeedsProvider);
   }
-
-  @Test
-  public void isContractValid_isValid_continueRunning() {
-    assertDoesNotThrow(() -> maker.isContractValid());
-  }
-
-  @Test
-  public void isContractValid_isNotValid_stopRunning() {}
 }

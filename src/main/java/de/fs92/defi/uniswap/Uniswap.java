@@ -30,6 +30,8 @@ import static de.fs92.defi.util.BigNumberUtil.*;
 import static de.fs92.defi.util.ProfitCalculator.getPotentialProfit;
 
 public class Uniswap implements IContract {
+  private static final String EXCEPTION = "Exception";
+  private static final String PROFIT = "Profit {}";
   public static final DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy_MM_dd HH_mm_ss");
   private static final org.slf4j.Logger logger =
       LoggerFactory.getLogger(MethodHandles.lookup().lookupClass().getSimpleName());
@@ -84,7 +86,7 @@ public class Uniswap implements IContract {
         buyDaiTransaction(ethToTokenSwapInput, medianEthereumPrice, balances);
       }
     } catch (Exception e) {
-      logger.error("Exception", e);
+      logger.error(EXCEPTION, e);
     }
   }
 
@@ -104,7 +106,7 @@ public class Uniswap implements IContract {
         sellDaiTransaction(tokenToEthSwapInput, medianEthereumPrice, balances);
       }
     } catch (Exception e) {
-      logger.error("Exception", e);
+      logger.error(EXCEPTION, e);
     }
   }
 
@@ -123,7 +125,7 @@ public class Uniswap implements IContract {
     try {
       buyableDaiAmount = this.contract.getEthToTokenInputPrice(ethToSell).send();
     } catch (Exception e) {
-      logger.error("Exception", e);
+      logger.error(EXCEPTION, e);
       return null;
     }
     UniswapOffer offer =
@@ -176,9 +178,9 @@ public class Uniswap implements IContract {
             .compareTo(
                 Balances
                     .MINIMUM_ETHEREUM_RESERVE_UPPER_LIMIT) // TODO: move this line up in the method
-                                                           // hierarchy
+        // hierarchy
         > 0) { // TODO: check this line
-      logger.trace("PROFIT {}", makeBigNumberHumanReadableFullPrecision(offer.profit));
+      logger.trace(PROFIT, makeBigNumberHumanReadableFullPrecision(offer.profit));
       weth.weth2Eth(
           balances,
           offer.profit,
@@ -204,7 +206,7 @@ public class Uniswap implements IContract {
     logger.trace("ETH SOLD {}", makeBigNumberHumanReadableFullPrecision(ethSold));
     logger.trace("MIN TOKENS {}", makeBigNumberHumanReadableFullPrecision(minTokens));
     logger.trace("DEADLINE {}", formattedDeadline);
-    logger.trace("PROFIT {}", makeBigNumberHumanReadable(actualProfitInUSD));
+    logger.trace(PROFIT, makeBigNumberHumanReadable(actualProfitInUSD));
     return new EthToTokenSwapInput(minTokens, deadline, ethSold, actualProfitInUSD);
   }
 
@@ -238,7 +240,7 @@ public class Uniswap implements IContract {
     logger.info("TOKEN SOLD {}", makeBigNumberHumanReadableFullPrecision(minEth));
     logger.info("MIN ETH {}", makeBigNumberHumanReadableFullPrecision(minEth));
     logger.info("DEADLINE {}", formatedDeadline);
-    logger.info("PROFIT {}", makeBigNumberHumanReadable(actualProfitInUSD));
+    logger.info(PROFIT, makeBigNumberHumanReadable(actualProfitInUSD));
     return new TokenToEthSwapInput(minEth, deadline, daiToSell, actualProfitInUSD);
   }
 
@@ -297,7 +299,7 @@ public class Uniswap implements IContract {
         return new UniswapOffer(buyableEthAmount, potentialProfit);
       return new UniswapOffer(BigInteger.ZERO, potentialProfit);
     } catch (Exception e) {
-      logger.error("Exception", e);
+      logger.error(EXCEPTION, e);
     }
     logger.info("POTENTIAL PROFIT 0 DAI");
     return new UniswapOffer(BigInteger.ZERO, BigDecimal.ZERO);
@@ -341,7 +343,7 @@ public class Uniswap implements IContract {
 
         balances.addToSumEstimatedMissedProfits(ethToTokenSwapInput.potentialProfit);
 
-        logger.error("Exception", e);
+        logger.error(EXCEPTION, e);
       }
       balances.updateBalanceInformation(medianEthereumPrice);
     }
@@ -384,7 +386,7 @@ public class Uniswap implements IContract {
 
         balances.addToSumEstimatedMissedProfits(tokenToEthSwapInput.potentialProfit);
 
-        logger.error("Exception", e);
+        logger.error(EXCEPTION, e);
       }
       balances.updateBalanceInformation(medianEthereumPrice);
     }

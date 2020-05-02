@@ -24,6 +24,7 @@ import static de.fs92.defi.util.BigNumberUtil.multiply;
 
 public class GasProvider implements ContractGasProvider {
   static final String GWEI = " GWEI";
+  private static final String GAS_PRICE_EXCEPTION = "GasPriceException";
   private static final org.slf4j.Logger logger =
       LoggerFactory.getLogger(MethodHandles.lookup().lookupClass().getSimpleName());
   final BigInteger minimumGasPrice;
@@ -88,13 +89,13 @@ public class GasProvider implements ContractGasProvider {
       BigInteger etherchainResult = Etherchain.getFastestGasPrice();
       fastGasPrice = fastGasPrice.max(etherchainResult);
     } catch (GasPriceException e) {
-      logger.error("GasPriceException", e);
+      logger.error(GAS_PRICE_EXCEPTION, e);
     }
     try {
       BigInteger ethGasStationResult = ETHGasStation.getAverageGasPrice();
       fastGasPrice = fastGasPrice.max(ethGasStationResult);
     } catch (GasPriceException e) {
-      logger.error("GasPriceException", e);
+      logger.error(GAS_PRICE_EXCEPTION, e);
     }
     try {
       double percentageOfProfitAsFee =
@@ -105,7 +106,7 @@ public class GasProvider implements ContractGasProvider {
               medianEthereumPrice, potentialProfit, 300000.0, percentageOfProfitAsFee);
       fastGasPrice = fastGasPrice.max(gasPriceBasedOnProfit);
     } catch (GasPriceException e) {
-      logger.error("GasPriceException", e);
+      logger.error(GAS_PRICE_EXCEPTION, e);
     }
     gasPrice = fastGasPrice.min(maximumGasPrice);
     logger.trace("GAS PRICE {}{}", Convert.fromWei(gasPrice.toString(), Convert.Unit.GWEI), GWEI);

@@ -18,6 +18,7 @@ import org.web3j.protocol.Web3j;
 import java.lang.invoke.MethodHandles;
 import java.math.BigInteger;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 public class Main {
   private static final org.slf4j.Logger logger =
@@ -62,7 +63,7 @@ public class Main {
     dai.checkApproval(compoundDai);
     weth.checkApproval(oasis);
 
-    while (CircuitBreaker.getContinueRunning()) {
+    while (circuitBreaker.getContinueRunning()) {
       balances.updateBalance(60);
       if (circuitBreaker.isAllowingOperations(3)) {
         balances.checkEnoughEthereumForGas();
@@ -79,12 +80,14 @@ public class Main {
         gasProvider.updateFailedTransactions(failedTransactions);
       }
 
-      //      try {
-      ////        TimeUnit.MILLISECONDS.sleep(4500);
-      //      } catch (InterruptedException e) {
-      //        logger.error("Exception", e);
-      //        Thread.currentThread().interrupt();
-      //      }
+      try { // TODO: add infura rate checking
+        TimeUnit.MILLISECONDS.sleep(4500);
+      } catch (InterruptedException e) {
+        logger.error("Exception", e);
+        Thread.currentThread().interrupt();
+      }
     }
+    logger.trace("Exit");
+    System.exit(0);
   }
 }
