@@ -16,7 +16,8 @@ public class ProfitCalculator {
     throw new IllegalStateException("Utility class");
   }
 
-  @NotNull
+  @NotNull // todo: think about moving these methods into uniswapoffer, ethtokenswapinput and
+  // tokentoethswapinput
   public static BigDecimal getPotentialProfit(
       BigDecimal bestOfferMedianRatio, BigDecimal toSellInDAI, double percentageOfProfitAsFee) {
     BigDecimal potentialProfitBeforeCosts =

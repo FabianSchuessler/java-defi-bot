@@ -17,6 +17,7 @@ public class BigNumberUtil {
 
   @NotNull
   public static BigDecimal makeDoubleMachineReadable(Double smallNumber) {
+    if (smallNumber == 0.0) return BigDecimal.ZERO;
     return BigDecimal.valueOf(smallNumber * Math.pow(10, 18));
   }
 
@@ -59,11 +60,18 @@ public class BigNumberUtil {
 
   @NotNull
   public static String makeBigNumberHumanReadableFullPrecision(@NotNull BigDecimal bigNumber) {
-    String number = StringUtils.leftPad(bigNumber.toString(), 18, "0");
+    // INFO: rethink this method
+    String number = StringUtils.leftPad(bigNumber.toPlainString(), 18, "0");
     if (number.length() == 18) {
       if (new BigDecimal(number).compareTo(BigDecimal.ZERO) == 0) return "0.000000000000000000";
       return "0." + number;
     } else {
+      String[] splitString = number.split("\\.");
+      if (splitString.length == 2) {
+        String decimal = StringUtils.rightPad(splitString[1], 18, "0");
+        decimal = decimal.substring(0, 18);
+        return splitString[0] + "." + decimal;
+      }
       return number.substring(0, number.length() - 18)
           + "."
           + number.substring(number.length() - 18);
@@ -78,7 +86,7 @@ public class BigNumberUtil {
     } else {
       return number.substring(0, number.length() - 18)
           + "."
-          + number.substring(number.length() - 18);
+          + number.substring(number.length() - 18); // todo: test if .toPlainString() is necessary
     }
   }
 
@@ -89,9 +97,16 @@ public class BigNumberUtil {
     if (number.length() == decimals) {
       return "0." + number;
     } else {
+      // TODO: fix 15401073595382400000000.
       return number.substring(0, number.length() - decimals)
           + "."
           + number.substring(number.length() - decimals);
     }
+  }
+
+  // todo: add tests
+  @NotNull
+  public static BigInteger convertUint256toBigInteger(@NotNull BigInteger bigNumber) {
+    return bigNumber.divide(BigDecimal.valueOf(Math.pow(10, 27)).toBigInteger());
   }
 }

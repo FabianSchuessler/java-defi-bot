@@ -14,8 +14,7 @@ public class ContractUser {
 
   protected static void isContractValid(@NotNull Contract contract, CircuitBreaker circuitBreaker) {
     try {
-      boolean isValid = contract.isValid();
-      if (isValid) {
+      if (contract.isValid()) {
         logger.trace("{} CONTRACT IS VALID", contract.getClass());
       } else {
         logger.trace("{} CONTRACT IS INVALID", contract.getClass());

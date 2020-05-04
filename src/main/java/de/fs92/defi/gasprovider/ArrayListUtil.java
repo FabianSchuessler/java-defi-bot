@@ -20,4 +20,13 @@ public class ArrayListUtil {
     }
     return newList;
   }
+
+  public static <T> String toString(@NotNull List<T> list) {
+    StringBuilder sb = new StringBuilder();
+    for (T s : list) {
+      sb.append(s.toString());
+      sb.append("\t");
+    }
+    return sb.toString();
+  }
 }

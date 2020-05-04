@@ -77,6 +77,7 @@ public class Balances {
     this.ethereum = ethereum;
   }
 
+  // INFO: just for testing
   public Balances(
       BigDecimal ethBalance,
       BigDecimal daiBalance,
@@ -84,7 +85,8 @@ public class Balances {
       Dai dai,
       Weth weth,
       CompoundDai compoundDai,
-      Ethereum ethereum) {
+      Ethereum ethereum,
+      BigDecimal daiInCompound) {
     this.ethBalance = ethBalance;
     this.daiBalance = daiBalance;
     this.wethBalance = wethBalance;
@@ -93,6 +95,7 @@ public class Balances {
     this.weth = weth;
     this.compoundDai = compoundDai;
     this.ethereum = ethereum;
+    this.daiInCompound = daiInCompound;
 
     minimumTradeProfit = makeDoubleMachineReadable(1.0);
     minimumTradeProfitBuyDai = makeDoubleMachineReadable(1.0);

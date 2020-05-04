@@ -100,7 +100,8 @@ public class UniswapIT {
             dai,
             weth,
             compoundDai,
-            ethereum);
+            ethereum,
+            makeDoubleMachineReadable(0.0));
     EthToTokenSwapInput ethToTokenSwapInput =
         uniswap.getBuyDaiParameters(balances, medianEthereumPrice);
     assertNull(ethToTokenSwapInput);
@@ -118,7 +119,8 @@ public class UniswapIT {
             dai,
             weth,
             compoundDai,
-            ethereum);
+            ethereum,
+            makeDoubleMachineReadable(0.0));
     BigDecimal medianEthereumPrice = new BigDecimal("231690000000000000000");
     EthToTokenSwapInput ethToTokenSwapInput =
         uniswap.getBuyDaiParameters(balances, medianEthereumPrice);

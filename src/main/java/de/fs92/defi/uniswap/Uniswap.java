@@ -24,6 +24,7 @@ import java.math.BigInteger;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 
 import static de.fs92.defi.util.BigNumberUtil.*;
@@ -162,9 +163,9 @@ public class Uniswap implements IContract {
   private EthToTokenSwapInput calculateBuyDaiParameters(
       BigDecimal medianEthereumPrice, UniswapOffer offer, @NotNull Balances balances)
       throws IOException {
-    long unixTime = System.currentTimeMillis() / 1000L + 300L;
+    long currentUnixTimePlusFiveMinutes = System.currentTimeMillis() / 1000L + 300L;
     logger.info("UNISWAP BUY DAI PROFIT CALCULATION");
-    logger.trace("ALTERNATIVE DEADLINE {}", unixTime);
+    logger.trace("ALTERNATIVE DEADLINE {}", currentUnixTimePlusFiveMinutes);
 
     BigInteger deadline =
         web3j
@@ -198,7 +199,11 @@ public class Uniswap implements IContract {
             .toBigInteger();
 
     // https://stackoverflow.com/questions/39506891/why-is-zoneoffset-utc-zoneid-ofutc
-    String formattedDeadline = Instant.ofEpochSecond(unixTime).atZone(ZoneId.of("UTC")).format(dtf);
+    String timeZone = TimeZone.getDefault().getID();
+    String formattedDeadline =
+        Instant.ofEpochSecond(currentUnixTimePlusFiveMinutes)
+            .atZone(ZoneId.of(timeZone))
+            .format(dtf);
 
     logger.trace(
         "PROFIT WILLING TO GIVE UP {}",
@@ -232,7 +237,9 @@ public class Uniswap implements IContract {
     BigInteger minEth = offer.buyableAmount.subtract(profitWillingToGiveUp);
 
     // https://stackoverflow.com/questions/39506891/why-is-zoneoffset-utc-zoneid-ofutc
-    String formatedDeadline = Instant.ofEpochSecond(unixTime).atZone(ZoneId.of("UTC")).format(dtf);
+    String timeZone = TimeZone.getDefault().getID();
+    String formatedDeadline =
+        Instant.ofEpochSecond(unixTime).atZone(ZoneId.of(timeZone)).format(dtf);
 
     logger.info(
         "PROFIT WILLING TO GIVE UP {}",

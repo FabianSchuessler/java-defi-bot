@@ -3,6 +3,7 @@ package de.fs92.defi;
 import de.fs92.defi.compounddai.CompoundDai;
 import de.fs92.defi.contractneedsprovider.*;
 import de.fs92.defi.dai.Dai;
+import de.fs92.defi.flipper.Flipper;
 import de.fs92.defi.gasprovider.GasProvider;
 import de.fs92.defi.medianizer.Medianizer;
 import de.fs92.defi.oasis.Oasis;
@@ -57,6 +58,7 @@ public class Main {
 
     Oasis oasis = new Oasis(contractNeedsProvider, compoundDai, weth);
     Uniswap uniswap = new Uniswap(contractNeedsProvider, javaProperties, compoundDai, weth);
+    Flipper flipper = new Flipper(contractNeedsProvider);
 
     dai.checkApproval(uniswap);
     dai.checkApproval(oasis);
@@ -72,6 +74,7 @@ public class Main {
         uniswap.checkIfSellDaiIsProfitableThenDoIt(balances);
         uniswap.checkIfBuyDaiIsProfitableThenDoIt(balances);
         compoundDai.lendDai(balances);
+        flipper.checkIfThereAreProfitableFlipAuctions(balances);
       }
 
       List<Long> failedTransactions = circuitBreaker.getFailedTransactions();

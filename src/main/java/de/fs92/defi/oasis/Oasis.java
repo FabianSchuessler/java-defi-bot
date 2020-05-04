@@ -41,7 +41,7 @@ public class Oasis extends ContractUser implements IContract {
   private final CircuitBreaker circuitBreaker;
   private final OasisContract contract;
 
-  public Oasis (
+  public Oasis(
       @NotNull ContractNeedsProvider contractNeedsProvider, CompoundDai compoundDai, Weth weth) {
     Web3j web3j = contractNeedsProvider.getWeb3j();
     Credentials credentials = contractNeedsProvider.getCredentials();
@@ -63,9 +63,10 @@ public class Oasis extends ContractUser implements IContract {
     offerValues.put(getOffer.component4(), new BigDecimal(getOffer.component3()));
 
     // TODO: test this method (equal should not care about capitalization)
-    if (!(getOffer.component2().equals(Weth.ADDRESS) && getOffer.component4().equals(Dai.ADDRESS))
-        && (!(getOffer.component2().equals(Dai.ADDRESS)
-            && getOffer.component4().equals(Weth.ADDRESS)))) {
+    if (!(getOffer.component2().equalsIgnoreCase(Weth.ADDRESS)
+            && getOffer.component4().equalsIgnoreCase(Dai.ADDRESS))
+        && (!(getOffer.component2().equalsIgnoreCase(Dai.ADDRESS)
+            && getOffer.component4().equalsIgnoreCase(Weth.ADDRESS)))) {
       logger.info("BIG INTEGER 1 {}", getOffer.component1());
       logger.info("CONTRACT ADDRESS 1 {}", getOffer.component2());
       logger.info("BIG INTEGER 2 {}", getOffer.component3());
@@ -196,12 +197,9 @@ public class Oasis extends ContractUser implements IContract {
     if (!offerValues.get(Weth.ADDRESS).equals(BigDecimal.ZERO)) {
       BigDecimal bestOfferEthDaiRatioBuyDai =
           divide(offerValues.get(Dai.ADDRESS), offerValues.get(Weth.ADDRESS));
-      BigDecimal bestOfferMedianRatio =
-          divide(medianEthereumPrice, bestOfferEthDaiRatioBuyDai);
+      BigDecimal bestOfferMedianRatio = divide(medianEthereumPrice, bestOfferEthDaiRatioBuyDai);
       logger.trace(
-          "DAI PER WETH {}{}",
-          makeBigNumberHumanReadable(bestOfferEthDaiRatioBuyDai),
-          " WETH/DAI");
+          "DAI PER WETH {}{}", makeBigNumberHumanReadable(bestOfferEthDaiRatioBuyDai), " WETH/DAI");
       logger.trace("MEDIAN-OFFER RATIO {}", makeBigNumberHumanReadable(bestOfferMedianRatio));
       BigDecimal potentialProfit =
           getPotentialProfit(
@@ -218,8 +216,7 @@ public class Oasis extends ContractUser implements IContract {
                   bestOfferEthDaiRatioBuyDai),
               percentageOfProfitAsFee);
       if (potentialProfit.compareTo(balances.getMinimumTradeProfitBuyDai()) > 0) {
-        return new OasisOffer(
-            bestOffer, offerValues, bestOfferEthDaiRatioBuyDai, potentialProfit);
+        return new OasisOffer(bestOffer, offerValues, bestOfferEthDaiRatioBuyDai, potentialProfit);
       }
     } else {
       logger.trace("OFFER TAKEN DURING PROCESSING!");
@@ -255,8 +252,7 @@ public class Oasis extends ContractUser implements IContract {
     if (!offerValues.get(Weth.ADDRESS).equals(BigDecimal.ZERO)) {
       BigDecimal bestOfferEthDaiRatioSellDai =
           divide(offerValues.get(Dai.ADDRESS), offerValues.get(Weth.ADDRESS));
-      BigDecimal bestOfferMedianRatio =
-          divide(bestOfferEthDaiRatioSellDai, medianEthereumPrice);
+      BigDecimal bestOfferMedianRatio = divide(bestOfferEthDaiRatioSellDai, medianEthereumPrice);
       logger.trace(
           "OFFER ETH PRICE {}{}",
           makeBigNumberHumanReadable(bestOfferEthDaiRatioSellDai),
@@ -270,8 +266,7 @@ public class Oasis extends ContractUser implements IContract {
       // TODO: do constraints already here
 
       if (potentialProfit.compareTo(balances.getMinimumTradeProfitSellDai()) > 0) {
-        return new OasisOffer(
-            bestOffer, offerValues, bestOfferEthDaiRatioSellDai, potentialProfit);
+        return new OasisOffer(bestOffer, offerValues, bestOfferEthDaiRatioSellDai, potentialProfit);
       }
     } else {
       logger.trace("OFFER TAKEN DURING PROCESSING!");

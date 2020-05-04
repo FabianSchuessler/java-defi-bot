@@ -41,6 +41,14 @@ public class BigNumberUtilTest {
   }
 
   @Test
+  public void makeBigNumberHumanReadableFullPrecision_zeroAsStringWithDot_returnZero2() {
+    String expected = "201.000000000000000000";
+    String actual =
+        makeBigNumberHumanReadableFullPrecision(new BigDecimal("201.0000000000000000000"));
+    assertEquals(expected, actual);
+  }
+
+  @Test
   public void multiply_twoNumbers_returnMultiplication() {
     BigDecimal expected = new BigDecimal("145414193828276050");
     BigDecimal actual = multiply(new BigDecimal("100000000000000000"), SOME_NUMBER);

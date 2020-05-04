@@ -72,6 +72,13 @@ Feel free to open merge requests.
 - Update Maven Dependencies: ```mvn versions:use-latest-versions```
 - Show updatable dependencies: ```mvn versions:display-dependency-updates```
 - Show unused dependencies: ```mvn dependency:analyze```
+- [MakerDAO Documentation](https://docs.makerdao.com/)
+- [Web3j Documentation](https://docs.web3j.io/)
+- [Compound Documentation](https://compound.finance/docs)
+- [DAI Stats](https://daistats.com)
+- [ETH Gas Station](https://ethgasstation.info)
+- [DAI Descipher](http://dai.descipher.io)
+- [Loanscan](https://loanscan.io/)
 
 ## License
 

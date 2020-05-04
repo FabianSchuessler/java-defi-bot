@@ -35,8 +35,8 @@ public class JavaProperties {
         case "infuraProjectId":
           loggedValue = "*infuraProjectId is not logged*";
           break;
-        case "myEthereumAddress":
-          loggedValue = "*myEthereumAddress is not logged*";
+        case "wallet":
+          loggedValue = "*wallet is not logged*";
           break;
         default:
           loggedValue = propertiesValue;
