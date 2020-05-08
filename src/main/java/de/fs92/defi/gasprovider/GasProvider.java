@@ -68,7 +68,6 @@ public class GasProvider implements ContractGasProvider {
         return BigInteger.valueOf(300_000);
       case WethContract.FUNC_WITHDRAW:
       case WethContract.FUNC_DEPOSIT:
-        return BigInteger.valueOf(100_000);
       case DaiContract.FUNC_APPROVE:
         return BigInteger.valueOf(50_000);
       default:

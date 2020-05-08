@@ -67,10 +67,18 @@ public class UniswapIT {
     contractNeedsProvider =
         new ContractNeedsProvider(web3j, credentials, gasProvider, permissions, circuitBreaker);
 
-    dai = new Dai(contractNeedsProvider);
+    dai =
+        new Dai(
+            contractNeedsProvider,
+            Double.parseDouble(javaProperties.getValue("minimumDaiNecessaryForSale")));
     compoundDai = new CompoundDai(contractNeedsProvider);
     weth = new Weth(contractNeedsProvider);
-    ethereum = new Ethereum(contractNeedsProvider);
+    ethereum =
+        new Ethereum(
+            contractNeedsProvider,
+            Double.parseDouble(javaProperties.getValue("minimumEthereumReserverUpperLimit")),
+            Double.parseDouble(javaProperties.getValue("minimumEthereumReserverLowerLimit")),
+            Double.parseDouble(javaProperties.getValue("minimumEthereumNecessaryForSale")));
 
     balances = new Balances(dai, weth, compoundDai, ethereum);
     uniswap = new Uniswap(contractNeedsProvider, javaProperties, compoundDai, weth);

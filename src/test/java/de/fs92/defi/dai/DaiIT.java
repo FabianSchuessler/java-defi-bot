@@ -43,6 +43,9 @@ public class DaiIT {
     Permissions permissions = new Permissions(true, true);
     ContractNeedsProvider contractNeedsProvider =
         new ContractNeedsProvider(web3j, credentials, gasProvider, permissions, circuitBreaker);
-    dai = new Dai(contractNeedsProvider);
+    dai =
+        new Dai(
+            contractNeedsProvider,
+            Double.parseDouble(javaProperties.getValue("minimumDaiNecessaryForSale")));
   }
 }

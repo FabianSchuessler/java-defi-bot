@@ -21,6 +21,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.concurrent.TimeUnit;
 
+import static de.fs92.defi.util.BigNumberUtil.makeBigNumberHumanReadableFullPrecision;
 import static de.fs92.defi.util.BigNumberUtil.multiply;
 
 public class CompoundDai extends ContractUser implements IContract {
@@ -31,6 +32,7 @@ public class CompoundDai extends ContractUser implements IContract {
       LoggerFactory.getLogger(MethodHandles.lookup().lookupClass().getSimpleName());
   private static final BigInteger secondsPerYear = BigInteger.valueOf(31557600);
   private static final BigInteger timeBetweenBlocks = BigInteger.valueOf(15);
+  private static final int WAIT_TIME = 60 * 60 * 1000; // 60 minutes
   private static final BigInteger supplyRatePerYearMultiplicand =
       secondsPerYear.divide(timeBetweenBlocks);
   private static final String EXCEPTION = "Exception";
@@ -175,17 +177,22 @@ public class CompoundDai extends ContractUser implements IContract {
           BigInteger.valueOf(2)
               .multiply(gasLimit)
               .multiply(multiply(slowGasPrice, medianEthereumPrice)); // in USD
-      if (transactionCosts.compareTo(getPossibleDailyInterest(balances)) < 0) {
+      BigInteger possibleDailyInterest = getPossibleDailyInterest(balances);
+      if (transactionCosts.compareTo(possibleDailyInterest) < 0) {
         logger.trace("SUFFICIENT INTEREST TO LEND DAI ON COMPOUND");
 
-        if (System.currentTimeMillis()
-            >= balances.getLastSuccessfulTransaction() + 60 * 60 * 1000) { // 60 minutes
+        if (System.currentTimeMillis() >= balances.getLastSuccessfulTransaction() + WAIT_TIME) {
           mint(balances, new BigDecimal(medianEthereumPrice));
         } else {
-          logger.warn("NOT ENOUGH TIME PASSED SINCE LAST SUCCESSFUL TRANSACTION");
+          logger.warn(
+              "CURRENT CODE REQUIRES {} MINUTES BETWEEN LAST SUCCESSFUL TRANSACTION AND MINTING CDAI",
+              WAIT_TIME);
         }
       } else {
-        logger.warn("NOT ENOUGH INTEREST TO LEND DAI ON COMPOUND");
+        logger.warn(
+            "CURRENT CODE REQUIRES THAT THE TRANSACTION COSTS {} ARE LOWER THAN THE DAILY INTEREST {}",
+            makeBigNumberHumanReadableFullPrecision(transactionCosts),
+            makeBigNumberHumanReadableFullPrecision(possibleDailyInterest));
       }
       logger.trace(
           "SLOW GAS PRICE {}{}",
@@ -195,8 +202,9 @@ public class CompoundDai extends ContractUser implements IContract {
           "TRANSACTION COSTS {}{}",
           BigNumberUtil.makeBigNumberCurrencyHumanReadable(transactionCosts),
           " DAI");
+    } else {
+      logger.info("NOT ENOUGH DAI TO LEND DAI ON COMPOUND");
     }
-    logger.info("NOT ENOUGH DAI TO LEND DAI ON COMPOUND");
   }
 
   private BigInteger getSupplyRate() {

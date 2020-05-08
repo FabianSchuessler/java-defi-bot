@@ -68,10 +68,18 @@ class AuctionIT {
     contractNeedsProvider =
         new ContractNeedsProvider(web3j, credentials, gasProvider, permissions, circuitBreaker);
 
-    dai = new Dai(contractNeedsProvider);
+    dai =
+        new Dai(
+            contractNeedsProvider,
+            Double.parseDouble(javaProperties.getValue("minimumDaiNecessaryForSale")));
     compoundDai = new CompoundDai(contractNeedsProvider);
     weth = new Weth(contractNeedsProvider);
-    ethereum = new Ethereum(contractNeedsProvider);
+    ethereum =
+        new Ethereum(
+            contractNeedsProvider,
+            Double.parseDouble(javaProperties.getValue("minimumEthereumReserverUpperLimit")),
+            Double.parseDouble(javaProperties.getValue("minimumEthereumReserverLowerLimit")),
+            Double.parseDouble(javaProperties.getValue("minimumEthereumNecessaryForSale")));
 
     balances = new Balances(dai, weth, compoundDai, ethereum);
     uniswap = new Uniswap(contractNeedsProvider, javaProperties, compoundDai, weth);
@@ -108,84 +116,84 @@ class AuctionIT {
   @Test
   public void isAffordable_maxDaiOwnedEqualAuctionPrice_false() {
     Tuple8<BigInteger, BigInteger, String, BigInteger, BigInteger, String, String, BigInteger>
-            auctionTuple =
+        auctionTuple =
             new Tuple8<>(
-                    new BigInteger("200000000000000000000000000000000000000000000000"),
-                    new BigInteger("10000000000000000000"),
-                    "0x04bB161C4e7583CDAaDEe93A8b8E6125FD661E57",
-                    new BigInteger("1588287896"),
-                    new BigInteger("1588266341"),
-                    "0x42A142cc082255CaEE58E3f30dc6d4Fc3056b6A7",
-                    "0xA950524441892A31ebddF91d3cEEFa04Bf454466",
-                    new BigInteger("37299123089429162514476831876850683361693243730"));
+                new BigInteger("200000000000000000000000000000000000000000000000"),
+                new BigInteger("10000000000000000000"),
+                "0x04bB161C4e7583CDAaDEe93A8b8E6125FD661E57",
+                new BigInteger("1588287896"),
+                new BigInteger("1588266341"),
+                "0x42A142cc082255CaEE58E3f30dc6d4Fc3056b6A7",
+                "0xA950524441892A31ebddF91d3cEEFa04Bf454466",
+                new BigInteger("37299123089429162514476831876850683361693243730"));
     Auction auction = new Auction(auctionTuple);
     BigInteger minimumBidIncrease = BigNumberUtil.makeDoubleMachineReadable(1.0).toBigInteger();
     Balances balances =
-            new Balances(
-                    makeDoubleMachineReadable(0.0),
-                    makeDoubleMachineReadable(200.0),
-                    makeDoubleMachineReadable(0.0),
-                    dai,
-                    weth,
-                    compoundDai,
-                    ethereum,
-                    makeDoubleMachineReadable(0.0));
+        new Balances(
+            makeDoubleMachineReadable(0.0),
+            makeDoubleMachineReadable(200.0),
+            makeDoubleMachineReadable(0.0),
+            dai,
+            weth,
+            compoundDai,
+            ethereum,
+            makeDoubleMachineReadable(0.0));
     assertFalse(auction.isAffordable(minimumBidIncrease, balances));
   }
 
   @Test
   public void isAffordable_maxDaiOwnedSmallerThanAuctionPrice_false() {
     Tuple8<BigInteger, BigInteger, String, BigInteger, BigInteger, String, String, BigInteger>
-            auctionTuple =
+        auctionTuple =
             new Tuple8<>(
-                    new BigInteger("200000000000000000000000000000000000000000000000"),
-                    new BigInteger("10000000000000000000"),
-                    "0x04bB161C4e7583CDAaDEe93A8b8E6125FD661E57",
-                    new BigInteger("1588287896"),
-                    new BigInteger("1588266341"),
-                    "0x42A142cc082255CaEE58E3f30dc6d4Fc3056b6A7",
-                    "0xA950524441892A31ebddF91d3cEEFa04Bf454466",
-                    new BigInteger("37299123089429162514476831876850683361693243730"));
+                new BigInteger("200000000000000000000000000000000000000000000000"),
+                new BigInteger("10000000000000000000"),
+                "0x04bB161C4e7583CDAaDEe93A8b8E6125FD661E57",
+                new BigInteger("1588287896"),
+                new BigInteger("1588266341"),
+                "0x42A142cc082255CaEE58E3f30dc6d4Fc3056b6A7",
+                "0xA950524441892A31ebddF91d3cEEFa04Bf454466",
+                new BigInteger("37299123089429162514476831876850683361693243730"));
     Auction auction = new Auction(auctionTuple);
     BigInteger minimumBidIncrease = BigNumberUtil.makeDoubleMachineReadable(1.0).toBigInteger();
     Balances balances =
-            new Balances(
-                    makeDoubleMachineReadable(0.0),
-                    makeDoubleMachineReadable(198.0),
-                    makeDoubleMachineReadable(0.0),
-                    dai,
-                    weth,
-                    compoundDai,
-                    ethereum,
-                    makeDoubleMachineReadable(1.0));
+        new Balances(
+            makeDoubleMachineReadable(0.0),
+            makeDoubleMachineReadable(198.0),
+            makeDoubleMachineReadable(0.0),
+            dai,
+            weth,
+            compoundDai,
+            ethereum,
+            makeDoubleMachineReadable(1.0));
     assertFalse(auction.isAffordable(minimumBidIncrease, balances));
   }
 
   @Test
   public void isAffordable_minimumBidMakesAuctionTooExpensive_false() {
     Tuple8<BigInteger, BigInteger, String, BigInteger, BigInteger, String, String, BigInteger>
-            auctionTuple =
+        auctionTuple =
             new Tuple8<>(
-                    new BigInteger("100000000000000000000000000000000000000000000000"),
-                    new BigInteger("10000000000000000000"),
-                    "0x04bB161C4e7583CDAaDEe93A8b8E6125FD661E57",
-                    new BigInteger("1588287896"),
-                    new BigInteger("1588266341"),
-                    "0x42A142cc082255CaEE58E3f30dc6d4Fc3056b6A7",
-                    "0xA950524441892A31ebddF91d3cEEFa04Bf454466",
-                    new BigInteger("37299123089429162514476831876850683361693243730"));
+                new BigInteger("100000000000000000000000000000000000000000000000"),
+                new BigInteger("10000000000000000000"),
+                "0x04bB161C4e7583CDAaDEe93A8b8E6125FD661E57",
+                new BigInteger("1588287896"),
+                new BigInteger("1588266341"),
+                "0x42A142cc082255CaEE58E3f30dc6d4Fc3056b6A7",
+                "0xA950524441892A31ebddF91d3cEEFa04Bf454466",
+                new BigInteger("37299123089429162514476831876850683361693243730"));
     Auction auction = new Auction(auctionTuple);
     BigInteger minimumBidIncrease = BigNumberUtil.makeDoubleMachineReadable(1.05).toBigInteger();
     Balances balances =
-            new Balances(
-                    makeDoubleMachineReadable(0.0),
-                    makeDoubleMachineReadable(105.0),
-                    makeDoubleMachineReadable(0.0),
-                    dai,
-                    weth,
-                    compoundDai,
-                    ethereum,
-                    makeDoubleMachineReadable(0.0));
+        new Balances(
+            makeDoubleMachineReadable(0.0),
+            makeDoubleMachineReadable(105.0),
+            makeDoubleMachineReadable(0.0),
+            dai,
+            weth,
+            compoundDai,
+            ethereum,
+            makeDoubleMachineReadable(0.0));
     assertFalse(auction.isAffordable(minimumBidIncrease, balances));
   }
 }

@@ -107,18 +107,19 @@ public class Oasis extends ContractUser implements IContract {
                     balances
                         .getWethBalance()
                         .add(balances.getEthBalance())
-                        .subtract(Balances.MINIMUM_ETHEREUM_RESERVE_UPPER_LIMIT),
+                        .subtract(balances.ethereum.minimumEthereumReserveUpperLimit),
                     bestOffer.bestOfferDaiPerEth)
                 .subtract(new BigDecimal(weiValue));
         BigDecimal offerConstraint = bestOffer.offerValues.get(Dai.ADDRESS);
         logger.debug("OWN CONSTRAINT {}", makeBigNumberHumanReadableFullPrecision(ownConstraint));
         logger.debug(
             "OFFER CONSTRAINT {}", makeBigNumberHumanReadableFullPrecision(offerConstraint));
-        if (balances.getEthBalance().compareTo(Balances.MINIMUM_ETHEREUM_RESERVE_UPPER_LIMIT) > 0) {
+        if (balances.getEthBalance().compareTo(balances.ethereum.minimumEthereumReserveUpperLimit)
+            > 0) {
           weth.eth2Weth(
               balances
                   .getEthBalance()
-                  .subtract(Balances.MINIMUM_ETHEREUM_RESERVE_UPPER_LIMIT)
+                  .subtract(balances.ethereum.minimumEthereumReserveUpperLimit)
                   .toBigInteger(),
               bestOffer.profit,
               medianEthereumPrice,
@@ -211,7 +212,8 @@ public class Oasis extends ContractUser implements IContract {
                               BigDecimal.ZERO.max(
                                   balances
                                       .getEthBalance()
-                                      .subtract(Balances.MINIMUM_ETHEREUM_RESERVE_UPPER_LIMIT))))
+                                      .subtract(
+                                          balances.ethereum.minimumEthereumReserveUpperLimit))))
                       .min(offerValues.get(Weth.ADDRESS))),
                   bestOfferEthDaiRatioBuyDai),
               percentageOfProfitAsFee);

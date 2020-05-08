@@ -120,7 +120,7 @@ public class Uniswap implements IContract {
                 BigDecimal.ZERO.max(
                     balances
                         .getEthBalance()
-                        .subtract(Balances.MINIMUM_ETHEREUM_RESERVE_UPPER_LIMIT)))
+                        .subtract(balances.ethereum.minimumEthereumReserveUpperLimit)))
             .toBigInteger();
     BigInteger buyableDaiAmount;
     try {
@@ -177,8 +177,9 @@ public class Uniswap implements IContract {
     if (balances
             .getWethBalance()
             .compareTo(
-                Balances
-                    .MINIMUM_ETHEREUM_RESERVE_UPPER_LIMIT) // TODO: move this line up in the method
+                balances
+                    .ethereum
+                    .minimumEthereumReserveUpperLimit) // TODO: move this line up in the method
         // hierarchy
         > 0) { // TODO: check this line
       logger.trace(PROFIT, makeBigNumberHumanReadableFullPrecision(offer.profit));
@@ -195,7 +196,7 @@ public class Uniswap implements IContract {
     BigInteger ethSold =
         balances
             .getEthBalance()
-            .subtract(Balances.MINIMUM_ETHEREUM_RESERVE_UPPER_LIMIT)
+            .subtract(balances.ethereum.minimumEthereumReserveUpperLimit)
             .toBigInteger();
 
     // https://stackoverflow.com/questions/39506891/why-is-zoneoffset-utc-zoneid-ofutc

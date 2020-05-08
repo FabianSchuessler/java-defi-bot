@@ -19,6 +19,7 @@ import java.math.BigInteger;
 import java.util.concurrent.TimeUnit;
 
 import static de.fs92.defi.util.BigNumberUtil.BIGGEST_NUMBER;
+import static de.fs92.defi.util.BigNumberUtil.makeBigNumberHumanReadableFullPrecision;
 
 public class Weth extends ContractUser {
   public static final String ADDRESS = "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2";
@@ -50,12 +51,15 @@ public class Weth extends ContractUser {
       try {
         gasProvider.updateFastGasPrice(medianEthereumPrice, potentialProfit);
 
-        // check if there is even enough weth to unwrap
         if (amountOfWethToUnwrap.compareTo(balances.getWethBalance().toBigInteger()) > 0) {
           amountOfWethToUnwrap = balances.getWethBalance().toBigInteger();
-          logger.warn("WETH AMOUNT TO UNWRAP WAS TOO BIG {}", amountOfWethToUnwrap);
+          logger.warn(
+              "WETH AMOUNT TO UNWRAP WAS TOO BIG {}",
+              makeBigNumberHumanReadableFullPrecision(amountOfWethToUnwrap));
         }
 
+        logger.warn(
+            "ETH 2 WETH  {}", makeBigNumberHumanReadableFullPrecision(amountOfWethToUnwrap));
         TransactionReceipt transferReceipt = contract.withdraw(amountOfWethToUnwrap).send();
         TimeUnit.SECONDS.sleep(
             1); // for balances to update, otherwise same (buy/sell) type of transaction happens,
@@ -80,17 +84,18 @@ public class Weth extends ContractUser {
     if (permissions.check("ETH2WETH")) {
       try {
         gasProvider.updateFastGasPrice(medianEthereumPrice, potentialProfit);
-
-        // check if there is even enough eth to wrap
         if (amountOfEthToWrap.compareTo(balances.getEthBalance().toBigInteger()) > 0) {
           amountOfEthToWrap =
               balances
                   .getEthBalance()
                   .toBigInteger()
-                  .subtract(Balances.MINIMUM_ETHEREUM_RESERVE_UPPER_LIMIT.toBigInteger());
-          logger.warn("ETH AMOUNT TO WRAP WAS TOO BIG {}", amountOfEthToWrap);
+                  .subtract(balances.ethereum.minimumEthereumReserveUpperLimit.toBigInteger());
+          logger.warn(
+              "ETH AMOUNT TO WRAP WAS TOO BIG {}",
+              makeBigNumberHumanReadableFullPrecision(amountOfEthToWrap));
         }
 
+        logger.warn("ETH 2 WETH  {}", makeBigNumberHumanReadableFullPrecision(amountOfEthToWrap));
         TransactionReceipt transferReceipt = contract.deposit(amountOfEthToWrap).send();
         TimeUnit.SECONDS.sleep(1);
         logger.trace(

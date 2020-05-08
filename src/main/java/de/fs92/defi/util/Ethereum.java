@@ -15,18 +15,34 @@ import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.math.BigDecimal;
 
+import static de.fs92.defi.util.BigNumberUtil.makeDoubleMachineReadable;
+
 public class Ethereum {
   private static final org.slf4j.Logger logger =
       LoggerFactory.getLogger(MethodHandles.lookup().lookupClass().getSimpleName());
+
+  public final BigDecimal minimumEthereumReserveUpperLimit;
+  public final BigDecimal minimumEthereumReserveLowerLimit;
+  public final BigDecimal minimumEthereumNecessaryForSale;
 
   private final Web3j web3j;
   private final Credentials credentials;
   private final Permissions permissions;
 
-  public Ethereum(@NotNull ContractNeedsProvider contractNeedsProvider) {
+  public Ethereum(
+      @NotNull ContractNeedsProvider contractNeedsProvider,
+      double minimumEthereumReserveUpperLimit,
+      double minimumEthereumReserveLowerLimit,
+      double minimumEthereumNecessaryForSale) {
     web3j = contractNeedsProvider.getWeb3j();
     permissions = contractNeedsProvider.getPermissions();
     credentials = contractNeedsProvider.getCredentials();
+    this.minimumEthereumReserveUpperLimit =
+        makeDoubleMachineReadable(minimumEthereumReserveUpperLimit);
+    this.minimumEthereumReserveLowerLimit =
+        makeDoubleMachineReadable(minimumEthereumReserveLowerLimit);
+    this.minimumEthereumNecessaryForSale =
+        makeDoubleMachineReadable(minimumEthereumNecessaryForSale);
   }
 
   public void sendTransaction() throws Exception {

@@ -18,9 +18,11 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 
 public class Dai extends ContractUser {
+  public static final String ADDRESS = "0x6b175474e89094c44da98b954eedeac495271d0f";
+  public final BigDecimal minimumDaiNecessaryForSale;
+
   private static final org.slf4j.Logger logger =
       LoggerFactory.getLogger(MethodHandles.lookup().lookupClass().getSimpleName());
-  public static final String ADDRESS = "0x6b175474e89094c44da98b954eedeac495271d0f";
   private static final String CDP_ADDRESS = "0x0000000000000000000000000000000000000000";
   private static final String EXCEPTION = "Exception";
 
@@ -30,12 +32,15 @@ public class Dai extends ContractUser {
   private final Credentials credentials;
   private final CircuitBreaker circuitBreaker;
 
-  public Dai(@NotNull ContractNeedsProvider contractNeedsProvider) {
+  public Dai(
+      @NotNull ContractNeedsProvider contractNeedsProvider, double minimumDaiNecessaryForSale) {
     Web3j web3j = contractNeedsProvider.getWeb3j();
     credentials = contractNeedsProvider.getCredentials();
     gasProvider = contractNeedsProvider.getGasProvider();
     permissions = contractNeedsProvider.getPermissions();
     circuitBreaker = contractNeedsProvider.getCircuitBreaker();
+    this.minimumDaiNecessaryForSale =
+        BigNumberUtil.makeDoubleMachineReadable(minimumDaiNecessaryForSale);
     contract = DaiContract.load(ADDRESS, web3j, credentials, gasProvider);
   }
 

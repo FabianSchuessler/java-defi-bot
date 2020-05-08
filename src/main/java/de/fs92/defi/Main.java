@@ -49,10 +49,18 @@ public class Main {
         new ContractNeedsProvider(web3j, credentials, gasProvider, permissions, circuitBreaker);
 
     Medianizer.setContract(contractNeedsProvider);
-    Dai dai = new Dai(contractNeedsProvider);
+    Dai dai =
+        new Dai(
+            contractNeedsProvider,
+            Double.parseDouble(javaProperties.getValue("minimumDaiNecessaryForSale")));
     Weth weth = new Weth(contractNeedsProvider);
     CompoundDai compoundDai = new CompoundDai(contractNeedsProvider);
-    Ethereum ethereum = new Ethereum(contractNeedsProvider);
+    Ethereum ethereum =
+        new Ethereum(
+            contractNeedsProvider,
+            Double.parseDouble(javaProperties.getValue("minimumEthereumReserverUpperLimit")),
+            Double.parseDouble(javaProperties.getValue("minimumEthereumReserverLowerLimit")),
+            Double.parseDouble(javaProperties.getValue("minimumEthereumNecessaryForSale")));
 
     Balances balances = new Balances(dai, weth, compoundDai, ethereum);
 
@@ -68,7 +76,7 @@ public class Main {
     while (circuitBreaker.getContinueRunning()) {
       balances.updateBalance(60);
       if (circuitBreaker.isAllowingOperations(3)) {
-        balances.checkEnoughEthereumForGas();
+        balances.checkEnoughEthereumForGas(web3j);
         oasis.checkIfSellDaiIsProfitableThenDoIt(balances);
         oasis.checkIfBuyDaiIsProfitableThenDoIt(balances);
         uniswap.checkIfSellDaiIsProfitableThenDoIt(balances);
@@ -90,7 +98,12 @@ public class Main {
         Thread.currentThread().interrupt();
       }
     }
+    shutdown(web3j);
+  }
+
+  public static void shutdown(Web3j web3j) {
     logger.trace("Exit");
+    web3j.shutdown();
     System.exit(0);
   }
 }

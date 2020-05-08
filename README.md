@@ -6,11 +6,18 @@ java-defi-bot is an application that aims to do beneficial actions on the Ethere
 
 ### Prerequisites
 
-- Java >= 13
-- Infura Project ID or Ethereum Node
-- Ethereum Wallet
-- Maven
-
+- Java such as [Oracle Java](https://www.oracle.com/de/java/technologies/javase-downloads.html)
+```
+    $ echo $JAVA_HOME
+    C:\Program Files\Java\jdk-14.0.1
+```
+- [Infura Project ID](https://infura.io/) (Alternatives would be an own Ethereum Node or Quiknode)
+- Ethereum Wallet as keystore file including password from services such as [MyEtherWallet](https://www.myetherwallet.com/)
+- [Maven](https://maven.apache.org/download.cgi)
+```
+    $ mvn -version
+    Apache Maven 3.6.3
+```
 ### Installing
 
 - ```mvn install```
@@ -27,6 +34,10 @@ transactionsRequireConfirmation=true
 playSoundOnTransaction=true
 uniswapBuyProfitPercentage=0.5
 uniswapSellProfitPercentage=0.5
+minimumEthereumReserveUpperLimit = 0.20
+minimumEthereumReserveLowerLimit = 0.10
+minimumEthereumNecessaryForSale = 1.0
+minimumDaiNecessaryForSale = 250.0
 ```
 
 __Make sure to never commit your config file!__
@@ -59,6 +70,8 @@ You will find the logs in ```./logs```.
 - sells DAI, if DAI > $1.00 on Uniswap ```uniswap.checkIfSellDaiIsProfitableThenDoIt(balances);```
 - buys DAI, if DAI < $1.00 on Uniswap ```uniswap.checkIfBuyDaiIsProfitableThenDoIt(balances);```
 - earns interest on Compound, if there is no market action ```compoundDai.lendDai(balances);```
+- listens for flip auctions ```flipper.checkIfThereAreProfitableFlipAuctions(balances);```
+
 
 ## Contribute
 
@@ -77,8 +90,10 @@ Feel free to open merge requests.
 - [Compound Documentation](https://compound.finance/docs)
 - [DAI Stats](https://daistats.com)
 - [ETH Gas Station](https://ethgasstation.info)
-- [DAI Descipher](http://dai.descipher.io)
+- [DAI Peg: DAI Descipher](http://dai.descipher.io)
+- [DAI Peg: DAI Stablecoin](https://dai.stablecoin.science/)
 - [Loanscan](https://loanscan.io/)
+- [Flip auctions](https://daiauctions.com/flip)
 
 ## License
 

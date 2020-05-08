@@ -1,11 +1,13 @@
 package de.fs92.defi.util;
 
+import de.fs92.defi.Main;
 import de.fs92.defi.compounddai.CompoundDai;
 import de.fs92.defi.dai.Dai;
 import de.fs92.defi.medianizer.MedianException;
 import de.fs92.defi.medianizer.Medianizer;
 import de.fs92.defi.weth.Weth;
 import org.slf4j.LoggerFactory;
+import org.web3j.protocol.Web3j;
 
 import java.lang.invoke.MethodHandles;
 import java.math.BigDecimal;
@@ -15,40 +17,43 @@ import java.math.RoundingMode;
 import static de.fs92.defi.util.BigNumberUtil.*;
 
 public class Balances {
-  // gas stuff, https://etherconverter.online/
-  public static final BigDecimal MINIMUM_ETHEREUM_RESERVE_UPPER_LIMIT =
-      makeDoubleMachineReadable(0.10);
-  public static final BigDecimal MINIMUM_ETHEREUM_RESERVE_LOWER_LIMIT =
-      makeDoubleMachineReadable(0.025);
-  private static final BigDecimal MINIMUM_DAI_NECESSARY_FOR_SALE = makeDoubleMachineReadable(250.0);
-  private static final BigDecimal MINIMUM_ETHEREUM_NECESSARY_FOR_SALE =
-      makeDoubleMachineReadable(1.0);
   private static final org.slf4j.Logger logger =
       LoggerFactory.getLogger(MethodHandles.lookup().lookupClass().getSimpleName());
-  // 1.043115231071306958
-  public final BigDecimal minimumTradeProfit;
+
+  // contracts
   private final Dai dai;
   private final Weth weth;
   private final CompoundDai compoundDai;
-  private final Ethereum ethereum;
-  BigDecimal usd;
-  // environment variables
+  public final Ethereum ethereum;
+
+  // balances
   private BigDecimal ethBalance;
   private BigDecimal daiBalance;
   private BigDecimal wethBalance;
   private BigInteger cdaiBalance;
   private BigDecimal daiInCompound;
+
+  public final BigDecimal minimumTradeProfit;
+  private BigDecimal minimumTradeProfitBuyDai;
+  private BigDecimal minimumTradeProfitSellDai;
+
+  // profit and loss calculation
+  private BigDecimal usd;
+  private BigDecimal initialTotalUSD;
   private BigDecimal sumEstimatedProfits;
   private BigDecimal sumEstimatedMissedProfits;
+  private int initialTotalUSDCounter;
+
+  // update balances
+  private long pastTimeBalances;
+
+  // lend dai
+  private long lastSuccessfulTransaction;
+
+  // current ownership ratio
   private double totalEthRatio;
   private double totalDaiRatio;
   private long pastTime;
-  private BigDecimal minimumTradeProfitBuyDai;
-  private BigDecimal minimumTradeProfitSellDai;
-  private BigDecimal initialTotalUSD;
-  private int initialTotalUSDCounter;
-  private long pastTimeBalances;
-  private long lastSuccessfulTransaction;
 
   public Balances(Dai dai, Weth weth, CompoundDai compoundDai, Ethereum ethereum) {
     ethBalance = BigDecimal.ZERO;
@@ -102,14 +107,14 @@ public class Balances {
     minimumTradeProfitSellDai = makeDoubleMachineReadable(1.0);
   }
 
-  public void checkEnoughEthereumForGas() {
+  public void checkEnoughEthereumForGas(Web3j web3j) {
     // TODO: test this method (might unwrap without updating the gas fee to eth balance from
     // previous transaction)
-    if (ethBalance.compareTo(MINIMUM_ETHEREUM_RESERVE_LOWER_LIMIT) < 0
+    if (ethBalance.compareTo(ethereum.minimumEthereumReserveLowerLimit) < 0
         && wethBalance.compareTo(new BigDecimal("10000000000000000")) > 0) {
 
       BigInteger toUnwrap =
-          (MINIMUM_ETHEREUM_RESERVE_UPPER_LIMIT.subtract(ethBalance).toBigInteger())
+          (ethereum.minimumEthereumReserveUpperLimit.subtract(ethBalance).toBigInteger())
               .min(wethBalance.toBigInteger());
 
       logger.info("UNWRAP {}", makeBigNumberHumanReadableFullPrecision(toUnwrap));
@@ -119,6 +124,11 @@ public class Balances {
       } catch (MedianException e) {
         logger.error("MedianIsZeroException", e);
       }
+    } else if (ethBalance.compareTo(ethereum.minimumEthereumReserveLowerLimit) < 0
+        && wethBalance.compareTo(new BigDecimal("10000000000000000")) < 0) {
+      logger.error(
+          "ETH + WETH ARE LOWER THAN MINIMUM ETHEREUM RESERVE LOWER LIMIT, THEREFORE SHUTDOWN");
+      Main.shutdown(web3j);
     }
   }
 
@@ -273,7 +283,7 @@ public class Balances {
   }
 
   public boolean checkTooFewDaiAndDaiInCompound() {
-    return daiBalance.add(daiInCompound).compareTo(MINIMUM_DAI_NECESSARY_FOR_SALE) <= 0;
+    return daiBalance.add(daiInCompound).compareTo(dai.minimumDaiNecessaryForSale) <= 0;
   }
 
   public BigDecimal getMaxDaiToSell() {
@@ -283,14 +293,29 @@ public class Balances {
   }
 
   public boolean checkEnoughDai() {
-    return daiBalance.compareTo(MINIMUM_DAI_NECESSARY_FOR_SALE) > 0;
+    boolean isEnough = daiBalance.compareTo(dai.minimumDaiNecessaryForSale) > 0;
+    if (isEnough) {
+      logger.trace("ENOUGH DAI {}", makeBigNumberHumanReadableFullPrecision(daiBalance));
+    } else {
+      logger.trace("TOO FEW DAI {}", makeBigNumberHumanReadableFullPrecision(daiBalance));
+    }
+    return isEnough;
   }
 
   public boolean checkTooFewEthOrWeth() {
-    return wethBalance
-            .add(BigDecimal.ZERO.max(ethBalance.subtract(MINIMUM_ETHEREUM_RESERVE_UPPER_LIMIT)))
-            .compareTo(MINIMUM_ETHEREUM_NECESSARY_FOR_SALE)
-        <= 0;
+    BigDecimal ethAndWethBalance =
+        wethBalance.add(
+            BigDecimal.ZERO.max(ethBalance.subtract(ethereum.minimumEthereumReserveUpperLimit)));
+    boolean isEnough = ethAndWethBalance.compareTo(ethereum.minimumEthereumNecessaryForSale) <= 0;
+    if (isEnough) {
+      logger.trace(
+          "ENOUGH AND WETH {}", makeBigNumberHumanReadableFullPrecision(ethAndWethBalance));
+    } else {
+      logger.trace(
+          "TOO FEW ETH ETH AND WETH {}",
+          makeBigNumberHumanReadableFullPrecision(ethAndWethBalance));
+    }
+    return isEnough;
   }
 
   public void addToSumEstimatedProfits(BigDecimal potentialProfit) {

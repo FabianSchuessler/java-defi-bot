@@ -56,7 +56,7 @@ public class JavaProperties {
     try {
       PropertiesConfiguration config =
           new PropertiesConfiguration(currentDirectory + CONFIG_FILE_NAME);
-      logger.trace("CURRENT CONFIG {}", config);
+      logger.trace("OLD KEY VALUE {}", config.getProperty(key));
       config.setProperty(key, value);
       logger.trace("WROTE KEY VALUE {} {}", key, value);
       config.save();

@@ -56,10 +56,18 @@ public class FlipperIT {
         new ContractNeedsProvider(web3j, credentials, gasProvider, permissions, circuitBreaker);
     flipper = new Flipper(contractNeedsProvider);
 
-    Dai dai = new Dai(contractNeedsProvider);
+    Dai dai =
+        new Dai(
+            contractNeedsProvider,
+            Double.parseDouble(javaProperties.getValue("minimumDaiNecessaryForSale")));
     Weth weth = new Weth(contractNeedsProvider);
     CompoundDai compoundDai = new CompoundDai(contractNeedsProvider);
-    Ethereum ethereum = new Ethereum(contractNeedsProvider);
+    Ethereum ethereum =
+        new Ethereum(
+            contractNeedsProvider,
+            Double.parseDouble(javaProperties.getValue("minimumEthereumReserverUpperLimit")),
+            Double.parseDouble(javaProperties.getValue("minimumEthereumReserverLowerLimit")),
+            Double.parseDouble(javaProperties.getValue("minimumEthereumNecessaryForSale")));
 
     balances = new Balances(dai, weth, compoundDai, ethereum);
   }

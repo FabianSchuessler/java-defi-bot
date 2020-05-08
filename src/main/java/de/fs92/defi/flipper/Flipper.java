@@ -103,6 +103,8 @@ public class Flipper extends ContractUser {
 
   ArrayList<Auction> getActiveAffordableAuctionList(
       BigInteger totalAuctionCount, Balances balances) {
+    // info: rethink this duplicated code
+    // todo: save id and requery to get updated bids
     logger.trace("PAST TOTAL AUCTION COUNT {}", pastTotalAuctionCount);
 
     boolean auctionIsCompleted = false;
@@ -115,7 +117,9 @@ public class Flipper extends ContractUser {
             && auction.isAffordable(minimumBidIncrease, balances)) activeAuctionList.add(auction);
         totalAuctionCount = totalAuctionCount.subtract(BigInteger.ONE);
       }
-      logger.trace("ACTIVE AUCTION LIST {}", ArrayListUtil.toString(activeAuctionList));
+      logger.trace("ACTIVE AUCTION LIST SIZE: {}", activeAuctionList.size());
+      if (!activeAuctionList.isEmpty())
+        logger.trace("ACTIVE AUCTION LIST: {}", ArrayListUtil.toString(activeAuctionList));
       pastTotalAuctionCount = totalAuctionCount;
       return activeAuctionList;
     }
@@ -124,9 +128,13 @@ public class Flipper extends ContractUser {
         auctionCount.compareTo(totalAuctionCount) < 0;
         auctionCount = auctionCount.add(BigInteger.ONE)) {
       Auction auction = getAuction(totalAuctionCount);
-      if (auction != null && !auction.isEmpty()) activeAuctionList.add(auction);
+      if (auction != null
+          && auction.isActive()
+          && auction.isAffordable(minimumBidIncrease, balances)) activeAuctionList.add(auction);
     }
-    logger.trace("ACTIVE AUCTION LIST {}", ArrayListUtil.toString(activeAuctionList));
+    logger.trace("ACTIVE AUCTION LIST SIZE: {}", activeAuctionList.size());
+    if (!activeAuctionList.isEmpty())
+      logger.trace("ACTIVE AUCTION LIST: {}", ArrayListUtil.toString(activeAuctionList));
     pastTotalAuctionCount = totalAuctionCount;
     return activeAuctionList;
   }
