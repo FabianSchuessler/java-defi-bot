@@ -25,8 +25,6 @@ public class Main {
   private static final org.slf4j.Logger logger =
       LoggerFactory.getLogger(MethodHandles.lookup().lookupClass().getSimpleName());
   private static final boolean IS_DEVELOPMENT_ENVIRONMENT = true;
-  private static final BigInteger minimumGasPrice = BigInteger.valueOf(1_000000000);
-  private static final BigInteger maximumGasPrice = BigInteger.valueOf(200_000000000L);
 
   public static void main(String[] args) {
     JavaProperties javaProperties = new JavaProperties(IS_DEVELOPMENT_ENVIRONMENT);
@@ -42,7 +40,11 @@ public class Main {
     CircuitBreaker circuitBreaker = new CircuitBreaker();
     Web3j web3j = new Web3jProvider(infuraProjectId).web3j;
     Credentials credentials = new Wallet(password, wallet).getCredentials();
-    GasProvider gasProvider = new GasProvider(web3j, minimumGasPrice, maximumGasPrice);
+    GasProvider gasProvider =
+        new GasProvider(
+            web3j,
+            BigInteger.valueOf(Long.parseLong(javaProperties.getValue("minimumGasPrice"))),
+            BigInteger.valueOf(Long.parseLong(javaProperties.getValue("maximumGasPrice"))));
     Permissions permissions =
         new Permissions(transactionsRequireConfirmation, playSoundOnTransaction);
     ContractNeedsProvider contractNeedsProvider =
@@ -58,8 +60,8 @@ public class Main {
     Ethereum ethereum =
         new Ethereum(
             contractNeedsProvider,
-            Double.parseDouble(javaProperties.getValue("minimumEthereumReserverUpperLimit")),
-            Double.parseDouble(javaProperties.getValue("minimumEthereumReserverLowerLimit")),
+            Double.parseDouble(javaProperties.getValue("minimumEthereumReserveUpperLimit")),
+            Double.parseDouble(javaProperties.getValue("minimumEthereumReserveLowerLimit")),
             Double.parseDouble(javaProperties.getValue("minimumEthereumNecessaryForSale")));
 
     Balances balances = new Balances(dai, weth, compoundDai, ethereum);

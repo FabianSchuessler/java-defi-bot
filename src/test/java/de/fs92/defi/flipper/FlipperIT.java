@@ -65,8 +65,8 @@ public class FlipperIT {
     Ethereum ethereum =
         new Ethereum(
             contractNeedsProvider,
-            Double.parseDouble(javaProperties.getValue("minimumEthereumReserverUpperLimit")),
-            Double.parseDouble(javaProperties.getValue("minimumEthereumReserverLowerLimit")),
+            Double.parseDouble(javaProperties.getValue("minimumEthereumReserveUpperLimit")),
+            Double.parseDouble(javaProperties.getValue("minimumEthereumReserveLowerLimit")),
             Double.parseDouble(javaProperties.getValue("minimumEthereumNecessaryForSale")));
 
     balances = new Balances(dai, weth, compoundDai, ethereum);

@@ -43,6 +43,7 @@ minimumDaiNecessaryForSale = 250.0
 __Make sure to never commit your config file!__
 
 - Make git stop tracking your config file ```git update-index --skip-worktree ./config.properties```
+- For adding changes to config file afterwards ```git update-index --no-skip-worktree ./config.properties```
 
 ### Compile
 

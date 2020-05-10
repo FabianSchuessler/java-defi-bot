@@ -336,7 +336,7 @@ public class Uniswap implements IContract {
         balances.refreshLastSuccessfulTransaction();
 
         buyProfitPercentage = Math.max(0.05, buyProfitPercentage - 0.05);
-        javaProperties.updateValue(
+        javaProperties.setValue(
             UNISWAP_BUY_PROFIT_PERCENTAGE, Double.toString(buyProfitPercentage));
         logger.trace("UNISWAP BUY PROFIT PERCENTAGE {}", buyProfitPercentage);
 
@@ -345,7 +345,7 @@ public class Uniswap implements IContract {
         circuitBreaker.add(System.currentTimeMillis());
 
         buyProfitPercentage = Math.min(0.75, buyProfitPercentage + 0.05);
-        javaProperties.updateValue(
+        javaProperties.setValue(
             UNISWAP_BUY_PROFIT_PERCENTAGE, Double.toString(buyProfitPercentage));
         logger.trace("UNISWAP BUY PROFIT PERCENTAGE {}", buyProfitPercentage);
 
@@ -379,7 +379,7 @@ public class Uniswap implements IContract {
         balances.refreshLastSuccessfulTransaction();
 
         sellProfitPercentage = Math.max(0.05, sellProfitPercentage - 0.05);
-        javaProperties.updateValue(
+        javaProperties.setValue(
             UNISWAP_SELL_PROFIT_PERCENTAGE, Double.toString(sellProfitPercentage));
         logger.info("UNISWAP SELL PROFIT PERCENTAGE {}", sellProfitPercentage);
 
@@ -388,7 +388,7 @@ public class Uniswap implements IContract {
         circuitBreaker.add(System.currentTimeMillis());
 
         sellProfitPercentage = Math.min(0.75, sellProfitPercentage + 0.05);
-        javaProperties.updateValue(
+        javaProperties.setValue(
             UNISWAP_SELL_PROFIT_PERCENTAGE, Double.toString(sellProfitPercentage));
         logger.info("UNISWAP SELL PROFIT PERCENTAGE {}", sellProfitPercentage);
 

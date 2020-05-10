@@ -52,7 +52,7 @@ public class JavaProperties {
     return "";
   }
 
-  public void updateValue(String key, String value) {
+  public void setValue(String key, String value) {
     try {
       PropertiesConfiguration config =
           new PropertiesConfiguration(currentDirectory + CONFIG_FILE_NAME);

@@ -124,8 +124,8 @@ public class Balances {
       } catch (MedianException e) {
         logger.error("MedianIsZeroException", e);
       }
-    } else if (ethBalance.compareTo(ethereum.minimumEthereumReserveLowerLimit) < 0
-        && wethBalance.compareTo(new BigDecimal("10000000000000000")) < 0) {
+    } else if (ethBalance.add(wethBalance).compareTo(ethereum.minimumEthereumReserveLowerLimit)
+        < 0) {
       logger.error(
           "ETH + WETH ARE LOWER THAN MINIMUM ETHEREUM RESERVE LOWER LIMIT, THEREFORE SHUTDOWN");
       Main.shutdown(web3j);

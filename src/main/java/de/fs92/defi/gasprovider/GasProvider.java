@@ -102,7 +102,7 @@ public class GasProvider implements ContractGasProvider {
               failedTransactionsWithinTheLastTwelveHoursForGasPriceArrayList.size());
       BigInteger gasPriceBasedOnProfit =
           calculateGasPriceAsAPercentageOfProfit(
-              medianEthereumPrice, potentialProfit, 300000.0, percentageOfProfitAsFee);
+              medianEthereumPrice, potentialProfit, 300000.0, percentageOfProfitAsFee); // todo: create transaction to use estimate gas limit instead of fixed
       fastGasPrice = fastGasPrice.max(gasPriceBasedOnProfit);
     } catch (GasPriceException e) {
       logger.error(GAS_PRICE_EXCEPTION, e);

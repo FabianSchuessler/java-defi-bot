@@ -31,7 +31,7 @@ public class ETHGasStation {
 
   @NotNull
   static BigInteger getAverageGasPrice() throws GasPriceException {
-    BigInteger gasPrice = getGasPrice(4);
+    BigInteger gasPrice = getGasPrice(4); // todo: taker lower gas price
     logger.trace(
         "ETHERGASSTATION SUGGESTS GP {}{}",
         Convert.fromWei(gasPrice.toString(), Convert.Unit.GWEI),
