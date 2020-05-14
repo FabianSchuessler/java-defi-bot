@@ -43,6 +43,6 @@ public class JavaPropertiesTest {
     assertFalse(javaProperties.getValue("minimumEthereumReserveUpperLimit").isEmpty());
     assertFalse(javaProperties.getValue("minimumEthereumReserveLowerLimit").isEmpty());
     assertFalse(javaProperties.getValue("minimumEthereumNecessaryForSale").isEmpty());
-    assertFalse(javaProperties.getValue("minimumDaiNecessaryForSale").isEmpty());
+    assertFalse(javaProperties.getValue("minimumDaiNecessaryForSaleAndLending").isEmpty());
   }
 }

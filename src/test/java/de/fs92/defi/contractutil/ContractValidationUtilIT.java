@@ -1,10 +1,11 @@
-package de.fs92.defi.util;
+package de.fs92.defi.contractutil;
 
 import de.fs92.defi.contractneedsprovider.CircuitBreaker;
 import de.fs92.defi.contractneedsprovider.Wallet;
 import de.fs92.defi.contractneedsprovider.Web3jProvider;
 import de.fs92.defi.dai.DaiContract;
 import de.fs92.defi.gasprovider.GasProvider;
+import de.fs92.defi.util.JavaProperties;
 import de.fs92.defi.weth.WethContract;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -15,7 +16,7 @@ import java.math.BigInteger;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class ContractUserIT {
+public class ContractValidationUtilIT {
   private static final String TRAVIS_INFURA_PROJECT_ID = "TRAVIS_INFURA_PROJECT_ID";
   private static final String TRAVIS_WALLET = "TRAVIS_WALLET";
   private static final String TRAVIS_PASSWORD = "TRAVIS_PASSWORD";
@@ -30,7 +31,7 @@ class ContractUserIT {
   GasProvider gasProvider;
 
   @BeforeEach
-  void setUp() {
+  public void setUp() {
     String infuraProjectId;
     String password;
     String wallet;
@@ -58,7 +59,7 @@ class ContractUserIT {
         WethContract.load(
             "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2", web3j, credentials, gasProvider);
     CircuitBreaker circuitBreaker = new CircuitBreaker();
-    assertDoesNotThrow(() -> ContractUser.isContractValid(contract, circuitBreaker));
+    assertDoesNotThrow(() -> ContractValidationUtil.isContractValid(contract, circuitBreaker));
     assertTrue(circuitBreaker.getContinueRunning());
   }
 
@@ -68,7 +69,7 @@ class ContractUserIT {
         DaiContract.load(
             "0x0000000000000000000000000000000000000000", web3j, credentials, gasProvider);
     CircuitBreaker circuitBreaker = new CircuitBreaker();
-    assertDoesNotThrow(() -> ContractUser.isContractValid(contract, circuitBreaker));
+    assertDoesNotThrow(() -> ContractValidationUtil.isContractValid(contract, circuitBreaker));
     assertFalse(circuitBreaker.getContinueRunning());
   }
 }

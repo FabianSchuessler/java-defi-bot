@@ -4,9 +4,9 @@ import org.jetbrains.annotations.NotNull;
 import org.slf4j.LoggerFactory;
 
 import java.lang.invoke.MethodHandles;
-import java.math.BigDecimal;
+import java.math.BigInteger;
 
-import static de.fs92.defi.util.BigNumberUtil.*;
+import static de.fs92.defi.util.NumberUtil.*;
 
 public class ProfitCalculator {
   private static final org.slf4j.Logger logger =
@@ -16,34 +16,24 @@ public class ProfitCalculator {
     throw new IllegalStateException("Utility class");
   }
 
-  @NotNull // todo: think about moving these methods into uniswapoffer, ethtokenswapinput and
+  @NotNull // todo: think about moving these methods into the classes uniswapoffer,
+           // ethtokenswapinput and
   // tokentoethswapinput
-  public static BigDecimal getPotentialProfit(
-      BigDecimal bestOfferMedianRatio, BigDecimal toSellInDAI, double percentageOfProfitAsFee) {
-    BigDecimal potentialProfitBeforeCosts =
-        multiply(makeDoubleMachineReadable(1.0).subtract(bestOfferMedianRatio), toSellInDAI);
+  public static BigInteger getPotentialProfit(
+      BigInteger bestOfferMedianRatio, BigInteger toSellInDAI, double percentageOfProfitAsFee) {
+    BigInteger potentialProfitBeforeCosts =
+        multiply(getMachineReadable(1.0).subtract(bestOfferMedianRatio), toSellInDAI);
     logger.trace(
-        "POTENTIAL PROFIT BEFORE COSTS {}{}",
-        makeBigNumberHumanReadable(potentialProfitBeforeCosts),
-        " DAI");
-    BigDecimal maxTransactionCosts =
-        makeDoubleMachineReadable(0.50)
-            .max(
-                multiply(
-                    potentialProfitBeforeCosts,
-                    BigNumberUtil.makeDoubleMachineReadable(percentageOfProfitAsFee)));
-    BigDecimal potentialProfitAfterCosts = potentialProfitBeforeCosts.subtract(maxTransactionCosts);
+        "POTENTIAL PROFIT BEFORE COSTS {}{}", getHumanReadable(potentialProfitBeforeCosts), " DAI");
+    BigInteger maxTransactionCosts =
+        getMachineReadable(0.50)
+            .max(multiply(potentialProfitBeforeCosts, getMachineReadable(percentageOfProfitAsFee)));
+    BigInteger potentialProfitAfterCosts = potentialProfitBeforeCosts.subtract(maxTransactionCosts);
 
-    if (potentialProfitAfterCosts.compareTo(BigDecimal.ZERO) > 0) {
-      logger.trace(
-          "POTENTIAL PROFIT +{}{}",
-          BigNumberUtil.makeBigNumberCurrencyHumanReadable(potentialProfitAfterCosts),
-          " DAI");
+    if (potentialProfitAfterCosts.compareTo(BigInteger.ZERO) > 0) {
+      logger.trace("POTENTIAL PROFIT +{}{}", getCurrency(potentialProfitAfterCosts), " DAI");
     } else {
-      logger.trace(
-          "POTENTIAL PROFIT {}{}",
-          BigNumberUtil.makeBigNumberCurrencyHumanReadable(potentialProfitAfterCosts),
-          " DAI");
+      logger.trace("POTENTIAL PROFIT {}{}", getCurrency(potentialProfitAfterCosts), " DAI");
     }
 
     return potentialProfitAfterCosts;

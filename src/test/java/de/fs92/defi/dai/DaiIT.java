@@ -17,6 +17,8 @@ public class DaiIT {
   private static final BigInteger minimumGasPrice = BigInteger.valueOf(1_000000000);
   private static final BigInteger maximumGasPrice = BigInteger.valueOf(200_000000000L);
   Dai dai;
+  JavaProperties javaProperties;
+  ContractNeedsProvider contractNeedsProvider;
 
   @BeforeEach
   public void setUp() {
@@ -24,7 +26,7 @@ public class DaiIT {
     String password;
     String wallet;
 
-    JavaProperties javaProperties = new JavaProperties(true);
+    javaProperties = new JavaProperties(true);
 
     if ("true".equals(System.getenv().get("TRAVIS"))) {
       infuraProjectId = System.getenv().get(TRAVIS_INFURA_PROJECT_ID);
@@ -41,7 +43,7 @@ public class DaiIT {
     Credentials credentials = new Wallet(password, wallet).getCredentials();
     GasProvider gasProvider = new GasProvider(web3j, minimumGasPrice, maximumGasPrice);
     Permissions permissions = new Permissions(true, true);
-    ContractNeedsProvider contractNeedsProvider =
+    contractNeedsProvider =
         new ContractNeedsProvider(web3j, credentials, gasProvider, permissions, circuitBreaker);
     dai =
         new Dai(

@@ -4,10 +4,10 @@ import de.fs92.defi.compounddai.CompoundDai;
 import de.fs92.defi.contractneedsprovider.CircuitBreaker;
 import de.fs92.defi.contractneedsprovider.ContractNeedsProvider;
 import de.fs92.defi.contractneedsprovider.Permissions;
+import de.fs92.defi.contractuserutil.AddressMethod;
 import de.fs92.defi.gasprovider.GasProvider;
 import de.fs92.defi.medianizer.Medianizer;
 import de.fs92.defi.util.Balances;
-import de.fs92.defi.util.IContract;
 import de.fs92.defi.util.JavaProperties;
 import de.fs92.defi.weth.Weth;
 import org.jetbrains.annotations.NotNull;
@@ -19,7 +19,6 @@ import org.web3j.protocol.core.methods.response.TransactionReceipt;
 
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
-import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.time.Instant;
 import java.time.ZoneId;
@@ -27,20 +26,20 @@ import java.time.format.DateTimeFormatter;
 import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 
-import static de.fs92.defi.util.BigNumberUtil.*;
+import static de.fs92.defi.util.NumberUtil.*;
 import static de.fs92.defi.util.ProfitCalculator.getPotentialProfit;
 
-public class Uniswap implements IContract {
+public class Uniswap implements AddressMethod {
+  public static final DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy_MM_dd HH_mm_ss");
   private static final String EXCEPTION = "Exception";
   private static final String PROFIT = "Profit {}";
-  public static final DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy_MM_dd HH_mm_ss");
   private static final org.slf4j.Logger logger =
       LoggerFactory.getLogger(MethodHandles.lookup().lookupClass().getSimpleName());
   private static final String ADDRESS = "0x2a1530C4C41db0B0b2bB646CB5Eb1A67b7158667";
   private static final String UNISWAP_BUY_PROFIT_PERCENTAGE = "uniswapBuyProfitPercentage";
   private static final String UNISWAP_SELL_PROFIT_PERCENTAGE = "uniswapSellProfitPercentage";
 
-  private final UniswapContract contract;
+  private final UniswapContract uniswapContract;
   private final GasProvider gasProvider;
   private final JavaProperties javaProperties;
   private final Permissions permissions;
@@ -59,7 +58,7 @@ public class Uniswap implements IContract {
     web3j = contractNeedsProvider.getWeb3j();
     Credentials credentials = contractNeedsProvider.getCredentials();
     gasProvider = contractNeedsProvider.getGasProvider();
-    contract = UniswapContract.load(ADDRESS, web3j, credentials, gasProvider);
+    uniswapContract = UniswapContract.load(ADDRESS, web3j, credentials, gasProvider);
     permissions = contractNeedsProvider.getPermissions();
     circuitBreaker = contractNeedsProvider.getCircuitBreaker();
     this.javaProperties = javaProperties;
@@ -72,13 +71,13 @@ public class Uniswap implements IContract {
   }
 
   public void checkIfBuyDaiIsProfitableThenDoIt(@NotNull Balances balances) {
-    if (balances.checkTooFewEthOrWeth()) {
+    if (!balances.isThereEnoughEthAndWethForSaleAndLending(balances.ethereum)) {
       logger.trace("NOT ENOUGH WETH AND ETH TO BUY DAI ON UNISWAP");
       return;
     }
     try {
       logger.trace("UNISWAP BUY DAI PROFIT CALCULATION");
-      BigDecimal medianEthereumPrice = Medianizer.getPrice();
+      BigInteger medianEthereumPrice = Medianizer.getPrice();
       EthToTokenSwapInput ethToTokenSwapInput = getBuyDaiParameters(balances, medianEthereumPrice);
 
       if (ethToTokenSwapInput != null
@@ -92,14 +91,14 @@ public class Uniswap implements IContract {
   }
 
   public void checkIfSellDaiIsProfitableThenDoIt(@NotNull Balances balances) {
-    if (balances.checkTooFewDaiAndDaiInCompound()) {
+    if (!balances.isThereEnoughDaiAndDaiInCompoundForSale()) {
       logger.trace("NOT ENOUGH DAI TO SELL DAI ON UNISWAP");
       return;
     }
 
     try {
       logger.trace("UNISWAP SELL DAI PROFIT CALCULATION");
-      BigDecimal medianEthereumPrice = Medianizer.getPrice();
+      BigInteger medianEthereumPrice = Medianizer.getPrice();
       TokenToEthSwapInput tokenToEthSwapInput = getSellDaiParameters(balances, medianEthereumPrice);
       if (tokenToEthSwapInput != null
           && compoundDai.canOtherProfitMethodsWorkWithoutCDaiConversion(
@@ -112,19 +111,13 @@ public class Uniswap implements IContract {
   }
 
   EthToTokenSwapInput getBuyDaiParameters(
-      @NotNull Balances balances, BigDecimal medianEthereumPrice) throws Exception {
+      @NotNull Balances balances, BigInteger medianEthereumPrice) throws Exception {
+    BigInteger wethBalance = balances.weth.getAccount().getBalance();
     BigInteger ethToSell =
-        balances
-            .getWethBalance()
-            .add(
-                BigDecimal.ZERO.max(
-                    balances
-                        .getEthBalance()
-                        .subtract(balances.ethereum.minimumEthereumReserveUpperLimit)))
-            .toBigInteger();
+        wethBalance.add(balances.ethereum.getBalanceWithoutMinimumEthereumReserveUpperLimit());
     BigInteger buyableDaiAmount;
     try {
-      buyableDaiAmount = this.contract.getEthToTokenInputPrice(ethToSell).send();
+      buyableDaiAmount = this.uniswapContract.getEthToTokenInputPrice(ethToSell).send();
     } catch (Exception e) {
       logger.error(EXCEPTION, e);
       return null;
@@ -144,8 +137,8 @@ public class Uniswap implements IContract {
   }
 
   TokenToEthSwapInput getSellDaiParameters(
-      @NotNull Balances balances, BigDecimal medianEthereumPrice) throws IOException {
-    BigInteger daiToSell = balances.getMaxDaiToSell().toBigInteger(); // TODO: test this line
+      @NotNull Balances balances, BigInteger medianEthereumPrice) throws IOException {
+    BigInteger daiToSell = balances.getMaxDaiToSell(); // TODO: test this line
     UniswapOffer offer =
         getProfitableSellDaiOffer(
             daiToSell,
@@ -161,7 +154,7 @@ public class Uniswap implements IContract {
 
   @NotNull
   private EthToTokenSwapInput calculateBuyDaiParameters(
-      BigDecimal medianEthereumPrice, UniswapOffer offer, @NotNull Balances balances)
+      BigInteger medianEthereumPrice, UniswapOffer offer, @NotNull Balances balances)
       throws IOException {
     long currentUnixTimePlusFiveMinutes = System.currentTimeMillis() / 1000L + 300L;
     logger.info("UNISWAP BUY DAI PROFIT CALCULATION");
@@ -174,30 +167,26 @@ public class Uniswap implements IContract {
             .getBlock()
             .getTimestamp()
             .add(BigInteger.valueOf(300));
-    if (balances
-            .getWethBalance()
-            .compareTo(
-                balances
-                    .ethereum
-                    .minimumEthereumReserveUpperLimit) // TODO: move this line up in the method
+    BigInteger wethBalance = balances.weth.getAccount().getBalance();
+    if (wethBalance.compareTo(
+            balances
+                .ethereum
+                .minimumEthereumReserveUpperLimit) // TODO: move this line up in the method
+                                                   // hierarchy
         // hierarchy
         > 0) { // TODO: check this line
-      logger.trace(PROFIT, makeBigNumberHumanReadableFullPrecision(offer.profit));
+      logger.trace(PROFIT, getFullPrecision(offer.profit));
       weth.weth2Eth(
           balances,
           offer.profit,
           medianEthereumPrice,
-          balances.getWethBalance().toBigInteger()); // TODO: check if enough stuff left
+          balances.weth.getAccount().getBalance()); // TODO: maybe check if enough weth is left
     }
     BigInteger profitWillingToGiveUp =
-        multiply(offer.profit, makeDoubleMachineReadable(buyProfitPercentage)).toBigInteger();
-    BigDecimal actualProfitInUSD = offer.profit.subtract(new BigDecimal(profitWillingToGiveUp));
+        multiply(offer.profit, getMachineReadable(buyProfitPercentage));
+    BigInteger actualProfitInUSD = offer.profit.subtract(profitWillingToGiveUp);
     BigInteger minTokens = offer.buyableAmount.subtract(profitWillingToGiveUp);
-    BigInteger ethSold =
-        balances
-            .getEthBalance()
-            .subtract(balances.ethereum.minimumEthereumReserveUpperLimit)
-            .toBigInteger();
+    BigInteger ethSold = balances.ethereum.getBalanceWithoutMinimumEthereumReserveUpperLimit();
 
     // https://stackoverflow.com/questions/39506891/why-is-zoneoffset-utc-zoneid-ofutc
     String timeZone = TimeZone.getDefault().getID();
@@ -206,19 +195,17 @@ public class Uniswap implements IContract {
             .atZone(ZoneId.of(timeZone))
             .format(dtf);
 
-    logger.trace(
-        "PROFIT WILLING TO GIVE UP {}",
-        makeBigNumberHumanReadableFullPrecision(profitWillingToGiveUp));
-    logger.trace("ETH SOLD {}", makeBigNumberHumanReadableFullPrecision(ethSold));
-    logger.trace("MIN TOKENS {}", makeBigNumberHumanReadableFullPrecision(minTokens));
+    logger.trace("PROFIT WILLING TO GIVE UP {}", getFullPrecision(profitWillingToGiveUp));
+    logger.trace("ETH SOLD {}", getFullPrecision(ethSold));
+    logger.trace("MIN TOKENS {}", getFullPrecision(minTokens));
     logger.trace("DEADLINE {}", formattedDeadline);
-    logger.trace(PROFIT, makeBigNumberHumanReadable(actualProfitInUSD));
+    logger.trace(PROFIT, getHumanReadable(actualProfitInUSD));
     return new EthToTokenSwapInput(minTokens, deadline, ethSold, actualProfitInUSD);
   }
 
   @NotNull
   private TokenToEthSwapInput calculateSellDaiParameters(
-      BigDecimal medianEthereumPrice, BigInteger daiToSell, @NotNull UniswapOffer offer)
+      BigInteger medianEthereumPrice, BigInteger daiToSell, @NotNull UniswapOffer offer)
       throws IOException {
     long unixTime = System.currentTimeMillis() / 1000L + 300L;
     logger.trace("DEADLINE IN UNIX {}", unixTime);
@@ -231,10 +218,10 @@ public class Uniswap implements IContract {
             .add(BigInteger.valueOf(300));
     BigInteger profitWillingToGiveUp =
         divide(
-            multiply(offer.profit, makeDoubleMachineReadable(sellProfitPercentage)).toBigInteger(),
+            multiply(offer.profit, getMachineReadable(sellProfitPercentage)),
             divide(daiToSell, offer.buyableAmount));
-    BigDecimal actualProfitInUSD =
-        offer.profit.subtract(multiply(new BigDecimal(profitWillingToGiveUp), medianEthereumPrice));
+    BigInteger actualProfitInUSD =
+        offer.profit.subtract(multiply(profitWillingToGiveUp, medianEthereumPrice));
     BigInteger minEth = offer.buyableAmount.subtract(profitWillingToGiveUp);
 
     // https://stackoverflow.com/questions/39506891/why-is-zoneoffset-utc-zoneid-ofutc
@@ -242,13 +229,11 @@ public class Uniswap implements IContract {
     String formatedDeadline =
         Instant.ofEpochSecond(unixTime).atZone(ZoneId.of(timeZone)).format(dtf);
 
-    logger.info(
-        "PROFIT WILLING TO GIVE UP {}",
-        makeBigNumberHumanReadableFullPrecision(profitWillingToGiveUp));
-    logger.info("TOKEN SOLD {}", makeBigNumberHumanReadableFullPrecision(minEth));
-    logger.info("MIN ETH {}", makeBigNumberHumanReadableFullPrecision(minEth));
+    logger.info("PROFIT WILLING TO GIVE UP {}", getFullPrecision(profitWillingToGiveUp));
+    logger.info("TOKEN SOLD {}", getFullPrecision(minEth));
+    logger.info("MIN ETH {}", getFullPrecision(minEth));
     logger.info("DEADLINE {}", formatedDeadline);
-    logger.info(PROFIT, makeBigNumberHumanReadable(actualProfitInUSD));
+    logger.info(PROFIT, getHumanReadable(actualProfitInUSD));
     return new TokenToEthSwapInput(minEth, deadline, daiToSell, actualProfitInUSD);
   }
 
@@ -257,51 +242,45 @@ public class Uniswap implements IContract {
       BigInteger buyableDaiAmount,
       BigInteger ethToSell,
       @NotNull Balances balances,
-      BigDecimal medianEthereumPrice,
+      BigInteger medianEthereumPrice,
       double percentageOfProfitAsFee) {
-    logger.trace(
-        "BUYABLE DAI AMOUNT {} DAI", makeBigNumberHumanReadableFullPrecision(buyableDaiAmount));
+    logger.trace("BUYABLE DAI AMOUNT {} DAI", getFullPrecision(buyableDaiAmount));
 
     BigInteger uniswapBuyDaiPrice = divide(buyableDaiAmount, ethToSell);
-    logger.trace("DAI PER ETH {}{}", makeBigNumberHumanReadable(uniswapBuyDaiPrice), " ETH/DAI");
+    logger.trace("DAI PER ETH {}{}", getHumanReadable(uniswapBuyDaiPrice), " ETH/DAI");
 
-    BigDecimal bestOfferMedianRatio =
-        divide(medianEthereumPrice, new BigDecimal(uniswapBuyDaiPrice));
-    logger.trace(
-        "MEDIAN-OFFER RATIO {}", makeBigNumberHumanReadableFullPrecision(bestOfferMedianRatio));
+    BigInteger bestOfferMedianRatio = divide(medianEthereumPrice, uniswapBuyDaiPrice);
+    logger.trace("MEDIAN-OFFER RATIO {}", getFullPrecision(bestOfferMedianRatio));
 
     //        BigDecimal potentialProfit = new
     // BigDecimal(buyableDaiAmount).subtract(multiply(medianEthereumPrice, new
     // BigDecimal(ethToSell))); // without transaction costs
-    BigDecimal potentialProfit =
-        getPotentialProfit(
-            bestOfferMedianRatio, new BigDecimal(buyableDaiAmount), percentageOfProfitAsFee);
+    BigInteger potentialProfit =
+        getPotentialProfit(bestOfferMedianRatio, buyableDaiAmount, percentageOfProfitAsFee);
 
     if (potentialProfit.compareTo(balances.getMinimumTradeProfitBuyDai()) > 0)
       return new UniswapOffer(buyableDaiAmount, potentialProfit);
-    return new UniswapOffer(BigInteger.ZERO, BigDecimal.ZERO);
+    return new UniswapOffer(BigInteger.ZERO, BigInteger.ZERO);
   }
 
   @NotNull
   UniswapOffer getProfitableSellDaiOffer(
       BigInteger daiToSell,
       Balances balances,
-      BigDecimal medianEthereumPrice,
+      BigInteger medianEthereumPrice,
       double percentageOfProfitAsFee) {
     try {
-      BigInteger buyableEthAmount = this.contract.getTokenToEthInputPrice(daiToSell).send();
-      logger.info(
-          "BUYABLE ETH AMOUNT {} ETH", makeBigNumberHumanReadableFullPrecision(buyableEthAmount));
+      BigInteger buyableEthAmount = this.uniswapContract.getTokenToEthInputPrice(daiToSell).send();
+      logger.info("BUYABLE ETH AMOUNT {} ETH", getFullPrecision(buyableEthAmount));
 
       BigInteger ethDaiRatio = divide(daiToSell, buyableEthAmount);
-      logger.info("OFFER ETH PRICE {} ETH/DAI", makeBigNumberHumanReadable(ethDaiRatio));
+      logger.info("OFFER ETH PRICE {} ETH/DAI", getHumanReadable(ethDaiRatio));
 
-      BigDecimal bestOfferMedianRatio = divide(new BigDecimal(ethDaiRatio), medianEthereumPrice);
-      logger.info("OFFER-MEDIAN RATIO {}", makeBigNumberHumanReadable(bestOfferMedianRatio));
+      BigInteger bestOfferMedianRatio = divide(ethDaiRatio, medianEthereumPrice);
+      logger.info("OFFER-MEDIAN RATIO {}", getHumanReadable(bestOfferMedianRatio));
 
-      BigDecimal potentialProfit =
-          getPotentialProfit(
-              bestOfferMedianRatio, new BigDecimal(daiToSell), percentageOfProfitAsFee);
+      BigInteger potentialProfit =
+          getPotentialProfit(bestOfferMedianRatio, daiToSell, percentageOfProfitAsFee);
 
       if (potentialProfit.compareTo(balances.getMinimumTradeProfitSellDai()) > 0)
         return new UniswapOffer(buyableEthAmount, potentialProfit);
@@ -310,17 +289,17 @@ public class Uniswap implements IContract {
       logger.error(EXCEPTION, e);
     }
     logger.info("POTENTIAL PROFIT 0 DAI");
-    return new UniswapOffer(BigInteger.ZERO, BigDecimal.ZERO);
+    return new UniswapOffer(BigInteger.ZERO, BigInteger.ZERO);
   }
 
   private void buyDaiTransaction(
-      EthToTokenSwapInput ethToTokenSwapInput, BigDecimal medianEthereumPrice, Balances balances) {
+      EthToTokenSwapInput ethToTokenSwapInput, BigInteger medianEthereumPrice, Balances balances) {
     if (permissions.check("UNISWAP BUY DAI")) {
       try {
         this.gasProvider.updateFastGasPrice(
-            ethToTokenSwapInput.potentialProfit, medianEthereumPrice);
+            medianEthereumPrice, ethToTokenSwapInput.potentialProfit);
         TransactionReceipt transferReceipt =
-            this.contract
+            this.uniswapContract
                 .ethToTokenSwapInput(
                     ethToTokenSwapInput.minTokens,
                     ethToTokenSwapInput.deadline,
@@ -358,13 +337,13 @@ public class Uniswap implements IContract {
   }
 
   private void sellDaiTransaction(
-      TokenToEthSwapInput tokenToEthSwapInput, BigDecimal medianEthereumPrice, Balances balances) {
+      TokenToEthSwapInput tokenToEthSwapInput, BigInteger medianEthereumPrice, Balances balances) {
     if (permissions.check("UNISWAP SELL DAI")) {
       try {
         this.gasProvider.updateFastGasPrice(
-            tokenToEthSwapInput.potentialProfit, medianEthereumPrice);
+            medianEthereumPrice, tokenToEthSwapInput.potentialProfit);
         TransactionReceipt transferReceipt =
-            this.contract
+            this.uniswapContract
                 .tokenToEthSwapInput(
                     tokenToEthSwapInput.tokenSold,
                     tokenToEthSwapInput.minEth,

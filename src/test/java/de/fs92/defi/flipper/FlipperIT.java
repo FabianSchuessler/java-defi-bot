@@ -5,7 +5,6 @@ import de.fs92.defi.contractneedsprovider.*;
 import de.fs92.defi.dai.Dai;
 import de.fs92.defi.gasprovider.GasProvider;
 import de.fs92.defi.util.Balances;
-import de.fs92.defi.util.BigNumberUtil;
 import de.fs92.defi.util.Ethereum;
 import de.fs92.defi.util.JavaProperties;
 import de.fs92.defi.weth.Weth;
@@ -17,6 +16,8 @@ import org.web3j.protocol.Web3j;
 import java.math.BigInteger;
 import java.util.ArrayList;
 
+import static de.fs92.defi.util.NumberUtil.convertUint256toBigInteger;
+import static de.fs92.defi.util.NumberUtil.getHumanReadable;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class FlipperIT {
@@ -59,7 +60,7 @@ public class FlipperIT {
     Dai dai =
         new Dai(
             contractNeedsProvider,
-            Double.parseDouble(javaProperties.getValue("minimumDaiNecessaryForSale")));
+            Double.parseDouble(javaProperties.getValue("minimumDaiNecessaryForSaleAndLending")));
     Weth weth = new Weth(contractNeedsProvider);
     CompoundDai compoundDai = new CompoundDai(contractNeedsProvider);
     Ethereum ethereum =
@@ -84,7 +85,7 @@ public class FlipperIT {
     assertEquals(
         0,
         auction.bidAmountInDai.compareTo(
-            BigNumberUtil.convertUint256toBigInteger(
+            convertUint256toBigInteger(
                 new BigInteger("37299123089429162514476831876850683361693243730"))));
     assertEquals(0, auction.collateralForSale.compareTo(new BigInteger("175927491330994700")));
     assertTrue(
@@ -100,7 +101,7 @@ public class FlipperIT {
     assertEquals(
         0,
         auction.totalDaiWanted.compareTo(
-            BigNumberUtil.convertUint256toBigInteger(
+            convertUint256toBigInteger(
                 new BigInteger("37299123089429162514476831876850683361693243730"))));
   }
 
@@ -111,14 +112,14 @@ public class FlipperIT {
     BigInteger minimumBidIncrease = flipper.getMinimumBidIncrease();
     for (Auction auction : auctionList) {
       assertTrue(auction.isActive());
-      assertTrue(auction.isAffordable(minimumBidIncrease, balances));
+      assertTrue(auction.isAffordable(minimumBidIncrease, balances.getMaxDaiToSell()));
     }
   }
 
   @Test
   public void getMinimumBidIncrease_noParameter_noException() {
     BigInteger actualValue = flipper.getMinimumBidIncrease();
-    assertEquals(1.03, BigNumberUtil.makeBigNumberHumanReadable(actualValue));
+    assertEquals("1.03", getHumanReadable(actualValue));
     assertDoesNotThrow(() -> flipper.getMinimumBidIncrease());
   }
 

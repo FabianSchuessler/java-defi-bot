@@ -50,11 +50,11 @@ public class Main {
     ContractNeedsProvider contractNeedsProvider =
         new ContractNeedsProvider(web3j, credentials, gasProvider, permissions, circuitBreaker);
 
-    Medianizer.setContract(contractNeedsProvider);
+    Medianizer.setMedianizerContract(contractNeedsProvider);
     Dai dai =
         new Dai(
             contractNeedsProvider,
-            Double.parseDouble(javaProperties.getValue("minimumDaiNecessaryForSale")));
+            Double.parseDouble(javaProperties.getValue("minimumDaiNecessaryForSaleAndLending")));
     Weth weth = new Weth(contractNeedsProvider);
     CompoundDai compoundDai = new CompoundDai(contractNeedsProvider);
     Ethereum ethereum =
@@ -70,15 +70,15 @@ public class Main {
     Uniswap uniswap = new Uniswap(contractNeedsProvider, javaProperties, compoundDai, weth);
     Flipper flipper = new Flipper(contractNeedsProvider);
 
-    dai.checkApproval(uniswap);
-    dai.checkApproval(oasis);
-    dai.checkApproval(compoundDai);
-    weth.checkApproval(oasis);
+    dai.getApproval().check(uniswap);
+    dai.getApproval().check(oasis);
+    dai.getApproval().check(compoundDai);
+    weth.getApproval().check(oasis);
 
     while (circuitBreaker.getContinueRunning()) {
       balances.updateBalance(60);
       if (circuitBreaker.isAllowingOperations(3)) {
-        balances.checkEnoughEthereumForGas(web3j);
+        balances.checkEnoughEthereumForGas(web3j, ethereum);
         oasis.checkIfSellDaiIsProfitableThenDoIt(balances);
         oasis.checkIfBuyDaiIsProfitableThenDoIt(balances);
         uniswap.checkIfSellDaiIsProfitableThenDoIt(balances);
@@ -93,7 +93,7 @@ public class Main {
         gasProvider.updateFailedTransactions(failedTransactions);
       }
 
-      try { // TODO: add infura rate checking
+      try {
         TimeUnit.MILLISECONDS.sleep(4500);
       } catch (InterruptedException e) {
         logger.error("Exception", e);

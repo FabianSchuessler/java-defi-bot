@@ -9,9 +9,8 @@ import java.util.List;
 public class CircuitBreaker {
   private static final org.slf4j.Logger logger =
       LoggerFactory.getLogger(MethodHandles.lookup().lookupClass().getSimpleName());
-  private boolean continueRunning = true;
-
   final ArrayList<Long> failedTransactionsWithinTheLastTenMinutesForErrorBlockingArrayList;
+  private boolean continueRunning = true;
 
   public CircuitBreaker() {
     failedTransactionsWithinTheLastTenMinutesForErrorBlockingArrayList = new ArrayList<>();

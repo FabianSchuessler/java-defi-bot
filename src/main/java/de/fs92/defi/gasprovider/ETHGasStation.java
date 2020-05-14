@@ -9,6 +9,7 @@ import java.lang.invoke.MethodHandles;
 import java.math.BigInteger;
 import java.net.URL;
 import java.net.URLConnection;
+import java.nio.charset.StandardCharsets;
 import java.util.Scanner;
 
 public class ETHGasStation {
@@ -21,7 +22,7 @@ public class ETHGasStation {
 
   @NotNull
   static BigInteger getFastestGasPrice() throws GasPriceException {
-    BigInteger gasPrice = getGasPrice(8);
+    BigInteger gasPrice = getGasPrice(4);
     logger.trace(
         "ETHERGASSTATION SUGGESTS GP {}{}",
         Convert.fromWei(gasPrice.toString(), Convert.Unit.GWEI),
@@ -30,8 +31,8 @@ public class ETHGasStation {
   }
 
   @NotNull
-  static BigInteger getAverageGasPrice() throws GasPriceException {
-    BigInteger gasPrice = getGasPrice(4); // todo: taker lower gas price
+  static BigInteger getSafeLowGasPrice() throws GasPriceException {
+    BigInteger gasPrice = getGasPrice(6);
     logger.trace(
         "ETHERGASSTATION SUGGESTS GP {}{}",
         Convert.fromWei(gasPrice.toString(), Convert.Unit.GWEI),
@@ -46,10 +47,11 @@ public class ETHGasStation {
       hc.setRequestProperty(
           "User-Agent",
           "Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.4; en-US; rv:1.9.2.2) Gecko/20100316 Firefox/3.6.2");
-      String out = new Scanner(hc.getInputStream(), "UTF-8").useDelimiter("\\A").next();
+      String out =
+          new Scanner(hc.getInputStream(), StandardCharsets.UTF_8).useDelimiter("\\A").next();
       String[] parts = out.split("\"");
       String clean = parts[i].replaceAll("[^\\d.]", "");
-      return Convert.toWei(clean, Convert.Unit.GWEI).toBigInteger();
+      return Convert.toWei(clean, Convert.Unit.GWEI).toBigInteger().divide(BigInteger.TEN);
     } catch (IOException e) {
       logger.error("IOException ", e);
       throw new GasPriceException("ETHGasStationException");

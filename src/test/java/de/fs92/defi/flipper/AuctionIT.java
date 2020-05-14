@@ -6,7 +6,6 @@ import de.fs92.defi.dai.Dai;
 import de.fs92.defi.gasprovider.GasProvider;
 import de.fs92.defi.uniswap.Uniswap;
 import de.fs92.defi.util.Balances;
-import de.fs92.defi.util.BigNumberUtil;
 import de.fs92.defi.util.Ethereum;
 import de.fs92.defi.util.JavaProperties;
 import de.fs92.defi.weth.Weth;
@@ -18,7 +17,7 @@ import org.web3j.tuples.generated.Tuple8;
 
 import java.math.BigInteger;
 
-import static de.fs92.defi.util.BigNumberUtil.makeDoubleMachineReadable;
+import static de.fs92.defi.util.NumberUtil.getMachineReadable;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -47,7 +46,7 @@ class AuctionIT {
     Permissions permissions =
         new Permissions(
             Boolean.parseBoolean(javaProperties.getValue("transactionsRequireConfirmation")),
-            Boolean.parseBoolean(javaProperties.getValue("soundOnTransaction")));
+            Boolean.parseBoolean(javaProperties.getValue("playSoundOnTransaction")));
 
     if ("true".equals(System.getenv().get("TRAVIS"))) {
       infuraProjectId = System.getenv().get(TRAVIS_INFURA_PROJECT_ID);
@@ -71,7 +70,7 @@ class AuctionIT {
     dai =
         new Dai(
             contractNeedsProvider,
-            Double.parseDouble(javaProperties.getValue("minimumDaiNecessaryForSale")));
+            Double.parseDouble(javaProperties.getValue("minimumDaiNecessaryForSaleAndLending")));
     compoundDai = new CompoundDai(contractNeedsProvider);
     weth = new Weth(contractNeedsProvider);
     ethereum =
@@ -98,19 +97,9 @@ class AuctionIT {
                 "0x42A142cc082255CaEE58E3f30dc6d4Fc3056b6A7",
                 "0xA950524441892A31ebddF91d3cEEFa04Bf454466",
                 new BigInteger("37299123089429162514476831876850683361693243730"));
-    Auction auction = new Auction(auctionTuple);
-    BigInteger minimumBidIncrease = BigNumberUtil.makeDoubleMachineReadable(1.0).toBigInteger();
-    Balances balances =
-        new Balances(
-            makeDoubleMachineReadable(0.0),
-            makeDoubleMachineReadable(200.0),
-            makeDoubleMachineReadable(0.0),
-            dai,
-            weth,
-            compoundDai,
-            ethereum,
-            makeDoubleMachineReadable(1.0));
-    assertTrue(auction.isAffordable(minimumBidIncrease, balances));
+    Auction auction = new Auction(BigInteger.ONE, auctionTuple);
+    BigInteger minimumBidIncrease = getMachineReadable(1.0);
+    assertTrue(auction.isAffordable(minimumBidIncrease, getMachineReadable(201.0)));
   }
 
   @Test
@@ -126,19 +115,9 @@ class AuctionIT {
                 "0x42A142cc082255CaEE58E3f30dc6d4Fc3056b6A7",
                 "0xA950524441892A31ebddF91d3cEEFa04Bf454466",
                 new BigInteger("37299123089429162514476831876850683361693243730"));
-    Auction auction = new Auction(auctionTuple);
-    BigInteger minimumBidIncrease = BigNumberUtil.makeDoubleMachineReadable(1.0).toBigInteger();
-    Balances balances =
-        new Balances(
-            makeDoubleMachineReadable(0.0),
-            makeDoubleMachineReadable(200.0),
-            makeDoubleMachineReadable(0.0),
-            dai,
-            weth,
-            compoundDai,
-            ethereum,
-            makeDoubleMachineReadable(0.0));
-    assertFalse(auction.isAffordable(minimumBidIncrease, balances));
+    Auction auction = new Auction(BigInteger.ONE, auctionTuple);
+    BigInteger minimumBidIncrease = getMachineReadable(1.0);
+    assertFalse(auction.isAffordable(minimumBidIncrease, getMachineReadable(200.0)));
   }
 
   @Test
@@ -154,19 +133,9 @@ class AuctionIT {
                 "0x42A142cc082255CaEE58E3f30dc6d4Fc3056b6A7",
                 "0xA950524441892A31ebddF91d3cEEFa04Bf454466",
                 new BigInteger("37299123089429162514476831876850683361693243730"));
-    Auction auction = new Auction(auctionTuple);
-    BigInteger minimumBidIncrease = BigNumberUtil.makeDoubleMachineReadable(1.0).toBigInteger();
-    Balances balances =
-        new Balances(
-            makeDoubleMachineReadable(0.0),
-            makeDoubleMachineReadable(198.0),
-            makeDoubleMachineReadable(0.0),
-            dai,
-            weth,
-            compoundDai,
-            ethereum,
-            makeDoubleMachineReadable(1.0));
-    assertFalse(auction.isAffordable(minimumBidIncrease, balances));
+    Auction auction = new Auction(BigInteger.ONE, auctionTuple);
+    BigInteger minimumBidIncrease = getMachineReadable(1.0);
+    assertFalse(auction.isAffordable(minimumBidIncrease, getMachineReadable(199.0)));
   }
 
   @Test
@@ -182,18 +151,8 @@ class AuctionIT {
                 "0x42A142cc082255CaEE58E3f30dc6d4Fc3056b6A7",
                 "0xA950524441892A31ebddF91d3cEEFa04Bf454466",
                 new BigInteger("37299123089429162514476831876850683361693243730"));
-    Auction auction = new Auction(auctionTuple);
-    BigInteger minimumBidIncrease = BigNumberUtil.makeDoubleMachineReadable(1.05).toBigInteger();
-    Balances balances =
-        new Balances(
-            makeDoubleMachineReadable(0.0),
-            makeDoubleMachineReadable(105.0),
-            makeDoubleMachineReadable(0.0),
-            dai,
-            weth,
-            compoundDai,
-            ethereum,
-            makeDoubleMachineReadable(0.0));
-    assertFalse(auction.isAffordable(minimumBidIncrease, balances));
+    Auction auction = new Auction(BigInteger.ONE, auctionTuple);
+    BigInteger minimumBidIncrease = getMachineReadable(1.05);
+    assertFalse(auction.isAffordable(minimumBidIncrease, getMachineReadable(105.0)));
   }
 }

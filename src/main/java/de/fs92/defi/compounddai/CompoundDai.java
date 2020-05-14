@@ -2,13 +2,12 @@ package de.fs92.defi.compounddai;
 
 import de.fs92.defi.contractneedsprovider.ContractNeedsProvider;
 import de.fs92.defi.contractneedsprovider.Permissions;
+import de.fs92.defi.contractuserutil.AddressMethod;
+import de.fs92.defi.contractutil.Account;
 import de.fs92.defi.gasprovider.GasProvider;
 import de.fs92.defi.medianizer.MedianException;
 import de.fs92.defi.medianizer.Medianizer;
 import de.fs92.defi.util.Balances;
-import de.fs92.defi.util.BigNumberUtil;
-import de.fs92.defi.util.ContractUser;
-import de.fs92.defi.util.IContract;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.LoggerFactory;
 import org.web3j.crypto.Credentials;
@@ -17,14 +16,12 @@ import org.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.web3j.utils.Convert;
 
 import java.lang.invoke.MethodHandles;
-import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.concurrent.TimeUnit;
 
-import static de.fs92.defi.util.BigNumberUtil.makeBigNumberHumanReadableFullPrecision;
-import static de.fs92.defi.util.BigNumberUtil.multiply;
+import static de.fs92.defi.util.NumberUtil.*;
 
-public class CompoundDai extends ContractUser implements IContract {
+public class CompoundDai implements AddressMethod {
   public static final String ADDRESS = "0x5d3a536E4D6DbD6114cc1Ead35777bAB948E3643";
   public static final BigInteger gasLimit =
       BigInteger.valueOf(200000); // https://compound.finance/developers#gas-costs
@@ -36,27 +33,28 @@ public class CompoundDai extends ContractUser implements IContract {
   private static final BigInteger supplyRatePerYearMultiplicand =
       secondsPerYear.divide(timeBetweenBlocks);
   private static final String EXCEPTION = "Exception";
-  private final CompoundDaiContract contract;
+  private final CompoundDaiContract compoundDaiContract;
   private final GasProvider gasProvider;
   private final Permissions permissions;
+  private final Credentials credentials;
+  private final Account account;
 
   public CompoundDai(@NotNull ContractNeedsProvider contractNeedsProvider) {
     Web3j web3j = contractNeedsProvider.getWeb3j();
-    Credentials credentials = contractNeedsProvider.getCredentials();
+    credentials = contractNeedsProvider.getCredentials();
     gasProvider = contractNeedsProvider.getGasProvider();
     permissions = contractNeedsProvider.getPermissions();
-    contract = CompoundDaiContract.load(ADDRESS, web3j, credentials, gasProvider);
+    compoundDaiContract = CompoundDaiContract.load(ADDRESS, web3j, credentials, gasProvider);
+    account = new Account(compoundDaiContract, credentials, "CDAI");
   }
 
-  public void mint(@NotNull Balances balances, BigDecimal medianEthereumPrice) {
-    BigInteger mintAmount = balances.getDaiBalance().toBigInteger();
-    if (permissions.check(
-        "COMPOUND DAI MINT " + BigNumberUtil.makeBigNumberHumanReadableFullPrecision(mintAmount))) {
+  public void mint(@NotNull Balances balances, BigInteger medianEthereumPrice) {
+    BigInteger mintAmount = balances.dai.getAccount().getBalance();
+    if (permissions.check("COMPOUND DAI MINT " + getFullPrecision(mintAmount))) {
       try {
         gasProvider.updateSlowGasPrice();
-        logger.debug(
-            "MINT DAI {}", BigNumberUtil.makeBigNumberHumanReadableFullPrecision(mintAmount));
-        TransactionReceipt transferReceipt = contract.mint(mintAmount).send();
+        logger.debug("MINT DAI {}", getFullPrecision(mintAmount));
+        TransactionReceipt transferReceipt = compoundDaiContract.mint(mintAmount).send();
         afterTransaction(balances, medianEthereumPrice, transferReceipt);
       } catch (Exception e) {
         logger.error(EXCEPTION, e);
@@ -65,24 +63,19 @@ public class CompoundDai extends ContractUser implements IContract {
   }
 
   public void redeemAll(
-      Balances balances, BigDecimal potentialProfit, BigDecimal medianEthereumPrice) {
+      Balances balances, BigInteger potentialProfit, BigInteger medianEthereumPrice) {
     logger.debug("REDEEM ALL");
     redeem(balances, potentialProfit, medianEthereumPrice);
   }
 
   public void redeem(
-      @NotNull Balances balances, BigDecimal potentialProfit, BigDecimal medianEthereumPrice) {
-    BigInteger redeemAmount = balances.getCdaiBalance();
-    if (permissions.check(
-        "COMPOUND DAI REDEEM "
-            + BigNumberUtil.makeBigNumberHumanReadableFullPrecision(redeemAmount, 8)
-            + " CDAI")) {
+      @NotNull Balances balances, BigInteger potentialProfit, BigInteger medianEthereumPrice) {
+    BigInteger redeemAmount = account.getBalance();
+    if (permissions.check("COMPOUND DAI REDEEM " + getFullPrecision(redeemAmount, 8) + " CDAI")) {
       try {
         gasProvider.updateFastGasPrice(medianEthereumPrice, potentialProfit);
-        logger.debug(
-            "REDEEM CDAI {}",
-            BigNumberUtil.makeBigNumberHumanReadableFullPrecision(redeemAmount, 8));
-        TransactionReceipt transferReceipt = contract.redeem(redeemAmount).send();
+        logger.debug("REDEEM CDAI {}", getFullPrecision(redeemAmount, 8));
+        TransactionReceipt transferReceipt = compoundDaiContract.redeem(redeemAmount).send();
         afterTransaction(balances, medianEthereumPrice, transferReceipt);
       } catch (Exception e) {
         logger.error(EXCEPTION, e);
@@ -92,7 +85,7 @@ public class CompoundDai extends ContractUser implements IContract {
 
   private void afterTransaction(
       @NotNull Balances balances,
-      BigDecimal medianEthereumPrice,
+      BigInteger medianEthereumPrice,
       TransactionReceipt transferReceipt)
       throws InterruptedException {
     TimeUnit.SECONDS.sleep(1);
@@ -103,13 +96,10 @@ public class CompoundDai extends ContractUser implements IContract {
   }
 
   void borrow(BigInteger borrowAmount) {
-    if (permissions.check(
-        "COMPOUND DAI BORROW "
-            + BigNumberUtil.makeBigNumberHumanReadableFullPrecision(borrowAmount))) {
+    if (permissions.check("COMPOUND DAI BORROW " + getFullPrecision(borrowAmount))) {
       try {
-        contract.borrow(borrowAmount).send();
-        logger.debug(
-            "BORROW DAI {}", BigNumberUtil.makeBigNumberHumanReadableFullPrecision(borrowAmount));
+        compoundDaiContract.borrow(borrowAmount).send();
+        logger.debug("BORROW DAI {}", getFullPrecision(borrowAmount));
       } catch (Exception e) {
         logger.error(EXCEPTION, e);
       }
@@ -117,13 +107,10 @@ public class CompoundDai extends ContractUser implements IContract {
   }
 
   void repayBorrow(BigInteger repayAmount) {
-    if (permissions.check(
-        "COMPOUND DAI REPAY "
-            + BigNumberUtil.makeBigNumberHumanReadableFullPrecision(repayAmount))) {
+    if (permissions.check("COMPOUND DAI REPAY " + getFullPrecision(repayAmount))) {
       try {
-        contract.repayBorrow(repayAmount).send();
-        logger.debug(
-            "REPAY DAI {}", BigNumberUtil.makeBigNumberHumanReadableFullPrecision(repayAmount));
+        compoundDaiContract.repayBorrow(repayAmount).send();
+        logger.debug("REPAY DAI {}", getFullPrecision(repayAmount));
       } catch (Exception e) {
         logger.error(EXCEPTION, e);
       }
@@ -132,33 +119,30 @@ public class CompoundDai extends ContractUser implements IContract {
 
   private BigInteger getExchangeRate() {
     try {
-      return contract.exchangeRateStored().send();
+      return compoundDaiContract.exchangeRateStored().send();
     } catch (Exception e) {
       logger.error(EXCEPTION, e);
     }
     return BigInteger.ZERO;
   }
 
-  public BigInteger getCDaiBalance(String ethereumAddress) {
-    try {
-      return contract.balanceOf(ethereumAddress).send();
-    } catch (Exception e) {
-      logger.error(EXCEPTION, e);
-    }
-    return BigInteger.ZERO;
+  public Account getAccount() {
+    return account;
   }
 
-  public BigDecimal getBalanceInDai(BigInteger cdai) {
-    return new BigDecimal(multiply(getExchangeRate(), cdai));
+  public BigInteger getBalanceInDai() {
+    return multiply(getExchangeRate(), account.getBalance());
   }
 
-  // lend dai on compound to earn interest, if dai price is low
+  /**
+   * Lend DAI on Compound to earn interest, if DAI price is below peg. Execute if transaction costs
+   * are lower than the interest of one day. Example: two transactions * gas price * used gas *
+   * median eth price < dai * compound_interest_rate / 365
+   *
+   * @param balances provides access to all balances
+   */
   public void lendDai(@NotNull Balances balances) {
-    // do if transaction costs are lower than the interest of one day
-    // example: 2 transactions * gas price * used gas * median eth price < dai *
-    // compound_interest_rate / 365
-
-    if (balances.checkEnoughDai()) {
+    if (balances.dai.isThereEnoughDaiForLending()) {
       BigInteger slowGasPrice = gasProvider.updateSlowGasPrice();
       if (slowGasPrice.compareTo(BigInteger.ZERO) == 0) {
         return;
@@ -166,7 +150,7 @@ public class CompoundDai extends ContractUser implements IContract {
 
       BigInteger medianEthereumPrice;
       try {
-        medianEthereumPrice = Medianizer.getPrice().toBigInteger();
+        medianEthereumPrice = Medianizer.getPrice();
       } catch (MedianException e) {
         logger.error(EXCEPTION, e);
         return;
@@ -177,12 +161,12 @@ public class CompoundDai extends ContractUser implements IContract {
           BigInteger.valueOf(2)
               .multiply(gasLimit)
               .multiply(multiply(slowGasPrice, medianEthereumPrice)); // in USD
-      BigInteger possibleDailyInterest = getPossibleDailyInterest(balances);
+      BigInteger possibleDailyInterest = getDailyInterest(balances.dai.getAccount().getBalance());
       if (transactionCosts.compareTo(possibleDailyInterest) < 0) {
         logger.trace("SUFFICIENT INTEREST TO LEND DAI ON COMPOUND");
 
         if (System.currentTimeMillis() >= balances.getLastSuccessfulTransaction() + WAIT_TIME) {
-          mint(balances, new BigDecimal(medianEthereumPrice));
+          mint(balances, medianEthereumPrice);
         } else {
           logger.warn(
               "CURRENT CODE REQUIRES {} MINUTES BETWEEN LAST SUCCESSFUL TRANSACTION AND MINTING CDAI",
@@ -191,17 +175,14 @@ public class CompoundDai extends ContractUser implements IContract {
       } else {
         logger.warn(
             "CURRENT CODE REQUIRES THAT THE TRANSACTION COSTS {} ARE LOWER THAN THE DAILY INTEREST {}",
-            makeBigNumberHumanReadableFullPrecision(transactionCosts),
-            makeBigNumberHumanReadableFullPrecision(possibleDailyInterest));
+            getFullPrecision(transactionCosts),
+            getFullPrecision(possibleDailyInterest));
       }
       logger.trace(
           "SLOW GAS PRICE {}{}",
           Convert.fromWei(slowGasPrice.toString(), Convert.Unit.GWEI),
           " GWEI");
-      logger.trace(
-          "TRANSACTION COSTS {}{}",
-          BigNumberUtil.makeBigNumberCurrencyHumanReadable(transactionCosts),
-          " DAI");
+      logger.trace("TRANSACTION COSTS {}{}", getCurrency(transactionCosts), " DAI");
     } else {
       logger.info("NOT ENOUGH DAI TO LEND DAI ON COMPOUND");
     }
@@ -210,52 +191,34 @@ public class CompoundDai extends ContractUser implements IContract {
   private BigInteger getSupplyRate() {
     BigInteger supplyRate = BigInteger.ZERO;
     try {
-      BigInteger supplyRatePerBlock = contract.supplyRatePerBlock().send();
+      BigInteger supplyRatePerBlock = compoundDaiContract.supplyRatePerBlock().send();
       supplyRate = supplyRatePerYearMultiplicand.multiply(supplyRatePerBlock);
     } catch (Exception e) {
       logger.error(EXCEPTION, e);
     }
-    logger.info(
-        "SUPPLY RATE {}{}",
-        BigNumberUtil.makeBigNumberHumanReadableFullPrecision(supplyRate),
-        " %");
+    logger.info("SUPPLY RATE {}{}", getFullPrecision(supplyRate), " %");
     return supplyRate;
   }
 
-  private BigInteger getCurrentDailyInterest(@NotNull Balances balances) {
-    BigInteger daiSupplied = balances.getDaiInCompound().toBigInteger();
+  private BigInteger getCurrentDailyInterest() {
+    BigInteger daiSupplied = getBalanceInDai();
     return getDailyInterest(daiSupplied);
   }
 
-  private BigInteger getPossibleDailyInterest(@NotNull Balances balances) {
-    BigInteger dai = balances.getDaiBalance().toBigInteger();
-    return getDailyInterest(dai);
-  }
-
   private BigInteger getDailyInterest(BigInteger amount) {
-    logger.info(
-        "DAI OR SUPPLIED DAI BALANCE {}{}",
-        BigNumberUtil.makeBigNumberHumanReadableFullPrecision(amount),
-        " DAI");
+    logger.info("DAI OR SUPPLIED DAI BALANCE {}{}", getFullPrecision(amount), " DAI");
     BigInteger dailyInterest = multiply(amount, getSupplyRate()).divide(BigInteger.valueOf(365));
-    logger.info(
-        "DAILY INTEREST {}{}",
-        BigNumberUtil.makeBigNumberHumanReadableFullPrecision(dailyInterest),
-        " DAI");
+    logger.info("DAILY INTEREST {}{}", getFullPrecision(dailyInterest), " DAI");
     return dailyInterest;
   }
 
   private boolean isAlternativeMoreProfitableThanLendingDai(
-      Balances balances, BigInteger profitComparator, BigDecimal medianEthereumPrice) {
-    BigInteger dailyInterest = getCurrentDailyInterest(balances);
-    logger.info(
-        "PROFIT COMPARATOR {}{}",
-        BigNumberUtil.makeBigNumberHumanReadableFullPrecision(profitComparator),
-        " DAI");
-    if (profitComparator.compareTo(dailyInterest.add(balances.minimumTradeProfit.toBigInteger()))
-        > 0) {
+      Balances balances, BigInteger profitComparator, BigInteger medianEthereumPrice) {
+    BigInteger dailyInterest = getCurrentDailyInterest();
+    logger.info("PROFIT COMPARATOR {}{}", getFullPrecision(profitComparator), " DAI");
+    if (profitComparator.compareTo(dailyInterest.add(balances.minimumTradeProfit)) > 0) {
       logger.info("ALTERNATIVE IS MORE PROFITABLE");
-      redeemAll(balances, new BigDecimal(profitComparator), medianEthereumPrice);
+      redeemAll(balances, profitComparator, medianEthereumPrice);
       return true;
     }
     logger.info("ALTERNATIVE IS LESS PROFITABLE");
@@ -263,13 +226,13 @@ public class CompoundDai extends ContractUser implements IContract {
   }
 
   public boolean canOtherProfitMethodsWorkWithoutCDaiConversion(
-      @NotNull Balances balances, BigDecimal profitComparator, BigDecimal medianEthereumPrice) {
-    if (balances.getDaiInCompound().compareTo(BigDecimal.ZERO) == 0) {
+      @NotNull Balances balances, BigInteger profitComparator, BigInteger medianEthereumPrice) {
+    if (getBalanceInDai().compareTo(BigInteger.ZERO) == 0) {
       logger.info("CDAI CONVERSION NOT NECESSARY");
       return true;
     }
     return isAlternativeMoreProfitableThanLendingDai(
-        balances, profitComparator.toBigInteger(), medianEthereumPrice);
+        balances, profitComparator, medianEthereumPrice);
   }
 
   public String getAddress() {

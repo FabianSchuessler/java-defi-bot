@@ -1,18 +1,21 @@
-package de.fs92.defi.util;
+package de.fs92.defi.contractutil;
 
 import de.fs92.defi.contractneedsprovider.CircuitBreaker;
-import org.jetbrains.annotations.NotNull;
 import org.slf4j.LoggerFactory;
 import org.web3j.tx.Contract;
 
 import java.lang.invoke.MethodHandles;
 
-public class ContractUser {
+public class ContractValidationUtil {
   private static final org.slf4j.Logger logger =
       LoggerFactory.getLogger(MethodHandles.lookup().lookupClass().getSimpleName());
   private static final String EXCEPTION = "Exception";
 
-  protected static void isContractValid(@NotNull Contract contract, CircuitBreaker circuitBreaker) {
+  private ContractValidationUtil() {
+    throw new IllegalStateException("Utility class");
+  }
+
+  public static void isContractValid(Contract contract, CircuitBreaker circuitBreaker) {
     try {
       if (contract.isValid()) {
         logger.trace("{} CONTRACT IS VALID", contract.getClass());

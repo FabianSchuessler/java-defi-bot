@@ -12,16 +12,16 @@ public class Permissions {
   private static final org.slf4j.Logger logger =
       LoggerFactory.getLogger(MethodHandles.lookup().lookupClass().getSimpleName());
 
-  private final boolean soundOnTransaction;
+  private final boolean playSoundOnTransaction;
   private final boolean transactionRequiresConfirmation;
 
-  public Permissions(boolean transactionRequiresConfirmation, boolean soundOnTransaction) {
+  public Permissions(boolean transactionRequiresConfirmation, boolean playSoundOnTransaction) {
     this.transactionRequiresConfirmation = transactionRequiresConfirmation;
-    this.soundOnTransaction = soundOnTransaction;
+    this.playSoundOnTransaction = playSoundOnTransaction;
   }
 
   public boolean check(String transactionInformation) {
-    if (soundOnTransaction) {
+    if (playSoundOnTransaction) {
       final Runnable runnable =
           (Runnable) Toolkit.getDefaultToolkit().getDesktopProperty("win.sound.exclamation");
       if (runnable != null) runnable.run();

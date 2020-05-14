@@ -7,7 +7,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.web3j.protocol.Web3j;
 
-import java.math.BigDecimal;
 import java.math.BigInteger;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -21,7 +20,7 @@ public class GasProviderIT {
   private static final String TOO_LOW = "Error, value is too low";
   private static final String EXCEPTION = "calculateGasPriceAsAPercentageOfProfit Exception";
   private static final BigInteger MINIMUM_GAS_PRICE = BigInteger.valueOf(1_000000000);
-  private static final BigInteger MAXIMUM_GAS_PRICE = BigInteger.valueOf(400_000000000L);
+  private static final BigInteger MAXIMUM_GAS_PRICE = BigInteger.valueOf(100_000000000L);
   private static Web3j web3j;
 
   @BeforeEach
@@ -40,7 +39,7 @@ public class GasProviderIT {
   }
 
   @Test
-  public void updateSlowGasPrice() {
+  public void updateSlowGasPrice_currentGasPrice_GasPriceWithinBoundaries() {
     GasProvider gasProvider = new GasProvider(web3j, MINIMUM_GAS_PRICE, MAXIMUM_GAS_PRICE);
     gasProvider.updateSlowGasPrice();
     assertTrue(MINIMUM_GAS_PRICE.compareTo(gasProvider.gasPrice) <= 0, TOO_LOW);
@@ -50,7 +49,7 @@ public class GasProviderIT {
   @Test
   public void updateFastGasPrice_ZeroMedianZeroProfit_GasPriceWithinBoundaries() {
     GasProvider gasProvider = new GasProvider(web3j, MINIMUM_GAS_PRICE, MAXIMUM_GAS_PRICE);
-    gasProvider.updateFastGasPrice(BigDecimal.ZERO, BigDecimal.ZERO);
+    gasProvider.updateFastGasPrice(BigInteger.ZERO, BigInteger.ZERO);
     assertTrue(MINIMUM_GAS_PRICE.compareTo(gasProvider.gasPrice) <= 0, TOO_LOW);
     assertTrue(MAXIMUM_GAS_PRICE.compareTo(gasProvider.gasPrice) >= 0, TOO_HIGH);
   }
@@ -59,7 +58,7 @@ public class GasProviderIT {
   public void updateFastGasPrice_RealMedianAndProfit_GasPriceWithinBoundaries() {
     GasProvider gasProvider = new GasProvider(web3j, MINIMUM_GAS_PRICE, MAXIMUM_GAS_PRICE);
     gasProvider.updateFastGasPrice(
-        new BigDecimal("200000000000000000000"), new BigDecimal("10000000000000000000"));
+        new BigInteger("200000000000000000000"), new BigInteger("10000000000000000000"));
     assertTrue(MINIMUM_GAS_PRICE.compareTo(gasProvider.gasPrice) <= 0, TOO_LOW);
     assertTrue(MAXIMUM_GAS_PRICE.compareTo(gasProvider.gasPrice) >= 0, TOO_HIGH);
   }
@@ -100,7 +99,7 @@ public class GasProviderIT {
             GasPriceException.class,
             () ->
                 gasProvider.calculateGasPriceAsAPercentageOfProfit(
-                    BigDecimal.ZERO, BigDecimal.ONE, 20.0, 0.1));
+                    BigInteger.ZERO, BigInteger.ONE, 20.0, 0.1));
     String actualMessage = exception.getMessage();
     assertTrue(actualMessage.contains(EXCEPTION));
   }
@@ -113,7 +112,7 @@ public class GasProviderIT {
             GasPriceException.class,
             () ->
                 gasProvider.calculateGasPriceAsAPercentageOfProfit(
-                    BigDecimal.ONE, BigDecimal.ZERO, 20.0, 0.1));
+                    BigInteger.ONE, BigInteger.ZERO, 20.0, 0.1));
     String actualMessage = exception.getMessage();
     assertTrue(actualMessage.contains(EXCEPTION));
   }
@@ -126,7 +125,7 @@ public class GasProviderIT {
             GasPriceException.class,
             () ->
                 gasProvider.calculateGasPriceAsAPercentageOfProfit(
-                    BigDecimal.ONE, BigDecimal.ONE, 0.0, 0.1));
+                    BigInteger.ONE, BigInteger.ONE, 0.0, 0.1));
     String actualMessage = exception.getMessage();
     assertTrue(actualMessage.contains(EXCEPTION));
   }
@@ -137,8 +136,8 @@ public class GasProviderIT {
     GasProvider gasProvider = new GasProvider(web3j, MINIMUM_GAS_PRICE, MAXIMUM_GAS_PRICE);
     BigInteger gasPrice =
         gasProvider.calculateGasPriceAsAPercentageOfProfit(
-            new BigDecimal("200000000000000000000"),
-            new BigDecimal("10000000000000000000"),
+            new BigInteger("200000000000000000000"),
+            new BigInteger("10000000000000000000"),
             300000.0,
             0.1);
     assertEquals(BigInteger.valueOf(16_666666666L), gasPrice);
@@ -150,10 +149,24 @@ public class GasProviderIT {
     GasProvider gasProvider = new GasProvider(web3j, MINIMUM_GAS_PRICE, MAXIMUM_GAS_PRICE);
     BigInteger gasPrice =
         gasProvider.calculateGasPriceAsAPercentageOfProfit(
-            new BigDecimal("124730000000000000000"),
-            new BigDecimal("1772900000000000000"),
+            new BigInteger("124730000000000000000"),
+            new BigInteger("1772900000000000000"),
             5300000,
             0.35);
     assertEquals(BigInteger.valueOf(938653907), gasPrice);
+  }
+
+  // TODO: have another look at this test
+  @Test
+  public void calculateGasPriceAsAPercentageOfProfit_someRealNumbers2_returnCalculation()
+      throws GasPriceException {
+    GasProvider gasProvider = new GasProvider(web3j, MINIMUM_GAS_PRICE, MAXIMUM_GAS_PRICE);
+    BigInteger gasPrice =
+        gasProvider.calculateGasPriceAsAPercentageOfProfit(
+            new BigInteger("190775000000000000000"),
+            new BigInteger("39335200000000000000"),
+            300000,
+            0.15);
+    assertEquals(new BigInteger("103093172585"), gasPrice);
   }
 }

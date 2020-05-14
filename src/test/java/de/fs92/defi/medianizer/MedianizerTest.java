@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.slf4j.LoggerFactory;
 
 import java.lang.invoke.MethodHandles;
-import java.math.BigDecimal;
+import java.math.BigInteger;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 
@@ -17,50 +17,50 @@ public class MedianizerTest {
   @Test
   public void getMedian_arrayWithRandomOrderAndZerosAndEvenLength_returnCalculation()
       throws MedianException {
-    BigDecimal expected = BigDecimal.valueOf(11);
-    BigDecimal actual =
+    BigInteger expected = BigInteger.valueOf(11);
+    BigInteger actual =
         Medianizer.getMedian(
-            new BigDecimal[] {
-              BigDecimal.valueOf(80),
-              BigDecimal.ONE,
-              BigDecimal.ZERO,
-              BigDecimal.TEN,
-              BigDecimal.valueOf(2),
-              BigDecimal.valueOf(12),
-              BigDecimal.valueOf(100.6)
+            new BigInteger[] {
+              BigInteger.valueOf(80),
+              BigInteger.ONE,
+              BigInteger.ZERO,
+              BigInteger.TEN,
+              BigInteger.valueOf(2),
+              BigInteger.valueOf(12),
+              BigInteger.valueOf(100)
             });
     assertThat(actual, Matchers.comparesEqualTo(expected));
   }
 
   @Test
   public void getMedian_arrayWithUnevenLength_returnCalculation() throws MedianException {
-    BigDecimal expected = BigDecimal.TEN;
-    BigDecimal actual =
-        Medianizer.getMedian(new BigDecimal[] {BigDecimal.TEN, BigDecimal.ONE, BigDecimal.TEN});
+    BigInteger expected = BigInteger.TEN;
+    BigInteger actual =
+        Medianizer.getMedian(new BigInteger[] {BigInteger.TEN, BigInteger.ONE, BigInteger.TEN});
     assertThat(actual, Matchers.comparesEqualTo(expected));
   }
 
   @Test
   public void getMedian_arrayWithEvenLength_returnCalculation() throws MedianException {
-    BigDecimal expected = BigDecimal.valueOf(5);
-    BigDecimal actual =
+    BigInteger expected = BigInteger.valueOf(5);
+    BigInteger actual =
         Medianizer.getMedian(
-            new BigDecimal[] {BigDecimal.TEN, BigDecimal.ONE, BigDecimal.ONE, BigDecimal.TEN});
+            new BigInteger[] {BigInteger.TEN, BigInteger.ONE, BigInteger.ONE, BigInteger.TEN});
     assertThat(actual, Matchers.comparesEqualTo(expected));
   }
 
   @Test
   public void getMedian_arrayWithAFewZeros_returnCalculation() throws MedianException {
-    BigDecimal expected = BigDecimal.TEN;
-    BigDecimal actual =
+    BigInteger expected = BigInteger.TEN;
+    BigInteger actual =
         Medianizer.getMedian(
-            new BigDecimal[] {BigDecimal.TEN, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.TEN});
+            new BigInteger[] {BigInteger.TEN, BigInteger.ZERO, BigInteger.ZERO, BigInteger.TEN});
     assertThat(actual, Matchers.comparesEqualTo(expected));
   }
 
   @Test
   public void getMedian_arrayWithOnlyZeros_throwMedianException() {
-    BigDecimal[] array = {BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO};
+    BigInteger[] array = {BigInteger.ZERO, BigInteger.ZERO, BigInteger.ZERO, BigInteger.ZERO};
     Assertions.assertThrows(MedianException.class, () -> Medianizer.getMedian(array));
   }
 }

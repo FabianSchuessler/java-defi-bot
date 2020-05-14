@@ -5,14 +5,13 @@ import de.fs92.defi.gasprovider.GasProvider;
 import de.fs92.defi.util.JavaProperties;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junitpioneer.jupiter.RepeatFailedTest;
 import org.web3j.crypto.Credentials;
 import org.web3j.protocol.Web3j;
 
-import java.math.BigDecimal;
 import java.math.BigInteger;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class MedianizerIT {
   private static final String TRAVIS_INFURA_PROJECT_ID = "TRAVIS_INFURA_PROJECT_ID";
@@ -21,8 +20,8 @@ public class MedianizerIT {
 
   private static final String TOO_HIGH = "Error, value is too high";
   private static final String TOO_LOW = "Error, value is too low";
-  private static final BigDecimal MINIMUM_ETH_PRICE = new BigDecimal("100000000000000000000");
-  private static final BigDecimal MAXIMUM_ETH_PRICE = new BigDecimal("500000000000000000000");
+  private static final BigInteger MINIMUM_ETH_PRICE = new BigInteger("100000000000000000000");
+  private static final BigInteger MAXIMUM_ETH_PRICE = new BigInteger("500000000000000000000");
   public static ContractNeedsProvider contractNeedsProvider;
 
   @BeforeEach
@@ -50,7 +49,7 @@ public class MedianizerIT {
     Permissions permissions =
         new Permissions(
             Boolean.parseBoolean(javaProperties.getValue("transactionRequiresConfirmation")),
-            Boolean.parseBoolean(javaProperties.getValue("soundOnTransaction")));
+            Boolean.parseBoolean(javaProperties.getValue("playSoundOnTransaction")));
     CircuitBreaker circuitBreaker = new CircuitBreaker();
     contractNeedsProvider =
         new ContractNeedsProvider(web3j, credentials, gasProvider, permissions, circuitBreaker);
@@ -58,16 +57,16 @@ public class MedianizerIT {
 
   @Test
   public void getCoinbaseProEthPrice_simpleGet_returnPrice() {
-    Medianizer.setContract(contractNeedsProvider);
-    BigDecimal coinbaseEthPrice = Medianizer.getCoinbaseProEthPrice();
+    Medianizer.setMedianizerContract(contractNeedsProvider);
+    BigInteger coinbaseEthPrice = Medianizer.getCoinbaseProEthPrice();
     assertTrue(MINIMUM_ETH_PRICE.compareTo(coinbaseEthPrice) <= 0, TOO_LOW);
     assertTrue(MAXIMUM_ETH_PRICE.compareTo(coinbaseEthPrice) >= 0, TOO_HIGH);
   }
 
   @Test
   public void getPrice_oneExecution_priceIsWithinReasonableBounds() throws MedianException {
-    Medianizer.setContract(contractNeedsProvider);
-    BigDecimal median = Medianizer.getPrice();
+    Medianizer.setMedianizerContract(contractNeedsProvider);
+    BigInteger median = Medianizer.getPrice();
     assertTrue(MINIMUM_ETH_PRICE.compareTo(median) <= 0, TOO_LOW);
     assertTrue(MAXIMUM_ETH_PRICE.compareTo(median) >= 0, TOO_HIGH);
   }
@@ -75,9 +74,9 @@ public class MedianizerIT {
   @Test
   public void getPrice_twoExecutionsWithinPriceUpdateInterval_priceIsEqual()
       throws MedianException {
-    Medianizer.setContract(contractNeedsProvider);
-    BigDecimal firstMedian = Medianizer.getPrice();
-    BigDecimal secondMedian = Medianizer.getPrice();
+    Medianizer.setMedianizerContract(contractNeedsProvider);
+    BigInteger firstMedian = Medianizer.getPrice();
+    BigInteger secondMedian = Medianizer.getPrice();
 
     assertEquals(firstMedian, secondMedian);
 
@@ -86,14 +85,4 @@ public class MedianizerIT {
     assertTrue(MINIMUM_ETH_PRICE.compareTo(secondMedian) <= 0, TOO_LOW);
     assertTrue(MAXIMUM_ETH_PRICE.compareTo(secondMedian) >= 0, TOO_HIGH);
   }
-
-  // TODO: think about how to improve this test, so it can't fail randomly
-//  @RepeatFailedTest(10)
-//  public void getTwoExecutionsAfterPriceUpdateInterval_priceMightBeDifferent() throws Exception {
-//    Medianizer.setContract(contractNeedsProvider);
-//    BigDecimal firstMedian = Medianizer.getPrice();
-//    Thread.sleep(Medianizer.PRICE_UPDATE_INTERVAL * 2);
-//    BigDecimal secondMedian = Medianizer.getPrice();
-//    assertNotEquals(firstMedian, secondMedian);
-//  }
 }

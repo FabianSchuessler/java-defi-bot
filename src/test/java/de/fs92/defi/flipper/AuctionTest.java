@@ -1,12 +1,11 @@
 package de.fs92.defi.flipper;
 
-import de.fs92.defi.util.BigNumberUtil;
 import org.junit.jupiter.api.Test;
 import org.web3j.tuples.generated.Tuple8;
 
-import java.math.BigDecimal;
 import java.math.BigInteger;
 
+import static de.fs92.defi.util.NumberUtil.getMachineReadable;
 import static org.junit.jupiter.api.Assertions.*;
 
 class AuctionTest {
@@ -24,7 +23,7 @@ class AuctionTest {
                 "0x0000000000000000000000000000000000000000",
                 "0x0000000000000000000000000000000000000000",
                 BigInteger.ZERO);
-    Auction auction = new Auction(auctionTuple);
+    Auction auction = new Auction(BigInteger.ONE, auctionTuple);
     assertTrue(auction.isEmpty());
   }
 
@@ -41,7 +40,7 @@ class AuctionTest {
                 "0x42A142cc082255CaEE58E3f30dc6d4Fc3056b6A7",
                 "0xA950524441892A31ebddF91d3cEEFa04Bf454466",
                 new BigInteger("37299123089429162514476831876850683361693243730"));
-    Auction auction = new Auction(auctionTuple);
+    Auction auction = new Auction(BigInteger.ONE, auctionTuple);
     assertFalse(auction.isEmpty());
   }
 
@@ -58,7 +57,7 @@ class AuctionTest {
                 "0x42A142cc082255CaEE58E3f30dc6d4Fc3056b6A7",
                 "0xA950524441892A31ebddF91d3cEEFa04Bf454466",
                 new BigInteger("37299123089429162514476831876850683361693243730"));
-    Auction auction = new Auction(auctionTuple);
+    Auction auction = new Auction(BigInteger.ONE, auctionTuple);
     assertTrue(auction.isCompleted());
   }
 
@@ -76,7 +75,7 @@ class AuctionTest {
                 "0x42A142cc082255CaEE58E3f30dc6d4Fc3056b6A7",
                 "0xA950524441892A31ebddF91d3cEEFa04Bf454466",
                 new BigInteger("37299123089429162514476831876850683361693243730"));
-    Auction auction = new Auction(auctionTuple);
+    Auction auction = new Auction(BigInteger.ONE, auctionTuple);
     assertFalse(auction.isCompleted());
   }
 
@@ -93,11 +92,11 @@ class AuctionTest {
                 "0x42A142cc082255CaEE58E3f30dc6d4Fc3056b6A7",
                 "0xA950524441892A31ebddF91d3cEEFa04Bf454466",
                 new BigInteger("37299123089429162514476831876850683361693243730"));
-    Auction auction = new Auction(auctionTuple);
-    BigInteger minimumBidIncrease = BigNumberUtil.makeDoubleMachineReadable(1.03).toBigInteger();
-    BigDecimal median = BigNumberUtil.makeDoubleMachineReadable(250.0);
-    BigDecimal actualValue = auction.getPotentialProfit(minimumBidIncrease, median);
-    assertEquals(0, BigNumberUtil.makeDoubleMachineReadable(440.0).compareTo(actualValue));
+    Auction auction = new Auction(BigInteger.ONE, auctionTuple);
+    BigInteger minimumBidIncrease = getMachineReadable(1.03);
+    BigInteger median = getMachineReadable(250.0);
+    BigInteger actualValue = auction.getPotentialProfit(minimumBidIncrease, median);
+    assertEquals(0, getMachineReadable(440.0).compareTo(actualValue));
   }
 
   @Test
@@ -114,7 +113,7 @@ class AuctionTest {
                 "0x42A142cc082255CaEE58E3f30dc6d4Fc3056b6A7",
                 "0xA950524441892A31ebddF91d3cEEFa04Bf454466",
                 new BigInteger("37299123089429162514476831876850683361693243730"));
-    Auction auction = new Auction(auctionTuple);
+    Auction auction = new Auction(BigInteger.ONE, auctionTuple);
     assertTrue(auction.isActive());
   }
 
@@ -131,7 +130,7 @@ class AuctionTest {
                 "0x0000000000000000000000000000000000000000",
                 "0x0000000000000000000000000000000000000000",
                 BigInteger.ZERO);
-    Auction auction = new Auction(auctionTuple);
+    Auction auction = new Auction(BigInteger.ONE, auctionTuple);
     assertFalse(auction.isActive());
   }
 
@@ -148,7 +147,7 @@ class AuctionTest {
                 "0x42A142cc082255CaEE58E3f30dc6d4Fc3056b6A7",
                 "0xA950524441892A31ebddF91d3cEEFa04Bf454466",
                 new BigInteger("37299123089429162514476831876850683361693243730"));
-    Auction auction = new Auction(auctionTuple);
+    Auction auction = new Auction(BigInteger.ONE, auctionTuple);
     assertFalse(auction.isActive());
   }
 }

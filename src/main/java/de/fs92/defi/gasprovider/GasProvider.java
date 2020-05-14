@@ -4,7 +4,6 @@ import de.fs92.defi.compounddai.CompoundDaiContract;
 import de.fs92.defi.dai.DaiContract;
 import de.fs92.defi.oasis.OasisContract;
 import de.fs92.defi.uniswap.UniswapContract;
-import de.fs92.defi.util.BigNumberUtil;
 import de.fs92.defi.weth.WethContract;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.LoggerFactory;
@@ -19,8 +18,7 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 
-import static de.fs92.defi.util.BigNumberUtil.divide;
-import static de.fs92.defi.util.BigNumberUtil.multiply;
+import static de.fs92.defi.util.NumberUtil.*;
 
 public class GasProvider implements ContractGasProvider {
   static final String GWEI = " GWEI";
@@ -56,7 +54,6 @@ public class GasProvider implements ContractGasProvider {
 
   @Override
   public BigInteger getGasLimit(@NotNull String contractFunc) {
-    // TODO: can't differentiate between contracts
     switch (contractFunc) {
       case CompoundDaiContract.FUNC_MINT:
       case CompoundDaiContract.FUNC_REDEEM:
@@ -71,7 +68,6 @@ public class GasProvider implements ContractGasProvider {
       case DaiContract.FUNC_APPROVE:
         return BigInteger.valueOf(50_000);
       default:
-        // TODO: estimate gas
         logger.trace("{} FUNCTION HAS NO CUSTOMIZED GAS LIMIT YET", contractFunc);
         return BigInteger.valueOf(500_000);
     }
@@ -82,7 +78,7 @@ public class GasProvider implements ContractGasProvider {
     return gasPrice;
   }
 
-  public BigInteger updateFastGasPrice(BigDecimal medianEthereumPrice, BigDecimal potentialProfit) {
+  public BigInteger updateFastGasPrice(BigInteger medianEthereumPrice, BigInteger potentialProfit) {
     BigInteger fastGasPrice = minimumGasPrice;
     try {
       BigInteger etherchainResult = Etherchain.getFastestGasPrice();
@@ -91,7 +87,7 @@ public class GasProvider implements ContractGasProvider {
       logger.error(GAS_PRICE_EXCEPTION, e);
     }
     try {
-      BigInteger ethGasStationResult = ETHGasStation.getAverageGasPrice();
+      BigInteger ethGasStationResult = ETHGasStation.getFastestGasPrice();
       fastGasPrice = fastGasPrice.max(ethGasStationResult);
     } catch (GasPriceException e) {
       logger.error(GAS_PRICE_EXCEPTION, e);
@@ -102,7 +98,8 @@ public class GasProvider implements ContractGasProvider {
               failedTransactionsWithinTheLastTwelveHoursForGasPriceArrayList.size());
       BigInteger gasPriceBasedOnProfit =
           calculateGasPriceAsAPercentageOfProfit(
-              medianEthereumPrice, potentialProfit, 300000.0, percentageOfProfitAsFee); // todo: create transaction to use estimate gas limit instead of fixed
+              medianEthereumPrice, potentialProfit, 300000.0, percentageOfProfitAsFee);
+      // instead of fixed
       fastGasPrice = fastGasPrice.max(gasPriceBasedOnProfit);
     } catch (GasPriceException e) {
       logger.error(GAS_PRICE_EXCEPTION, e);
@@ -113,9 +110,20 @@ public class GasProvider implements ContractGasProvider {
   }
 
   public BigInteger updateSlowGasPrice() {
-    BigInteger slowGasPrice = minimumGasPrice;
+    BigInteger slowGasPrice = maximumGasPrice;
     try {
-      slowGasPrice = slowGasPrice.max(web3j.ethGasPrice().send().getGasPrice());
+      BigInteger ethGasStationResult = ETHGasStation.getSafeLowGasPrice();
+      slowGasPrice = slowGasPrice.min(ethGasStationResult);
+    } catch (GasPriceException e) {
+      logger.error(GAS_PRICE_EXCEPTION, e);
+    }
+    try {
+      BigInteger web3jResult = web3j.ethGasPrice().send().getGasPrice();
+      logger.trace(
+          "WEB3J SUGGESTS GP {}{}",
+          Convert.fromWei(web3jResult.toString(), Convert.Unit.GWEI),
+          GWEI);
+      slowGasPrice = slowGasPrice.min(web3jResult);
     } catch (IOException e) {
       logger.error("IOException", e);
     }
@@ -138,27 +146,28 @@ public class GasProvider implements ContractGasProvider {
   }
 
   BigInteger calculateGasPriceAsAPercentageOfProfit(
-      @NotNull BigDecimal medianEthereumPrice,
-      BigDecimal potentialProfit,
+      @NotNull BigInteger medianEthereumPrice,
+      BigInteger potentialProfit,
       double gasLimit,
       double percentageOfProfitAsFee)
       throws GasPriceException {
-    if (medianEthereumPrice.compareTo(BigDecimal.ZERO) == 0
-        || potentialProfit.compareTo(BigDecimal.ZERO) == 0
+    if (medianEthereumPrice.compareTo(BigInteger.ZERO) == 0
+        || potentialProfit.compareTo(BigInteger.ZERO) == 0
         || gasLimit == 0.0)
       throw new GasPriceException("calculateGasPriceAsAPercentageOfProfit Exception");
 
-    BigDecimal feeInEth =
+    BigInteger feeInEth =
         divide(
-            potentialProfit.multiply(BigDecimal.valueOf(percentageOfProfitAsFee)),
+            new BigDecimal(potentialProfit)
+                .multiply(BigDecimal.valueOf(percentageOfProfitAsFee))
+                .toBigInteger(), // TODO: debug this method call
             medianEthereumPrice); // 0.049307620043223397 0.04930762004
     logger.trace(
         "EST. TRANSACTION FEE {}{}",
-        BigNumberUtil.makeBigNumberHumanReadable(multiply(feeInEth, medianEthereumPrice)),
+        getHumanReadable(multiply(feeInEth, medianEthereumPrice)),
         " DAI");
 
-    BigInteger gasPriceBasedOnProfit =
-        divide(feeInEth, BigNumberUtil.makeDoubleMachineReadable(gasLimit)).toBigInteger();
+    BigInteger gasPriceBasedOnProfit = divide(feeInEth, getMachineReadable(gasLimit));
     logger.trace(
         "PROFIT SUGGESTS GP {}{}",
         Convert.fromWei(gasPriceBasedOnProfit.toString(), Convert.Unit.GWEI),
