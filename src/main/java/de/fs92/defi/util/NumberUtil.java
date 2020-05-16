@@ -37,10 +37,12 @@ public final class NumberUtil {
   }
 
   public static BigInteger divide(@NotNull BigInteger dividend, BigInteger divisor) {
+    if (divisor.compareTo(BigInteger.ZERO) == 0) throw new IllegalArgumentException("Argument 'divisor' is 0");
     return dividend.multiply(BigInteger.valueOf(1000000000000000000L)).divide(divisor);
   }
 
   public static BigDecimal divide(@NotNull BigDecimal dividend, BigDecimal divisor) {
+    if (divisor.compareTo(BigDecimal.ZERO) == 0) throw new IllegalArgumentException("Argument 'divisor' is 0");
     return dividend
         .multiply(BigDecimal.valueOf(Math.pow(10, 18)))
         .divide(divisor, 0, RoundingMode.DOWN)

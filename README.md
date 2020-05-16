@@ -1,6 +1,6 @@
 # java-defi-bot [![Build Status](https://travis-ci.com/FabianSchuessler/java-defi-bot.svg?branch=master)](https://travis-ci.com/FabianSchuessler/java-defi-bot) [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=FabianSchuessler_java-defi-bot&metric=coverage)](https://sonarcloud.io/dashboard?id=FabianSchuessler_java-defi-bot)
 
-java-defi-bot is an application that aims to do beneficial actions on the Ethereum blockchain for the DeFi ecosystem while earning a profit for the user. These actions include maintaining the DAI peg, providing liquidity and liquidating undercollateralized assets.
+java-defi-bot is an application that aims to do beneficial actions on the Ethereum blockchain for the [DeFi](https://defipulse.com/) ecosystem while earning a profit for the user. These actions include maintaining the DAI peg, providing liquidity and liquidating undercollateralized assets.
 
 ## Getting started
 
@@ -28,19 +28,23 @@ java-defi-bot is an application that aims to do beneficial actions on the Ethere
 
 ```
 infuraProjectId=
-wallet=
 password=
+wallet=
 transactionsRequireConfirmation=true
 playSoundOnTransaction=true
 uniswapBuyProfitPercentage=0.5
 uniswapSellProfitPercentage=0.5
-minimumEthereumReserveUpperLimit = 0.20
-minimumEthereumReserveLowerLimit = 0.10
-minimumEthereumNecessaryForSale = 1.0
-minimumDaiNecessaryForSale = 250.0
+minimumEthereumReserveUpperLimit=0.20
+minimumEthereumReserveLowerLimit=0.10
+minimumEthereumNecessaryForSale=1.0
+minimumDaiNecessaryForSaleAndLending=250.0
+minimumFlipAuctionProfit=50.0
+minimumGasPrice=1000000000
+maximumGasPrice=30000000000
+testProperty=true
 ```
 
-__Make sure to never commit your config file!__
+__Make sure to never commit your ```config.properties``` file!__
 
 - Make git stop tracking your config file ```git update-index --skip-worktree ./config.properties```
 - For adding changes to config file afterwards ```git update-index --no-skip-worktree ./config.properties```
@@ -58,7 +62,7 @@ __Make sure to never commit your config file!__
 ### Run 
 
 - Either just run it in the IDE of your choice
-- or make sure the compiled application has access to the config and wallet file```java -jar java-defi-bot-0.1-jar-with-dependencies.jar```
+- or make sure the compiled application has access to the ```config.properties``` file```java -jar java-defi-bot-0.1-jar-with-dependencies.jar```
 
 ### Logs
 
