@@ -17,7 +17,8 @@ import org.web3j.tuples.generated.Tuple8;
 import java.lang.invoke.MethodHandles;
 import java.math.BigInteger;
 import java.util.ArrayList;
-import java.util.List;
+
+import static de.fs92.defi.util.NumberUtil.*;
 
 public class Flipper {
   public static final String ADDRESS = "0xd8a04F5412223F513DC55F839574430f5EC15531";
@@ -25,45 +26,95 @@ public class Flipper {
       LoggerFactory.getLogger(MethodHandles.lookup().lookupClass().getSimpleName());
   private static final String EXCEPTION = "Exception";
   private final FlipperContract flipperContract;
-  private final GasProvider gasProvider;
-  private final Permissions permissions;
   private final Credentials credentials;
+  private final Permissions permissions;
   private final CircuitBreaker circuitBreaker;
   private final BigInteger minimumBidIncrease; // beg
-  private final BigInteger bidDuration; // ttl
-  private final BigInteger auctionLength; // tau
+  private final BigInteger startingBiddingBeforeEnd;
+  private final BigInteger minimumFlipAuctionProfit;
   private ArrayList<Auction> activeAuctionList;
   private BigInteger pastTotalAuctionCount;
 
-  public Flipper(@NotNull ContractNeedsProvider contractNeedsProvider) {
+  public Flipper(
+      @NotNull ContractNeedsProvider contractNeedsProvider, double minimumFlipAuctionProfit) {
     Web3j web3j = contractNeedsProvider.getWeb3j();
     credentials = contractNeedsProvider.getCredentials();
-    gasProvider = contractNeedsProvider.getGasProvider();
     permissions = contractNeedsProvider.getPermissions();
     circuitBreaker = contractNeedsProvider.getCircuitBreaker();
+    GasProvider gasProvider = contractNeedsProvider.getGasProvider();
     flipperContract = FlipperContract.load(ADDRESS, web3j, credentials, gasProvider);
     pastTotalAuctionCount = BigInteger.ZERO;
     minimumBidIncrease = getMinimumBidIncrease();
-    bidDuration = getBidDuration();
-    auctionLength = getAuctionLength();
     activeAuctionList = new ArrayList<>();
+    this.minimumFlipAuctionProfit = getMachineReadable(minimumFlipAuctionProfit);
+    startingBiddingBeforeEnd = BigInteger.valueOf(300); // 5 minutes * 60 seconds
   }
 
-  public List<Auction> checkIfThereAreProfitableFlipAuctions(Balances balances) {
+  private void bid(@NotNull Auction auction) {
+    if (auction.isDent(minimumBidIncrease)) {
+      dent(auction);
+    } else {
+      tend(auction);
+    }
+  }
+
+  private void tend(@NotNull Auction auction) {
+    if (permissions.check("TEND")) {
+      try {
+        flipperContract
+            .tend(
+                auction.id,
+                auction.collateralForSale,
+                auction.bidAmountInDai.multiply(getMinimumBidIncrease()))
+            .send();
+      } catch (Exception e) {
+        logger.error(EXCEPTION, e);
+        circuitBreaker.addTransactionFailedNow();
+      }
+    }
+  }
+
+  private void dent(@NotNull Auction auction) {
+    if (permissions.check("DENT")) {
+      try {
+        flipperContract
+            .dent(
+                auction.id,
+                auction.collateralForSale.divide(getMinimumBidIncrease()),
+                auction.bidAmountInDai)
+            .send();
+      } catch (Exception e) {
+        logger.error(EXCEPTION, e);
+        circuitBreaker.addTransactionFailedNow();
+      }
+    }
+  }
+
+  public void checkIfThereAreProfitableFlipAuctions(Balances balances) {
+    logger.trace("CHECKING IF THERE ARE PROFITABLE FLIP AUCTIONS");
     BigInteger totalAuctionCount = getTotalAuctionCount();
-    if (totalAuctionCount.compareTo(BigInteger.ZERO) == 0) return new ArrayList<>();
+    if (totalAuctionCount.compareTo(BigInteger.ZERO) == 0) return;
     ArrayList<Auction> auctionList = getActiveAffordableAuctionList(totalAuctionCount, balances);
     BigInteger median;
     try {
       median = Medianizer.getPrice();
     } catch (MedianException e) {
       logger.error(EXCEPTION, e);
-      return auctionList;
+      return;
     }
     for (Auction auction : auctionList) {
-      auction.getPotentialProfit(minimumBidIncrease, median);
+      BigInteger potentialProfit = auction.getPotentialProfit(minimumBidIncrease, median);
+      if (potentialProfit.compareTo(minimumFlipAuctionProfit) > 0
+          && !auction.amIHighestBidder(credentials)
+          && auction.isInDefinedBiddingPhase(startingBiddingBeforeEnd)) {
+        balances.weth.checkIfWeth2EthConversionNecessaryThenDoIt(
+            multiply(convertUint256toBigInteger(auction.bidAmountInDai), minimumBidIncrease),
+            balances,
+            potentialProfit,
+            median);
+        bid(auction);
+      }
     }
-    return auctionList;
   }
 
   BigInteger getAuctionLength() {
@@ -108,14 +159,18 @@ public class Flipper {
 
     boolean auctionIsCompleted = false;
     if (pastTotalAuctionCount.compareTo(BigInteger.ZERO) == 0) {
-      while (!auctionIsCompleted && pastTotalAuctionCount.compareTo(totalAuctionCount) != 0) {
-        Auction auction = getAuction(totalAuctionCount);
-        if (auction != null && auction.isCompleted()) auctionIsCompleted = true;
-        if (auction != null
-            && auction.isActive()
-            && auction.isAffordable(minimumBidIncrease, balances.getMaxDaiToSell()))
-          activeAuctionList.add(auction);
-        totalAuctionCount = totalAuctionCount.subtract(BigInteger.ONE);
+      BigInteger auctionCounter = totalAuctionCount;
+      while (!auctionIsCompleted && pastTotalAuctionCount.compareTo(auctionCounter) != 0) {
+        Auction auction = getAuction(auctionCounter);
+        if (auction != null) {
+          if (auction.isCompleted()) {
+            auctionIsCompleted = true;
+          } else if (auction.isActive()
+              && auction.isAffordable(minimumBidIncrease, balances.getMaxDaiToSell())) {
+            activeAuctionList.add(auction);
+          }
+        }
+        auctionCounter = auctionCounter.subtract(BigInteger.ONE);
       }
       logger.trace("ACTIVE AUCTION LIST SIZE: {}", activeAuctionList.size());
       if (!activeAuctionList.isEmpty())
@@ -133,6 +188,7 @@ public class Flipper {
           && auction.isActive()
           && auction.isAffordable(minimumBidIncrease, balances.getMaxDaiToSell()))
         newActiveAuctionList.add(auction);
+      logger.trace("UPDATED AUCTION {}", auction);
     }
     this.activeAuctionList = newActiveAuctionList;
   }
@@ -156,6 +212,7 @@ public class Flipper {
     } catch (Exception e) {
       logger.error(EXCEPTION, e);
     }
+    logger.trace("TOTAL AUCTION COUNT {}", totalAuctionCount);
     return totalAuctionCount;
   }
 }

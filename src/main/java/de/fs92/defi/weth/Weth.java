@@ -72,7 +72,7 @@ public class Weth {
         balances.updateBalanceInformation(medianEthereumPrice); // not really necessary?
       } catch (Exception e) {
         logger.error(EXCEPTION, e);
-        circuitBreaker.add(System.currentTimeMillis());
+        circuitBreaker.addTransactionFailedNow();
       }
     }
   }
@@ -99,7 +99,7 @@ public class Weth {
         balances.updateBalanceInformation(medianEthereumPrice); // not really necessary?
       } catch (Exception e) {
         logger.error(EXCEPTION, e);
-        circuitBreaker.add(System.currentTimeMillis());
+        circuitBreaker.addTransactionFailedNow();
       }
     }
   }
@@ -110,5 +110,12 @@ public class Weth {
 
   public Account getAccount() {
     return account;
+  }
+
+  public void checkIfWeth2EthConversionNecessaryThenDoIt(BigInteger requiredBalance, Balances balances, BigInteger potentialProfit, BigInteger medianEthereumPrice) {
+    if (account.getBalance().compareTo(requiredBalance) < 0) {
+      logger.trace("WETH 2 ETH CONVERSION NECESSARY");
+      weth2Eth(balances, potentialProfit, medianEthereumPrice, account.getBalance().subtract(requiredBalance));
+    }
   }
 }

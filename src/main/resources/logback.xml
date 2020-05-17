@@ -2,7 +2,7 @@
     <appender name="console" class="ch.qos.logback.core.ConsoleAppender">
         <target>System.out</target>
         <encoder>
-            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+            <pattern>%d{HH:mm:ss.SSS} %-5level %-20logger{20} %msg%n</pattern>
         </encoder>
     </appender>
     <appender name="fout" class="ch.qos.logback.core.rolling.RollingFileAppender">
@@ -13,7 +13,7 @@
             <totalSizeCap>5GB</totalSizeCap>
         </rollingPolicy>
         <encoder>
-            <pattern>%d{HH:mm:ss.SSS} %-5level %logger{36} - %msg%n</pattern>
+            <pattern>%d{HH:mm:ss.SSS} %-5level %-20logger{20} %msg%n</pattern>
         </encoder>
     </appender>
     <root level="trace">

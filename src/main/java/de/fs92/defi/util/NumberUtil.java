@@ -36,13 +36,15 @@ public final class NumberUtil {
         .divide(BigDecimal.valueOf(Math.pow(10, 18)), RoundingMode.DOWN);
   }
 
-  public static BigInteger divide(@NotNull BigInteger dividend, BigInteger divisor) {
-    if (divisor.compareTo(BigInteger.ZERO) == 0) throw new IllegalArgumentException("Argument 'divisor' is 0");
+  public static BigInteger divide(@NotNull BigInteger dividend, @NotNull BigInteger divisor) {
+    if (divisor.compareTo(BigInteger.ZERO) == 0)
+      throw new IllegalArgumentException("Argument 'divisor' is 0"); // todo: test exception
     return dividend.multiply(BigInteger.valueOf(1000000000000000000L)).divide(divisor);
   }
 
-  public static BigDecimal divide(@NotNull BigDecimal dividend, BigDecimal divisor) {
-    if (divisor.compareTo(BigDecimal.ZERO) == 0) throw new IllegalArgumentException("Argument 'divisor' is 0");
+  public static BigDecimal divide(@NotNull BigDecimal dividend, @NotNull BigDecimal divisor) {
+    if (divisor.compareTo(BigDecimal.ZERO) == 0)
+      throw new IllegalArgumentException("Argument 'divisor' is 0");
     return dividend
         .multiply(BigDecimal.valueOf(Math.pow(10, 18)))
         .divide(divisor, 0, RoundingMode.DOWN)
@@ -120,6 +122,6 @@ public final class NumberUtil {
   // TODO: test this method
   @NotNull
   public static BigInteger convertUint256toBigInteger(@NotNull BigInteger bigNumber) {
-    return bigNumber.divide(BigDecimal.valueOf(Math.pow(10, 27)).toBigInteger());
+    return bigNumber.divide(BigDecimal.valueOf(Math.pow(10, 27)).toBigInteger()); // todo: might round down here...
   }
 }

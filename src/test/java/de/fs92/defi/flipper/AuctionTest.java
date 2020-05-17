@@ -150,4 +150,128 @@ class AuctionTest {
     Auction auction = new Auction(BigInteger.ONE, auctionTuple);
     assertFalse(auction.isActive());
   }
+
+  @Test
+  void isDent_bidAmountInDai_Equal_totalDaiWanted_true() {
+    Tuple8<BigInteger, BigInteger, String, BigInteger, BigInteger, String, String, BigInteger>
+        auctionTuple =
+            new Tuple8<>(
+                new BigInteger("37299123089429162514476831876850683361693243730"),
+                new BigInteger("175927491330994700"),
+                "0x04bB161C4e7583CDAaDEe93A8b8E6125FD661E57",
+                new BigInteger("1588287896"),
+                new BigInteger("1588266341"),
+                "0x42A142cc082255CaEE58E3f30dc6d4Fc3056b6A7",
+                "0xA950524441892A31ebddF91d3cEEFa04Bf454466",
+                new BigInteger("37299123089429162514476831876850683361693243730"));
+    Auction auction = new Auction(BigInteger.ONE, auctionTuple);
+    assertTrue(auction.isDent(BigInteger.valueOf(1030000000000000000L)));
+  }
+
+  @Test
+  void isDent_bidAmountInDai_Less_totalDaiWanted_false() {
+    Tuple8<BigInteger, BigInteger, String, BigInteger, BigInteger, String, String, BigInteger>
+        auctionTuple =
+            new Tuple8<>(
+                new BigInteger("36212740863523458751000000000000000000000000000"),
+                new BigInteger("175927491330994700"),
+                "0x04bB161C4e7583CDAaDEe93A8b8E6125FD661E57",
+                new BigInteger("1588287896"),
+                new BigInteger("1588266341"),
+                "0x42A142cc082255CaEE58E3f30dc6d4Fc3056b6A7",
+                "0xA950524441892A31ebddF91d3cEEFa04Bf454466",
+                new BigInteger("37299123089429162514476831876850683361693243730"));
+    Auction auction = new Auction(BigInteger.ONE, auctionTuple);
+    assertFalse(auction.isDent(BigInteger.valueOf(1030000000000000000L)));
+  }
+
+  @Test
+  void isDent_bidAmountInDai_multiplied_minimumBidIncrease_equals_totalDaiWanted_false() {
+    Tuple8<BigInteger, BigInteger, String, BigInteger, BigInteger, String, String, BigInteger>
+        auctionTuple =
+            new Tuple8<>(
+                new BigInteger("36212740863523458752000000000000000000000000000"),
+                new BigInteger("175927491330994700"),
+                "0x04bB161C4e7583CDAaDEe93A8b8E6125FD661E57",
+                new BigInteger("1588287896"),
+                new BigInteger("1588266341"),
+                "0x42A142cc082255CaEE58E3f30dc6d4Fc3056b6A7",
+                "0xA950524441892A31ebddF91d3cEEFa04Bf454466",
+                new BigInteger("37299123089429162514476831876850683361693243730"));
+    Auction auction = new Auction(BigInteger.ONE, auctionTuple);
+    assertTrue(auction.isDent(BigInteger.valueOf(1030000000000000000L)));
+  }
+
+  @Test
+  void isInDefinedBiddingPhase_completed_false() {
+    Tuple8<BigInteger, BigInteger, String, BigInteger, BigInteger, String, String, BigInteger>
+            auctionTuple =
+            new Tuple8<>(
+                    new BigInteger("37299123089429162514476831876850683361693243730"),
+                    new BigInteger("175927491330994700"),
+                    "0x04bB161C4e7583CDAaDEe93A8b8E6125FD661E57",
+                    new BigInteger("1588287896"),
+                    new BigInteger("1588266341"),
+                    "0x42A142cc082255CaEE58E3f30dc6d4Fc3056b6A7",
+                    "0xA950524441892A31ebddF91d3cEEFa04Bf454466",
+                    new BigInteger("37299123089429162514476831876850683361693243730"));
+    Auction auction = new Auction(BigInteger.ONE, auctionTuple);
+    assertFalse(auction.isInDefinedBiddingPhase(BigInteger.valueOf(300)));
+  }
+
+  @Test
+  void isInDefinedBiddingPhase_beforeBiddingPhase_currentTimeLowerThanBothBidExpiryAndMaxAuctionLength_false() {
+    long currentUnixTimePlusMoreThanBiddingPeriod = System.currentTimeMillis() / 1000L + 310L;
+    Tuple8<BigInteger, BigInteger, String, BigInteger, BigInteger, String, String, BigInteger>
+            auctionTuple =
+            new Tuple8<>(
+                    new BigInteger("37299123089429162514476831876850683361693243730"),
+                    new BigInteger("175927491330994700"),
+                    "0x04bB161C4e7583CDAaDEe93A8b8E6125FD661E57",
+                    new BigInteger(String.valueOf(currentUnixTimePlusMoreThanBiddingPeriod)),
+                    new BigInteger(String.valueOf(currentUnixTimePlusMoreThanBiddingPeriod)),
+                    "0x42A142cc082255CaEE58E3f30dc6d4Fc3056b6A7",
+                    "0xA950524441892A31ebddF91d3cEEFa04Bf454466",
+                    new BigInteger("37299123089429162514476831876850683361693243730"));
+    Auction auction = new Auction(BigInteger.ONE, auctionTuple);
+    assertFalse(auction.isInDefinedBiddingPhase(BigInteger.valueOf(300)));
+  }
+
+  @Test
+  void isInDefinedBiddingPhase_biddingPhase_BidExpiry_true() {
+    long currentUnixTimePlusMoreThanBiddingPeriod = System.currentTimeMillis() / 1000L + 310L;
+    long currentUnixTime = System.currentTimeMillis() / 1000L;
+    Tuple8<BigInteger, BigInteger, String, BigInteger, BigInteger, String, String, BigInteger>
+            auctionTuple =
+            new Tuple8<>(
+                    new BigInteger("37299123089429162514476831876850683361693243730"),
+                    new BigInteger("175927491330994700"),
+                    "0x04bB161C4e7583CDAaDEe93A8b8E6125FD661E57",
+                    new BigInteger(String.valueOf(currentUnixTimePlusMoreThanBiddingPeriod)),
+                    new BigInteger(String.valueOf(currentUnixTime)),
+                    "0x42A142cc082255CaEE58E3f30dc6d4Fc3056b6A7",
+                    "0xA950524441892A31ebddF91d3cEEFa04Bf454466",
+                    new BigInteger("37299123089429162514476831876850683361693243730"));
+    Auction auction = new Auction(BigInteger.ONE, auctionTuple);
+    assertTrue(auction.isInDefinedBiddingPhase(BigInteger.valueOf(300)));
+  }
+
+  @Test
+  void isInDefinedBiddingPhase_biddingPhase_MaxAuctionLength_true() {
+    long currentUnixTimePlusMoreThanBiddingPeriod = System.currentTimeMillis() / 1000L + 310L;
+    long currentUnixTime = System.currentTimeMillis() / 1000L;
+    Tuple8<BigInteger, BigInteger, String, BigInteger, BigInteger, String, String, BigInteger>
+            auctionTuple =
+            new Tuple8<>(
+                    new BigInteger("37299123089429162514476831876850683361693243730"),
+                    new BigInteger("175927491330994700"),
+                    "0x04bB161C4e7583CDAaDEe93A8b8E6125FD661E57",
+                    new BigInteger(String.valueOf(currentUnixTime)),
+                    new BigInteger(String.valueOf(currentUnixTimePlusMoreThanBiddingPeriod)),
+                    "0x42A142cc082255CaEE58E3f30dc6d4Fc3056b6A7",
+                    "0xA950524441892A31ebddF91d3cEEFa04Bf454466",
+                    new BigInteger("37299123089429162514476831876850683361693243730"));
+    Auction auction = new Auction(BigInteger.ONE, auctionTuple);
+    assertTrue(auction.isInDefinedBiddingPhase(BigInteger.valueOf(300)));
+  }
 }

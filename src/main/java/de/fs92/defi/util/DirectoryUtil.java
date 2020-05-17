@@ -18,19 +18,15 @@ public class DirectoryUtil {
   public static String getCurrentDirectory(boolean isDevelopmentEnvironment) {
     String currentDirectory = "";
     try {
+      File currentFile =
+          new File(Main.class.getProtectionDomain().getCodeSource().getLocation().toURI())
+              .getParentFile();
       if (isDevelopmentEnvironment) {
         logger.trace("TESTING TRUE"); // weird bug with caching testing = false
-        currentDirectory =
-            new File(Main.class.getProtectionDomain().getCodeSource().getLocation().toURI())
-                .getParentFile()
-                .getParentFile()
-                .getPath();
+        currentDirectory = currentFile.getParentFile().getPath();
       } else {
         logger.trace("TESTING FALSE"); // weird bug with caching testing = false
-        currentDirectory =
-            new File(Main.class.getProtectionDomain().getCodeSource().getLocation().toURI())
-                .getParentFile()
-                .getPath();
+        currentDirectory = currentFile.getPath();
       }
     } catch (URISyntaxException e) {
       logger.error("URISyntaxException", e);

@@ -91,7 +91,7 @@ public class Oasis implements AddressMethod {
   }
 
   public void checkIfBuyDaiIsProfitableThenDoIt(@NotNull Balances balances) {
-    if (!balances.isThereEnoughEthAndWethForSaleAndLending(balances.ethereum)) {
+    if (balances.isThereTooFewEthAndWethForSaleAndLending(balances.ethereum)) {
       logger.info("NOT ENOUGH WETH AND ETH TO BUY DAI ON OASIS");
       return;
     }
@@ -139,7 +139,7 @@ public class Oasis implements AddressMethod {
   }
 
   public void checkIfSellDaiIsProfitableThenDoIt(@NotNull Balances balances) {
-    if (!balances.isThereEnoughDaiAndDaiInCompoundForSale()) {
+    if (balances.isThereTooFewDaiAndDaiInCompoundForSale()) {
       logger.info("NOT ENOUGH DAI TO SELL DAI ON OASIS");
       return;
     }
@@ -275,7 +275,7 @@ public class Oasis implements AddressMethod {
         balances.refreshLastSuccessfulTransaction();
         balances.addToSumEstimatedProfits(potentialProfit);
       } catch (Exception e) {
-        circuitBreaker.add(System.currentTimeMillis());
+        circuitBreaker.addTransactionFailedNow();
         balances.addToSumEstimatedMissedProfits(potentialProfit);
         logger.error(EXCEPTION, e);
       }

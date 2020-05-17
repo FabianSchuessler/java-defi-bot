@@ -27,6 +27,7 @@ public class Main {
   private static final boolean IS_DEVELOPMENT_ENVIRONMENT = true;
 
   public static void main(String[] args) {
+    logger.trace("NEW START");
     JavaProperties javaProperties = new JavaProperties(IS_DEVELOPMENT_ENVIRONMENT);
 
     String password = javaProperties.getValue("password");
@@ -68,7 +69,10 @@ public class Main {
 
     Oasis oasis = new Oasis(contractNeedsProvider, compoundDai, weth);
     Uniswap uniswap = new Uniswap(contractNeedsProvider, javaProperties, compoundDai, weth);
-    Flipper flipper = new Flipper(contractNeedsProvider);
+    Flipper flipper =
+        new Flipper(
+            contractNeedsProvider,
+            Double.parseDouble(javaProperties.getValue("minimumFlipAuctionProfit")));
 
     dai.getApproval().check(uniswap);
     dai.getApproval().check(oasis);
@@ -78,7 +82,7 @@ public class Main {
     while (circuitBreaker.getContinueRunning()) {
       balances.updateBalance(60);
       if (circuitBreaker.isAllowingOperations(3)) {
-        balances.checkEnoughEthereumForGas(web3j, ethereum);
+        balances.checkEnoughEthereumForGas(circuitBreaker, ethereum);
         oasis.checkIfSellDaiIsProfitableThenDoIt(balances);
         oasis.checkIfBuyDaiIsProfitableThenDoIt(balances);
         uniswap.checkIfSellDaiIsProfitableThenDoIt(balances);
@@ -100,10 +104,7 @@ public class Main {
         Thread.currentThread().interrupt();
       }
     }
-    shutdown(web3j);
-  }
 
-  public static void shutdown(Web3j web3j) {
     logger.trace("Exit");
     web3j.shutdown();
     System.exit(0);

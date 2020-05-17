@@ -29,7 +29,7 @@ public class Approval {
         logger.debug("{} UNLOCK DAI", name);
       } catch (Exception e) {
         logger.error(EXCEPTION, e);
-        contractNeedsProvider.getCircuitBreaker().add(System.currentTimeMillis());
+        contractNeedsProvider.getCircuitBreaker().addTransactionFailedNow();
       }
     }
   }

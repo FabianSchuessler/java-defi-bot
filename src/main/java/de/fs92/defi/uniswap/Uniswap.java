@@ -71,7 +71,7 @@ public class Uniswap implements AddressMethod {
   }
 
   public void checkIfBuyDaiIsProfitableThenDoIt(@NotNull Balances balances) {
-    if (!balances.isThereEnoughEthAndWethForSaleAndLending(balances.ethereum)) {
+    if (balances.isThereTooFewEthAndWethForSaleAndLending(balances.ethereum)) {
       logger.trace("NOT ENOUGH WETH AND ETH TO BUY DAI ON UNISWAP");
       return;
     }
@@ -91,7 +91,7 @@ public class Uniswap implements AddressMethod {
   }
 
   public void checkIfSellDaiIsProfitableThenDoIt(@NotNull Balances balances) {
-    if (!balances.isThereEnoughDaiAndDaiInCompoundForSale()) {
+    if (balances.isThereTooFewDaiAndDaiInCompoundForSale()) {
       logger.trace("NOT ENOUGH DAI TO SELL DAI ON UNISWAP");
       return;
     }
@@ -180,7 +180,7 @@ public class Uniswap implements AddressMethod {
           balances,
           offer.profit,
           medianEthereumPrice,
-          balances.weth.getAccount().getBalance()); // TODO: maybe check if enough weth is left
+          balances.weth.getAccount().getBalance());
     }
     BigInteger profitWillingToGiveUp =
         multiply(offer.profit, getMachineReadable(buyProfitPercentage));
@@ -321,7 +321,7 @@ public class Uniswap implements AddressMethod {
 
         balances.addToSumEstimatedProfits(ethToTokenSwapInput.potentialProfit);
       } catch (Exception e) {
-        circuitBreaker.add(System.currentTimeMillis());
+        circuitBreaker.addTransactionFailedNow();
 
         buyProfitPercentage = Math.min(0.75, buyProfitPercentage + 0.05);
         javaProperties.setValue(
@@ -364,7 +364,7 @@ public class Uniswap implements AddressMethod {
 
         balances.addToSumEstimatedProfits(tokenToEthSwapInput.potentialProfit);
       } catch (Exception e) {
-        circuitBreaker.add(System.currentTimeMillis());
+        circuitBreaker.addTransactionFailedNow();
 
         sellProfitPercentage = Math.min(0.75, sellProfitPercentage + 0.05);
         javaProperties.setValue(

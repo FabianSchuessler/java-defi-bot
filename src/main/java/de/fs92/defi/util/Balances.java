@@ -1,14 +1,13 @@
 package de.fs92.defi.util;
 
-import de.fs92.defi.Main;
 import de.fs92.defi.compounddai.CompoundDai;
+import de.fs92.defi.contractneedsprovider.CircuitBreaker;
 import de.fs92.defi.dai.Dai;
 import de.fs92.defi.medianizer.MedianException;
 import de.fs92.defi.medianizer.Medianizer;
 import de.fs92.defi.weth.Weth;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.LoggerFactory;
-import org.web3j.protocol.Web3j;
 
 import java.lang.invoke.MethodHandles;
 import java.math.BigDecimal;
@@ -80,26 +79,7 @@ public class Balances {
   }
 
   public void updateBalanceInformation(BigInteger medianEthereumPrice) {
-    // Changes minimum trade profit depending on the time of the last successful transaction.
-    /*
-    if (System.currentTimeMillis() < lastSuccessfulTransaction + 5 * 60 * 1000) { // < 5 min
-        minimumTradeProfit = makeDoubleMachineReadable(5.0);
-    } else if (System.currentTimeMillis() < lastSuccessfulTransaction + 10 * 60 * 1000) { // < 10 min
-        minimumTradeProfit = makeDoubleMachineReadable(2.5);
-    } else if (System.currentTimeMillis() < lastSuccessfulTransaction + 30 * 60 * 1000) { // < 30 min
-        minimumTradeProfit = makeDoubleMachineReadable(1.0);
-    } else if (System.currentTimeMillis() < lastSuccessfulTransaction + 3 * 60 * 60 * 1000) { // < 3 h
-        minimumTradeProfit = makeDoubleMachineReadable(0.5);
-    } else { // > 3 h
-        minimumTradeProfit = makeDoubleMachineReadable(0.01);
-    }
-    */
-    // usingBufferedWriter("MINIMUM TRADE PROFIT          " +
-    // makeBigNumberHumanReadable(minimumTradeProfit));
-
     try {
-      // TODO: think about putting this method into each class such as ethereum, dai and weth
-      logger.trace("BALANCES");
       ethereum.updateBalance();
       weth.getAccount().update();
       dai.getAccount().update();
@@ -114,7 +94,7 @@ public class Balances {
           multiply(ethBalance, medianEthereumPrice)
               .add(multiply(wethBalance, medianEthereumPrice))
               .add(daiBalance)
-              .add(cdaiBalance); // US-Dollar
+              .add(cdaiBalance);
 
       // Gets executed just once at the beginning. Initializes initialTotalUSD.
       if (initialTotalUSDCounter == 0) {
@@ -140,8 +120,6 @@ public class Balances {
       logger.trace(
           "MINIMUM TRADE PROFIT SELL DAI {}{}", getCurrency(minimumTradeProfitSellDai), " DAI");
 
-      // updateCDPInformation();
-
       // Checks if the bot made a big loss.
       // For some reason the DAI balance can be wrongly zero instead of the actual value. This means
       // that this If condition can be wrongly true.
@@ -151,7 +129,6 @@ public class Balances {
         logger.warn("USD BALANCE MIGHT BE ZERO EXCEPTION");
 
         updateBalanceInformation(Medianizer.getPrice());
-        // everythingIsFine = false;
       }
 
       logger.trace(
@@ -206,7 +183,8 @@ public class Balances {
     }
   }
 
-  public void checkEnoughEthereumForGas(Web3j web3j, @NotNull Ethereum ethereum) {
+  public void checkEnoughEthereumForGas(CircuitBreaker circuitBreaker, @NotNull Ethereum ethereum) {
+    logger.trace("CHECKING IF ENOUGH ETHEREUM FOR GAS");
     // TODO: test this method (might unwrap without updating the gas fee to eth balance from
     // previous transaction)
     BigInteger ethereumBalance = ethereum.getBalance();
@@ -229,16 +207,16 @@ public class Balances {
     } else if (ethereumAndWethBalance.compareTo(ethereum.minimumEthereumReserveLowerLimit) < 0) {
       logger.error(
           "ETH + WETH ARE LOWER THAN MINIMUM ETHEREUM RESERVE LOWER LIMIT, THEREFORE SHUTDOWN");
-      Main.shutdown(web3j);
+      circuitBreaker.stopRunning();
     }
   }
 
-  public boolean isThereEnoughDaiAndDaiInCompoundForSale() { // todo: test this method and class
+  public boolean isThereTooFewDaiAndDaiInCompoundForSale() { // todo: test this method and class
     return dai.getAccount()
             .getBalance()
             .add(compoundDai.getBalanceInDai())
             .compareTo(dai.minimumDaiNecessaryForSaleAndLending)
-        > 0;
+        <= 0;
   }
 
   public BigInteger getMaxDaiToSell() { // todo: test this method
@@ -263,11 +241,11 @@ public class Balances {
     lastSuccessfulTransaction = System.currentTimeMillis();
   }
 
-  public boolean isThereEnoughEthAndWethForSaleAndLending(@NotNull Ethereum ethereum) {
+  public boolean isThereTooFewEthAndWethForSaleAndLending(@NotNull Ethereum ethereum) {
     BigInteger wethBalance = weth.getAccount().getBalance();
     BigInteger ethAndWethBalance =
         wethBalance.add(ethereum.getBalanceWithoutMinimumEthereumReserveUpperLimit());
-    return ethAndWethBalance.compareTo(ethereum.minimumEthereumNecessaryForSale) > 0;
+    return ethAndWethBalance.compareTo(ethereum.minimumEthereumNecessaryForSale) <= 0;
   }
 
   public BigInteger getMinimumTradeProfitSellDai() {

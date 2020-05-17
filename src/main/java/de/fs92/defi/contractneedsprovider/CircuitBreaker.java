@@ -28,15 +28,17 @@ public class CircuitBreaker {
     return failedTransactionsWithinTheLastTenMinutesForErrorBlockingArrayList.size() < number;
   }
 
-  public void add(long time) {
-    failedTransactionsWithinTheLastTenMinutesForErrorBlockingArrayList.add(time);
+  public void addTransactionFailedNow() {
+    logger.trace("ADD A FAILED TRANSACTION");
+    failedTransactionsWithinTheLastTenMinutesForErrorBlockingArrayList.add(
+        System.currentTimeMillis());
   }
 
   public void update() {
     if (System.currentTimeMillis()
         >= failedTransactionsWithinTheLastTenMinutesForErrorBlockingArrayList.get(0)
             + 10 * 60 * 1000) {
-      logger.trace("FAILED TRANSACTION REMOVED 10 MINUTES");
+      logger.trace("REMOVE FAILED TRANSACTION: 10 MINUTES");
       failedTransactionsWithinTheLastTenMinutesForErrorBlockingArrayList.remove(0);
     }
   }

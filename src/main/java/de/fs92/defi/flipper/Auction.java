@@ -2,6 +2,7 @@ package de.fs92.defi.flipper;
 
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.LoggerFactory;
+import org.web3j.crypto.Credentials;
 import org.web3j.tuples.generated.Tuple8;
 
 import java.lang.invoke.MethodHandles;
@@ -17,58 +18,68 @@ public class Auction {
   public static final DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy_MM_dd HH_mm_ss");
   private static final org.slf4j.Logger logger =
       LoggerFactory.getLogger(MethodHandles.lookup().lookupClass().getSimpleName());
-  public final BigInteger bidAmountInDai; // bid
+  public final BigInteger bidAmountInDai; // bid requires convertUint256toBigInteger
   public final BigInteger collateralForSale; // lot
   public final String highestBidder; // guy
   public final BigInteger bidExpiry; // tic
   public final BigInteger maxAuctionDuration; // end
   public final String addressOfAuctionedVault; // usr
   public final String recipientOfAuctionIncome; // gal
-  public final BigInteger totalDaiWanted; // tab
+  public final BigInteger totalDaiWanted; // tab requires convertUint256toBigInteger
   public final BigInteger id; // id
 
-  public Auction(
+  Auction(
       BigInteger id,
       @NotNull
           Tuple8<BigInteger, BigInteger, String, BigInteger, BigInteger, String, String, BigInteger>
               auctionTuple) {
     this.id = id;
-    this.bidAmountInDai = convertUint256toBigInteger(auctionTuple.component1());
+    this.bidAmountInDai = auctionTuple.component1();
     this.collateralForSale = auctionTuple.component2();
     this.highestBidder = auctionTuple.component3();
     this.bidExpiry = auctionTuple.component4();
     this.maxAuctionDuration = auctionTuple.component5();
     this.addressOfAuctionedVault = auctionTuple.component6();
     this.recipientOfAuctionIncome = auctionTuple.component7();
-    this.totalDaiWanted = convertUint256toBigInteger(auctionTuple.component8());
+    this.totalDaiWanted = auctionTuple.component8();
     logger.trace("AUCTION CREATED {}", this);
   }
 
-  public BigInteger getPotentialProfit(BigInteger minimumBidIncrease, BigInteger median) {
+  boolean isDent(BigInteger minimumBidIncrease) {
+    return totalDaiWanted.compareTo(multiply(bidAmountInDai, minimumBidIncrease)) <= 0;
+  }
+
+  boolean isInDefinedBiddingPhase(BigInteger biddingPeriod) {
+    long currentUnixTime = System.currentTimeMillis() / 1000L;
+    return !isCompleted()
+        && (currentUnixTime + biddingPeriod.longValue())
+            >= bidExpiry.min(maxAuctionDuration).longValue();
+  }
+
+  boolean amIHighestBidder(@NotNull Credentials credentials) {
+    return highestBidder.equalsIgnoreCase(credentials.getAddress());
+  }
+
+  BigInteger getPotentialProfit(BigInteger minimumBidIncrease, BigInteger median) {
     BigInteger marketPrice = multiply(median, collateralForSale);
-    BigInteger auctionPrice = multiply(bidAmountInDai, minimumBidIncrease);
+    BigInteger auctionPrice = multiply(convertUint256toBigInteger(bidAmountInDai), minimumBidIncrease);
     BigInteger potentialProfit = marketPrice.subtract(auctionPrice);
-    logger.trace("POTENTIAL PROFIT {}{}", getCurrency(potentialProfit), " DAI");
+    logger.trace("AUCTION {} HAS POTENTIAL PROFIT {} DAI", id, getCurrency(potentialProfit));
     return potentialProfit;
   }
 
-  public boolean isAffordable(BigInteger minimumBidIncrease, @NotNull BigInteger maxDaiToSell) {
-    BigInteger auctionPrice = multiply(bidAmountInDai, minimumBidIncrease);
+  boolean isAffordable(BigInteger minimumBidIncrease, @NotNull BigInteger maxDaiToSell) {
+    BigInteger auctionPrice = multiply(convertUint256toBigInteger(bidAmountInDai), minimumBidIncrease);
     boolean isAffordable = auctionPrice.compareTo(maxDaiToSell) < 0;
     logger.trace("AUCTION IS AFFORDABLE {}", isAffordable);
     return isAffordable;
   }
 
-  public boolean isActive() {
+  boolean isActive() {
     return !isEmpty() && !isCompleted();
   }
 
-  //  once the bid hits the debt amount + 13 liquidation penalty threshold the auction switches to
-  // the dent (reverse auction) phase
-  //  in this phase everyone is bidding the debt amount + 13%, however they are underbidding each
-  // other on the amount of collateral they are willing to accept
-
-  public boolean isEmpty() {
+  boolean isEmpty() {
     String burnAddress = "0x0000000000000000000000000000000000000000";
     boolean isEmpty =
         bidAmountInDai.compareTo(BigInteger.ZERO) == 0
@@ -83,15 +94,15 @@ public class Auction {
     return isEmpty;
   }
 
-  public boolean isCompleted() {
+  boolean isCompleted() {
     String timeZone = TimeZone.getDefault().getID();
     String formattedBidExpiry =
         Instant.ofEpochSecond(maxAuctionDuration.longValue())
             .atZone(ZoneId.of(timeZone))
             .format(dtf);
-    long unixTime = System.currentTimeMillis() / 1000L;
+    long currentUnixTime = System.currentTimeMillis() / 1000L;
     logger.trace("END OF AUCTION {}", formattedBidExpiry);
-    boolean isCompleted = maxAuctionDuration.longValue() < unixTime;
+    boolean isCompleted = maxAuctionDuration.longValue() < currentUnixTime;
     logger.trace("AUCTION IS COMPLETED {}", isCompleted);
     return isCompleted;
   }
@@ -100,8 +111,10 @@ public class Auction {
   public String toString() {
     String timeZone = TimeZone.getDefault().getID();
     return "Auction{"
-        + "bidAmountInDai="
-        + getHumanReadable(bidAmountInDai)
+        + "id="
+        + id
+        + ", bidAmountInDai="
+        + getHumanReadable(convertUint256toBigInteger(bidAmountInDai))
         + ", collateralForSale="
         + getHumanReadable(collateralForSale)
         + ", highestBidder='"
@@ -117,7 +130,7 @@ public class Auction {
         + ", recipientOfAuctionIncome='"
         + recipientOfAuctionIncome
         + ", totalDaiWanted="
-        + getHumanReadable(totalDaiWanted)
+        + getHumanReadable(convertUint256toBigInteger(totalDaiWanted))
         + '}';
   }
 }

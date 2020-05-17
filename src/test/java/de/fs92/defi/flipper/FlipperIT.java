@@ -16,7 +16,6 @@ import org.web3j.protocol.Web3j;
 import java.math.BigInteger;
 import java.util.ArrayList;
 
-import static de.fs92.defi.util.NumberUtil.convertUint256toBigInteger;
 import static de.fs92.defi.util.NumberUtil.getHumanReadable;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -55,7 +54,10 @@ public class FlipperIT {
     Permissions permissions = new Permissions(true, true);
     ContractNeedsProvider contractNeedsProvider =
         new ContractNeedsProvider(web3j, credentials, gasProvider, permissions, circuitBreaker);
-    flipper = new Flipper(contractNeedsProvider);
+    flipper =
+        new Flipper(
+            contractNeedsProvider,
+            Double.parseDouble(javaProperties.getValue("minimumFlipAuctionProfit")));
 
     Dai dai =
         new Dai(
@@ -85,8 +87,7 @@ public class FlipperIT {
     assertEquals(
         0,
         auction.bidAmountInDai.compareTo(
-            convertUint256toBigInteger(
-                new BigInteger("37299123089429162514476831876850683361693243730"))));
+            new BigInteger("37299123089429162514476831876850683361693243730")));
     assertEquals(0, auction.collateralForSale.compareTo(new BigInteger("175927491330994700")));
     assertTrue(
         auction.highestBidder.equalsIgnoreCase("0x04bB161C4e7583CDAaDEe93A8b8E6125FD661E57"));
@@ -101,8 +102,7 @@ public class FlipperIT {
     assertEquals(
         0,
         auction.totalDaiWanted.compareTo(
-            convertUint256toBigInteger(
-                new BigInteger("37299123089429162514476831876850683361693243730"))));
+            new BigInteger("37299123089429162514476831876850683361693243730")));
   }
 
   @Test
