@@ -2,6 +2,15 @@ language: java
 sudo: false
 script: mvn clean org.jacoco:jacoco-maven-plugin:prepare-agent install sonar:sonar
   -Dsonar.projectKey=FabianSchuessler_java-defi-bot -Pcoverage
+before_install:
+  ##########
+  # TEMPORARY hack to get around Travis not installing Java
+  # Remove this and the ".travis_install_jdk.sh" file once Travis installs java properly again!
+  # Copied from the output of the "install_jdk" task in our last successful build
+  - export JAVA_HOME=~/openjdk14
+  - export PATH="$JAVA_HOME/bin:$PATH"
+  - ./.travis_install_jdk.sh --target "/home/travis/openjdk14" --workspace "/home/travis/.cache/install-jdk" --feature "14" --license "GPL" --cacerts
+  ##########
 jdk: oraclejdk13
 addons:
   sonarcloud:
