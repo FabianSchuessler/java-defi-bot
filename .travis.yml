@@ -9,7 +9,7 @@ before_install:
   # Copied from the output of the "install_jdk" task in our last successful build
   - export JAVA_HOME=~/openjdk13
   - export PATH="$JAVA_HOME/bin:$PATH"
-  - .travis_install_jdk.sh --target "/home/travis/openjdk14" --workspace "/home/travis/.cache/install-jdk" --feature "13" --license "GPL" --cacerts
+  - ./.travis_install_jdk.sh --target "/home/travis/openjdk13" --workspace "/home/travis/.cache/install-jdk" --feature "13" --license "GPL" --cacerts
   ##########
 jdk: oraclejdk13
 addons:
