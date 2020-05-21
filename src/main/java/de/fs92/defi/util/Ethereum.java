@@ -2,6 +2,8 @@ package de.fs92.defi.util;
 
 import de.fs92.defi.contractneedsprovider.ContractNeedsProvider;
 import de.fs92.defi.contractneedsprovider.Permissions;
+import de.fs92.defi.medianizer.MedianException;
+import de.fs92.defi.numberutil.Wad18;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.LoggerFactory;
 import org.web3j.crypto.Credentials;
@@ -16,35 +18,37 @@ import java.lang.invoke.MethodHandles;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
-import static de.fs92.defi.util.NumberUtil.getFullPrecision;
-import static de.fs92.defi.util.NumberUtil.getMachineReadable;
+import static de.fs92.defi.numberutil.NumberUtil.getMachineReadable;
 
 public class Ethereum {
   private static final org.slf4j.Logger logger =
-      LoggerFactory.getLogger(MethodHandles.lookup().lookupClass().getSimpleName());
+          LoggerFactory.getLogger(MethodHandles.lookup().lookupClass().getSimpleName());
 
-  public final BigInteger minimumEthereumReserveUpperLimit;
-  public final BigInteger minimumEthereumReserveLowerLimit;
-  public final BigInteger minimumEthereumNecessaryForSale;
+  public final Wad18 minimumEthereumReserveUpperLimit;
+  public final Wad18 minimumEthereumReserveLowerLimit;
+  public final Wad18 minimumEthereumNecessaryForSale;
 
   private final Web3j web3j;
   private final Credentials credentials;
   private final Permissions permissions;
 
-  private BigInteger balance;
+  private Wad18 balance;
 
   public Ethereum(
-      @NotNull ContractNeedsProvider contractNeedsProvider,
-      double minimumEthereumReserveUpperLimit,
-      double minimumEthereumReserveLowerLimit,
-      double minimumEthereumNecessaryForSale) {
+          @NotNull ContractNeedsProvider contractNeedsProvider,
+          double minimumEthereumReserveUpperLimit,
+          double minimumEthereumReserveLowerLimit,
+          double minimumEthereumNecessaryForSale) {
     web3j = contractNeedsProvider.getWeb3j();
     permissions = contractNeedsProvider.getPermissions();
     credentials = contractNeedsProvider.getCredentials();
-    this.minimumEthereumReserveUpperLimit = getMachineReadable(minimumEthereumReserveUpperLimit);
-    this.minimumEthereumReserveLowerLimit = getMachineReadable(minimumEthereumReserveLowerLimit);
-    this.minimumEthereumNecessaryForSale = getMachineReadable(minimumEthereumNecessaryForSale);
-    balance = BigInteger.ZERO;
+    this.minimumEthereumReserveUpperLimit =
+            new Wad18(getMachineReadable(minimumEthereumReserveUpperLimit));
+    this.minimumEthereumReserveLowerLimit =
+            new Wad18(getMachineReadable(minimumEthereumReserveLowerLimit));
+    this.minimumEthereumNecessaryForSale =
+            new Wad18(getMachineReadable(minimumEthereumNecessaryForSale));
+    balance = Wad18.ZERO;
   }
 
   public void sendTransaction() throws Exception {
@@ -68,17 +72,23 @@ public class Ethereum {
   }
 
   public void updateBalance() {
-    BigInteger oldBalance = balance;
+    Wad18 oldBalance = balance; // todo: use account
     try {
       balance =
-          web3j.ethGetBalance(getAddress(), DefaultBlockParameterName.LATEST).send().getBalance();
+              new Wad18(
+                      web3j
+                              .ethGetBalance(getAddress(), DefaultBlockParameterName.LATEST)
+                              .send()
+                              .getBalance());
     } catch (IOException e) {
-      logger.error("IOException ", e);
-      balance = BigInteger.ZERO;
+      logger.error("IOException", e);
+      balance = new Wad18();
     }
-    if (oldBalance.compareTo(balance) != 0) {
-      logger.trace("OLD BALANCE {} ETH", getFullPrecision(oldBalance));
-      logger.trace("UPDATED BALANCE {} ETH", getFullPrecision(balance));
+    if (oldBalance != null && oldBalance.compareTo(balance) != 0) {
+      logger.trace("OLD BALANCE {} ETH", oldBalance);
+      logger.trace("UPDATED BALANCE {} ETH", balance);
+    } else if (oldBalance == null) {
+      logger.trace("ETH BALANCE {} ETH", balance);
     }
   }
 
@@ -86,20 +96,28 @@ public class Ethereum {
     return credentials.getAddress();
   }
 
-  public BigInteger getBalance() {
-    if (balance.compareTo(BigInteger.ZERO) != 0)
-      logger.trace("ETH BALANCE {}{}", getFullPrecision(balance), " ETH");
+  public Wad18 getBalance() {
+    if (balance.compareTo(BigInteger.ZERO) != 0) logger.trace("ETH BALANCE {}{}", balance, " ETH");
     return balance;
   }
 
-  public BigInteger getBalanceWithoutMinimumEthereumReserveUpperLimit() {
-    BigInteger balanceWithoutMinimumEthereumReserveUpperLimit =
-        BigInteger.ZERO.max(balance.subtract(minimumEthereumReserveUpperLimit));
+  public Wad18 getBalanceWithoutMinimumEthereumReserveUpperLimit() {
+    Wad18 balanceWithoutMinimumEthereumReserveUpperLimit =
+            Wad18.ZERO.max(balance.subtract(minimumEthereumReserveUpperLimit));
     if (balanceWithoutMinimumEthereumReserveUpperLimit.compareTo(BigInteger.ZERO) != 0)
       logger.trace(
-          "ETH BALANCE WITHOUT MINIMUM ETHEREUM RESERVER UPPER LIMIT {}{}",
-          getFullPrecision(balanceWithoutMinimumEthereumReserveUpperLimit),
-          " ETH");
+              "ETH BALANCE WITHOUT MINIMUM ETHEREUM RESERVER UPPER LIMIT {}{}",
+              balanceWithoutMinimumEthereumReserveUpperLimit,
+              " ETH");
     return balanceWithoutMinimumEthereumReserveUpperLimit;
+  }
+
+  public BigInteger getCurrentBlock() throws MedianException {
+    try {
+      return web3j.ethBlockNumber().send().getBlockNumber();
+    } catch (Exception e) {
+      logger.error("Exception", e);
+      throw new MedianException("CAN'T GET CURRENT BLOCK");
+    }
   }
 }

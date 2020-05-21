@@ -5,14 +5,13 @@ import de.fs92.defi.contractneedsprovider.Wallet;
 import de.fs92.defi.contractneedsprovider.Web3jProvider;
 import de.fs92.defi.dai.DaiContract;
 import de.fs92.defi.gasprovider.GasProvider;
+import de.fs92.defi.numberutil.Wad18;
 import de.fs92.defi.util.JavaProperties;
 import de.fs92.defi.weth.WethContract;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.web3j.crypto.Credentials;
 import org.web3j.protocol.Web3j;
-
-import java.math.BigInteger;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -23,8 +22,8 @@ public class ContractValidationUtilIT {
 
   private static final String EXCEPTION = "Exception";
 
-  private static final BigInteger minimumGasPrice = BigInteger.valueOf(1_000000000);
-  private static final BigInteger maximumGasPrice = BigInteger.valueOf(200_000000000L);
+  private static final Wad18 minimumGasPrice = new Wad18(1_000000000);
+  private static final Wad18 maximumGasPrice = new Wad18(200_000000000L);
 
   Web3j web3j;
   Credentials credentials;

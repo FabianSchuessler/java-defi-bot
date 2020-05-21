@@ -1,19 +1,17 @@
 package de.fs92.defi.oasis;
 
-import java.math.BigInteger;
+import de.fs92.defi.numberutil.Wad18;
+
 import java.util.Map;
 
 public class OasisOffer {
-  public final BigInteger offerId;
-  public final Map<String, BigInteger> offerValues;
-  public final BigInteger bestOfferDaiPerEth;
-  public final BigInteger profit;
+  public final Wad18 offerId;
+  public final Map<String, Wad18> offerValues;
+  public final Wad18 bestOfferDaiPerEth;
+  public final Wad18 profit;
 
   public OasisOffer(
-      BigInteger offerId,
-      Map<String, BigInteger> offerValues,
-      BigInteger bestOfferDaiPerEth,
-      BigInteger profit) {
+          Wad18 offerId, Map<String, Wad18> offerValues, Wad18 bestOfferDaiPerEth, Wad18 profit) {
     this.offerId = offerId;
     this.offerValues = offerValues;
     this.bestOfferDaiPerEth = bestOfferDaiPerEth;

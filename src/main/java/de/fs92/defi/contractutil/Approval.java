@@ -2,12 +2,13 @@ package de.fs92.defi.contractutil;
 
 import de.fs92.defi.contractneedsprovider.ContractNeedsProvider;
 import de.fs92.defi.contractuserutil.AddressMethod;
+import de.fs92.defi.numberutil.Wad18;
 import org.slf4j.LoggerFactory;
 
 import java.lang.invoke.MethodHandles;
-import java.math.BigInteger;
 
-import static de.fs92.defi.util.NumberUtil.*;
+import static de.fs92.defi.numberutil.NumberUtil.MINIMUM_APPROVAL_ALLOWANCE;
+import static de.fs92.defi.numberutil.NumberUtil.UINT_MAX;
 
 public class Approval {
   private static final org.slf4j.Logger logger =
@@ -37,10 +38,10 @@ public class Approval {
   public void check(AddressMethod toAllowContract) {
     try {
       String address = toAllowContract.getAddress();
-      BigInteger allowance =
-          contract.allowance(contractNeedsProvider.getCredentials().getAddress(), address).send();
+      Wad18 allowance = new Wad18(
+              contract.allowance(contractNeedsProvider.getCredentials().getAddress(), address).send());
       if (allowance.compareTo(MINIMUM_APPROVAL_ALLOWANCE) < 0) {
-        logger.warn("DAI ALLOWANCE IS TOO LOW {}", getFullPrecision(allowance));
+        logger.warn("DAI ALLOWANCE IS TOO LOW {}", allowance);
         approve(address, toAllowContract.getClass().getName());
       }
     } catch (Exception e) {

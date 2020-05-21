@@ -2,13 +2,12 @@ package de.fs92.defi.medianizer;
 
 import de.fs92.defi.contractneedsprovider.*;
 import de.fs92.defi.gasprovider.GasProvider;
+import de.fs92.defi.numberutil.Wad18;
 import de.fs92.defi.util.JavaProperties;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.web3j.crypto.Credentials;
 import org.web3j.protocol.Web3j;
-
-import java.math.BigInteger;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -20,8 +19,8 @@ public class MedianizerIT {
 
   private static final String TOO_HIGH = "Error, value is too high";
   private static final String TOO_LOW = "Error, value is too low";
-  private static final BigInteger MINIMUM_ETH_PRICE = new BigInteger("100000000000000000000");
-  private static final BigInteger MAXIMUM_ETH_PRICE = new BigInteger("500000000000000000000");
+  private static final Wad18 MINIMUM_ETH_PRICE = new Wad18("100000000000000000000");
+  private static final Wad18 MAXIMUM_ETH_PRICE = new Wad18("500000000000000000000");
   public static ContractNeedsProvider contractNeedsProvider;
 
   @BeforeEach
@@ -45,11 +44,11 @@ public class MedianizerIT {
     Web3j web3j = new Web3jProvider(infuraProjectId).web3j;
     Credentials credentials = new Wallet(password, wallet).getCredentials();
     GasProvider gasProvider =
-        new GasProvider(web3j, BigInteger.valueOf(1_000000000), BigInteger.valueOf(200_000000000L));
+            new GasProvider(web3j, new Wad18(1_000000000), new Wad18(200_000000000L));
     Permissions permissions =
-        new Permissions(
-            Boolean.parseBoolean(javaProperties.getValue("transactionRequiresConfirmation")),
-            Boolean.parseBoolean(javaProperties.getValue("playSoundOnTransaction")));
+            new Permissions(
+                    Boolean.parseBoolean(javaProperties.getValue("transactionRequiresConfirmation")),
+                    Boolean.parseBoolean(javaProperties.getValue("playSoundOnTransaction")));
     CircuitBreaker circuitBreaker = new CircuitBreaker();
     contractNeedsProvider =
         new ContractNeedsProvider(web3j, credentials, gasProvider, permissions, circuitBreaker);
@@ -58,7 +57,7 @@ public class MedianizerIT {
   @Test
   public void getCoinbaseProEthPrice_simpleGet_returnPrice() {
     Medianizer.setMedianizerContract(contractNeedsProvider);
-    BigInteger coinbaseEthPrice = Medianizer.getCoinbaseProEthPrice();
+    Wad18 coinbaseEthPrice = Medianizer.getCoinbaseProEthPrice();
     assertTrue(MINIMUM_ETH_PRICE.compareTo(coinbaseEthPrice) <= 0, TOO_LOW);
     assertTrue(MAXIMUM_ETH_PRICE.compareTo(coinbaseEthPrice) >= 0, TOO_HIGH);
   }
@@ -66,7 +65,7 @@ public class MedianizerIT {
   @Test
   public void getPrice_oneExecution_priceIsWithinReasonableBounds() throws MedianException {
     Medianizer.setMedianizerContract(contractNeedsProvider);
-    BigInteger median = Medianizer.getPrice();
+    Wad18 median = Medianizer.getPrice();
     assertTrue(MINIMUM_ETH_PRICE.compareTo(median) <= 0, TOO_LOW);
     assertTrue(MAXIMUM_ETH_PRICE.compareTo(median) >= 0, TOO_HIGH);
   }
@@ -75,8 +74,8 @@ public class MedianizerIT {
   public void getPrice_twoExecutionsWithinPriceUpdateInterval_priceIsEqual()
       throws MedianException {
     Medianizer.setMedianizerContract(contractNeedsProvider);
-    BigInteger firstMedian = Medianizer.getPrice();
-    BigInteger secondMedian = Medianizer.getPrice();
+    Wad18 firstMedian = Medianizer.getPrice();
+    Wad18 secondMedian = Medianizer.getPrice();
 
     assertEquals(firstMedian, secondMedian);
 

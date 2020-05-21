@@ -4,6 +4,7 @@ import de.fs92.defi.compounddai.CompoundDai;
 import de.fs92.defi.contractneedsprovider.*;
 import de.fs92.defi.dai.Dai;
 import de.fs92.defi.gasprovider.GasProvider;
+import de.fs92.defi.numberutil.Wad18;
 import de.fs92.defi.util.Balances;
 import de.fs92.defi.util.Ethereum;
 import de.fs92.defi.util.JavaProperties;
@@ -16,7 +17,7 @@ import org.web3j.protocol.Web3j;
 import java.math.BigInteger;
 import java.util.ArrayList;
 
-import static de.fs92.defi.util.NumberUtil.getHumanReadable;
+import static de.fs92.defi.numberutil.NumberUtil.getMachineReadable;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class FlipperIT {
@@ -24,8 +25,8 @@ public class FlipperIT {
   private static final String TRAVIS_WALLET = "TRAVIS_WALLET";
   private static final String TRAVIS_PASSWORD = "TRAVIS_PASSWORD";
 
-  private static final BigInteger minimumGasPrice = BigInteger.valueOf(1_000000000);
-  private static final BigInteger maximumGasPrice = BigInteger.valueOf(200_000000000L);
+  private static final Wad18 minimumGasPrice = new Wad18(1_000000000);
+  private static final Wad18 maximumGasPrice = new Wad18(200_000000000L);
   Flipper flipper;
   Balances balances;
 
@@ -109,7 +110,7 @@ public class FlipperIT {
   public void getActiveAuctionList_noParameter_noException() {
     BigInteger actualValue = flipper.getTotalAuctionCount();
     ArrayList<Auction> auctionList = flipper.getActiveAffordableAuctionList(actualValue, balances);
-    BigInteger minimumBidIncrease = flipper.getMinimumBidIncrease();
+    Wad18 minimumBidIncrease = flipper.getMinimumBidIncrease();
     for (Auction auction : auctionList) {
       assertTrue(auction.isActive());
       assertTrue(auction.isAffordable(minimumBidIncrease, balances.getMaxDaiToSell()));
@@ -118,8 +119,8 @@ public class FlipperIT {
 
   @Test
   public void getMinimumBidIncrease_noParameter_noException() {
-    BigInteger actualValue = flipper.getMinimumBidIncrease();
-    assertEquals("1.03", getHumanReadable(actualValue));
+    Wad18 actualValue = flipper.getMinimumBidIncrease();
+    assertEquals(new Wad18(getMachineReadable(1.03)), actualValue);
     assertDoesNotThrow(() -> flipper.getMinimumBidIncrease());
   }
 

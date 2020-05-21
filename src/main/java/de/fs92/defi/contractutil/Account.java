@@ -1,12 +1,11 @@
 package de.fs92.defi.contractutil;
 
+import de.fs92.defi.numberutil.Wad18;
 import org.slf4j.LoggerFactory;
 import org.web3j.crypto.Credentials;
 
 import java.lang.invoke.MethodHandles;
 import java.math.BigInteger;
-
-import static de.fs92.defi.util.NumberUtil.getFullPrecision;
 
 public class Account {
   private static final org.slf4j.Logger logger =
@@ -16,7 +15,7 @@ public class Account {
   private final Credentials credentials;
   private final String name;
 
-  private BigInteger balance;
+  private Wad18 balance;
 
   public Account(AccountMethod contract, Credentials credentials, String name) {
     this.contract = contract;
@@ -25,25 +24,25 @@ public class Account {
     update();
   }
 
-  public BigInteger getBalance() {
+  public Wad18 getBalance() {
     if (balance.compareTo(BigInteger.ZERO) != 0)
-      logger.trace("{} BALANCE {} {}", name, getFullPrecision(balance), name);
+      logger.trace("{} BALANCE {} {}", name, balance, name);
     return balance;
   }
 
   public void update() {
-    BigInteger oldBalance = balance;
+    Wad18 oldBalance = balance;
     try {
-      balance = contract.balanceOf(credentials.getAddress()).send();
+      balance = new Wad18(contract.balanceOf(credentials.getAddress()).send());
     } catch (Exception e) {
       logger.error(EXCEPTION, e);
-      balance = BigInteger.ZERO;
+      balance = new Wad18();
     }
     if (oldBalance != null && oldBalance.compareTo(balance) != 0) {
-      logger.trace("OLD BALANCE {} {}", getFullPrecision(oldBalance), name);
-      logger.trace("UPDATED BALANCE {} {}", getFullPrecision(balance), name);
+      logger.trace("OLD BALANCE {} {}", oldBalance, name);
+      logger.trace("UPDATED BALANCE {} {}", balance, name);
     } else if (oldBalance == null) {
-      logger.trace("{} BALANCE {} {}", name, getFullPrecision(balance), name);
+      logger.trace("{} BALANCE {} {}", name, balance, name);
     }
   }
 }

@@ -2,6 +2,7 @@ package de.fs92.defi.gasprovider;
 
 import de.fs92.defi.compounddai.CompoundDaiContract;
 import de.fs92.defi.dai.DaiContract;
+import de.fs92.defi.numberutil.Wad18;
 import de.fs92.defi.oasis.OasisContract;
 import de.fs92.defi.uniswap.UniswapContract;
 import de.fs92.defi.weth.WethContract;
@@ -13,30 +14,29 @@ import org.web3j.utils.Convert;
 
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
-import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 
-import static de.fs92.defi.util.NumberUtil.*;
+import static de.fs92.defi.numberutil.NumberUtil.getMachineReadable;
 
 public class GasProvider implements ContractGasProvider {
   static final String GWEI = " GWEI";
   private static final String GAS_PRICE_EXCEPTION = "GasPriceException";
   private static final org.slf4j.Logger logger =
-      LoggerFactory.getLogger(MethodHandles.lookup().lookupClass().getSimpleName());
-  final BigInteger minimumGasPrice;
-  final BigInteger maximumGasPrice;
+          LoggerFactory.getLogger(MethodHandles.lookup().lookupClass().getSimpleName());
+  final Wad18 minimumGasPrice;
+  final Wad18 maximumGasPrice;
   final Web3j web3j;
-  BigInteger gasPrice;
+  Wad18 gasPrice;
   private List<Long> failedTransactionsWithinTheLastTwelveHoursForGasPriceArrayList =
-      new ArrayList<>();
+          new ArrayList<>();
 
-  public GasProvider(Web3j web3j, BigInteger minimumGasPrice, BigInteger maximumGasPrice) {
+  public GasProvider(Web3j web3j, Wad18 minimumGasPrice, Wad18 maximumGasPrice) {
     this.web3j = web3j;
     this.minimumGasPrice = minimumGasPrice;
     this.maximumGasPrice = maximumGasPrice;
-    this.gasPrice = BigInteger.valueOf(1_000000000);
+    this.gasPrice = new Wad18(BigInteger.valueOf(1_000000000));
   }
 
   public void updateFailedTransactions(List<Long> list) {
@@ -75,30 +75,30 @@ public class GasProvider implements ContractGasProvider {
 
   @Override
   public BigInteger getGasPrice(String contractFunc) {
-    return gasPrice;
+    return gasPrice.toBigInteger();
   }
 
-  public BigInteger updateFastGasPrice(BigInteger medianEthereumPrice, BigInteger potentialProfit) {
-    BigInteger fastGasPrice = minimumGasPrice;
+  public Wad18 updateFastGasPrice(Wad18 medianEthereumPrice, Wad18 potentialProfit) {
+    Wad18 fastGasPrice = minimumGasPrice;
     try {
-      BigInteger etherchainResult = Etherchain.getFastestGasPrice();
+      Wad18 etherchainResult = Etherchain.getFastestGasPrice();
       fastGasPrice = fastGasPrice.max(etherchainResult);
     } catch (GasPriceException e) {
       logger.error(GAS_PRICE_EXCEPTION, e);
     }
     try {
-      BigInteger ethGasStationResult = ETHGasStation.getFastestGasPrice();
+      Wad18 ethGasStationResult = ETHGasStation.getFastestGasPrice();
       fastGasPrice = fastGasPrice.max(ethGasStationResult);
     } catch (GasPriceException e) {
       logger.error(GAS_PRICE_EXCEPTION, e);
     }
     try {
       double percentageOfProfitAsFee =
-          getPercentageOfProfitAsFee(
-              failedTransactionsWithinTheLastTwelveHoursForGasPriceArrayList.size());
-      BigInteger gasPriceBasedOnProfit =
-          calculateGasPriceAsAPercentageOfProfit(
-              medianEthereumPrice, potentialProfit, 300000.0, percentageOfProfitAsFee);
+              getPercentageOfProfitAsFee(
+                      failedTransactionsWithinTheLastTwelveHoursForGasPriceArrayList.size());
+      Wad18 gasPriceBasedOnProfit =
+              calculateGasPriceAsAPercentageOfProfit(
+                      medianEthereumPrice, potentialProfit, 300000.0, percentageOfProfitAsFee);
       // instead of fixed
       fastGasPrice = fastGasPrice.max(gasPriceBasedOnProfit);
     } catch (GasPriceException e) {
@@ -109,20 +109,20 @@ public class GasProvider implements ContractGasProvider {
     return gasPrice;
   }
 
-  public BigInteger updateSlowGasPrice() {
-    BigInteger slowGasPrice = maximumGasPrice;
+  public Wad18 updateSlowGasPrice() {
+    Wad18 slowGasPrice = maximumGasPrice;
     try {
-      BigInteger ethGasStationResult = ETHGasStation.getSafeLowGasPrice();
+      Wad18 ethGasStationResult = ETHGasStation.getSafeLowGasPrice();
       slowGasPrice = slowGasPrice.min(ethGasStationResult);
     } catch (GasPriceException e) {
       logger.error(GAS_PRICE_EXCEPTION, e);
     }
     try {
-      BigInteger web3jResult = web3j.ethGasPrice().send().getGasPrice();
+      Wad18 web3jResult = new Wad18(web3j.ethGasPrice().send().getGasPrice());
       logger.trace(
-          "WEB3J SUGGESTS GP {}{}",
-          Convert.fromWei(web3jResult.toString(), Convert.Unit.GWEI),
-          GWEI);
+              "WEB3J SUGGESTS GP {}{}",
+              Convert.fromWei(web3jResult.toString(), Convert.Unit.GWEI),
+              GWEI);
       slowGasPrice = slowGasPrice.min(web3jResult);
     } catch (IOException e) {
       logger.error("IOException", e);
@@ -135,57 +135,52 @@ public class GasProvider implements ContractGasProvider {
   public double getPercentageOfProfitAsFee(
       int failedTransactionsWithinTheLastTwelveHoursForGasPriceArrayListSize) {
     double percentageOfProfitAsFee =
-        Math.min(
-            0.35,
-            ((double) failedTransactionsWithinTheLastTwelveHoursForGasPriceArrayListSize * 5.0
-                    + 10.0)
-                / 100.0);
+            Math.min(
+                    0.35,
+                    ((double) failedTransactionsWithinTheLastTwelveHoursForGasPriceArrayListSize * 5.0
+                            + 10.0)
+                            / 100.0);
     logger.trace("GP PERCENTAGE OF PROFIT {}", percentageOfProfitAsFee);
 
     return percentageOfProfitAsFee;
   }
 
-  BigInteger calculateGasPriceAsAPercentageOfProfit(
-      @NotNull BigInteger medianEthereumPrice,
-      BigInteger potentialProfit,
-      double gasLimit,
-      double percentageOfProfitAsFee)
-      throws GasPriceException {
+  Wad18 calculateGasPriceAsAPercentageOfProfit(
+          @NotNull Wad18 medianEthereumPrice,
+          Wad18 potentialProfit,
+          double gasLimit,
+          double percentageOfProfitAsFee)
+          throws GasPriceException {
     if (medianEthereumPrice.compareTo(BigInteger.ZERO) == 0
-        || potentialProfit.compareTo(BigInteger.ZERO) == 0
-        || gasLimit == 0.0)
+            || potentialProfit.compareTo(BigInteger.ZERO) == 0
+            || gasLimit == 0.0)
       throw new GasPriceException("calculateGasPriceAsAPercentageOfProfit Exception");
+    // TODO: debug this method call
+    Wad18 feeInEth =
+            potentialProfit
+                    .multiply(new Wad18(getMachineReadable(percentageOfProfitAsFee)))
+                    .divide(medianEthereumPrice); // 0.049307620043223397 0.04930762004
+    logger.trace("EST. TRANSACTION FEE {}{}", feeInEth.multiply(medianEthereumPrice), " DAI");
 
-    BigInteger feeInEth =
-        divide(
-            new BigDecimal(potentialProfit)
-                .multiply(BigDecimal.valueOf(percentageOfProfitAsFee))
-                .toBigInteger(), // TODO: debug this method call
-            medianEthereumPrice); // 0.049307620043223397 0.04930762004
+    Wad18 gasPriceBasedOnProfit = feeInEth.divide(new Wad18(getMachineReadable(gasLimit)));
     logger.trace(
-        "EST. TRANSACTION FEE {}{}",
-        getHumanReadable(multiply(feeInEth, medianEthereumPrice)),
-        " DAI");
-
-    BigInteger gasPriceBasedOnProfit = divide(feeInEth, getMachineReadable(gasLimit));
-    logger.trace(
-        "PROFIT SUGGESTS GP {}{}",
-        Convert.fromWei(gasPriceBasedOnProfit.toString(), Convert.Unit.GWEI),
-        GWEI);
+            "PROFIT SUGGESTS GP {}{}",
+            Convert.fromWei(gasPriceBasedOnProfit.toBigInteger().toString(), Convert.Unit.GWEI),
+            GWEI);
 
     return gasPriceBasedOnProfit;
   }
 
   /** @deprecated in the interface       */
   @Override
-  @Deprecated
+  @Deprecated(since = "0.0.1", forRemoval = false)
   public BigInteger getGasPrice() {
     return null;
   }
 
   /** @deprecated in the interface       */
   @Override
-  @Deprecated
+  @Deprecated(since = "0.0.1", forRemoval = false)
   public BigInteger getGasLimit() {
     return null;
   }

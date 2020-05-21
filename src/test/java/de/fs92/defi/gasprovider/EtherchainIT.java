@@ -1,5 +1,6 @@
 package de.fs92.defi.gasprovider;
 
+import de.fs92.defi.numberutil.Wad18;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigInteger;
@@ -12,23 +13,23 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class EtherchainIT {
   private static final String TOO_HIGH = "Error, value is too high";
   private static final String TOO_LOW = "Error, value is too low";
-  private static final BigInteger MINIMUM_GAS_PRICE = BigInteger.valueOf(1_000000000);
-  private static final BigInteger MAXIMUM_GAS_PRICE = BigInteger.valueOf(100_000000000L);
+  private static final Wad18 MINIMUM_GAS_PRICE = new Wad18(1_000000000);
+  private static final Wad18 MAXIMUM_GAS_PRICE = new Wad18(100_000000000L);
 
   @Test
   public void getFastestGasPrice_currentGasPrice_GasPriceWithinBoundaries()
-      throws GasPriceException {
-    BigInteger result = Etherchain.getFastestGasPrice();
+          throws GasPriceException {
+    Wad18 result = Etherchain.getFastestGasPrice();
     assertTrue(MINIMUM_GAS_PRICE.compareTo(result) < 0, TOO_LOW);
     assertTrue(MAXIMUM_GAS_PRICE.compareTo(result) > 0, TOO_HIGH);
   }
 
-  @Test
+  @Test // todo: this is a bad test
   public void getFastestGasPrice_currentGasPriceDifference_GasPriceDifferenceIsReasonable()
       throws GasPriceException {
-    BigInteger etherchainResult = Etherchain.getFastestGasPrice();
-    BigInteger ethGasStationResult = ETHGasStation.getFastestGasPrice();
-    BigInteger difference = ethGasStationResult.subtract(etherchainResult);
-    assertThat(difference, is(lessThan(BigInteger.valueOf(10_000000000L))));
+    Wad18 etherchainResult = Etherchain.getFastestGasPrice();
+    Wad18 ethGasStationResult = ETHGasStation.getFastestGasPrice();
+    Wad18 difference = ethGasStationResult.subtract(etherchainResult);
+    assertThat(difference.toBigInteger(), is(lessThan(BigInteger.valueOf(20_000000000L))));
   }
 }

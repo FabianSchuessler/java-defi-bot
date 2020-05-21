@@ -4,6 +4,7 @@ import de.fs92.defi.compounddai.CompoundDai;
 import de.fs92.defi.contractneedsprovider.*;
 import de.fs92.defi.dai.Dai;
 import de.fs92.defi.gasprovider.GasProvider;
+import de.fs92.defi.numberutil.Wad18;
 import de.fs92.defi.util.Balances;
 import de.fs92.defi.util.Ethereum;
 import de.fs92.defi.util.JavaProperties;
@@ -14,7 +15,6 @@ import org.web3j.crypto.Credentials;
 import org.web3j.protocol.Web3j;
 
 import java.io.IOException;
-import java.math.BigInteger;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -58,8 +58,8 @@ public class UniswapIT {
 
     Web3j web3j = new Web3jProvider(infuraProjectId).web3j;
     GasProvider gasProvider =
-        new GasProvider(
-            web3j, BigInteger.valueOf(1_000000000), BigInteger.valueOf(1000_000000000L));
+            new GasProvider(
+                    web3j, new Wad18(1_000000000), new Wad18(1000_000000000L));
     Credentials credentials = new Wallet(password, wallet).getCredentials();
     CircuitBreaker circuitBreaker = new CircuitBreaker();
     contractNeedsProvider =
@@ -84,22 +84,22 @@ public class UniswapIT {
 
   @Test
   public void getProfitableBuyDaiOffer_someRealNumbers_returnExpectedCalculation() {
-    BigInteger buyableDaiAmount =
-        new BigInteger("4533813969247998520957"); // 4533.813969247998520957
-    BigInteger medianEthereumPrice =
-        new BigInteger("231690000000000000000"); // 231.690000000000000000
-    BigInteger ethToSell = new BigInteger("19439031735500000000"); // 19.439031735500000000
+    Wad18 buyableDaiAmount =
+            new Wad18("4533813969247998520957"); // 4533.813969247998520957
+    Wad18 medianEthereumPrice =
+            new Wad18("231690000000000000000"); // 231.690000000000000000
+    Wad18 ethToSell = new Wad18("19439031735500000000"); // 19.439031735500000000
     UniswapOffer offer =
-        uniswap.getProfitableBuyDaiOffer(
-            buyableDaiAmount, ethToSell, balances, medianEthereumPrice, 0.35);
-    assertEquals(new BigInteger("19490059192502288879"), offer.profit);
+            uniswap.getProfitableBuyDaiOffer(
+                    buyableDaiAmount, ethToSell, balances, medianEthereumPrice, 0.35);
+    assertEquals(new Wad18("19490059192502288879"), offer.profit);
   }
 
   @Test
   public void getBuyDaiParameters_buyableAmountIsZero_Null() throws Exception {
-    BigInteger medianEthereumPrice = new BigInteger("231690000000000000000");
+    Wad18 medianEthereumPrice = new Wad18("231690000000000000000");
     EthToTokenSwapInput ethToTokenSwapInput =
-        uniswap.getBuyDaiParameters(balances, medianEthereumPrice);
+            uniswap.getBuyDaiParameters(balances, medianEthereumPrice);
     assertNull(ethToTokenSwapInput);
   }
 
@@ -107,18 +107,18 @@ public class UniswapIT {
   public void
       getBuyDaiParameters_buyableAmountIsBiggerThanZero_allEthToTokenSwapInputAttributesNonZero()
           throws Exception {
-    BigInteger medianEthereumPrice = new BigInteger("231690000000000000000");
+    Wad18 medianEthereumPrice = new Wad18("231690000000000000000");
     EthToTokenSwapInput ethToTokenSwapInput =
-        uniswap.getBuyDaiParameters(balances, medianEthereumPrice);
+            uniswap.getBuyDaiParameters(balances, medianEthereumPrice);
     assertNull(ethToTokenSwapInput);
   }
 
   @Test
   public void getSellDaiParameters_buyableAmountIsZero_Null() throws IOException {
     // TODO: test should not depend on real balances
-    BigInteger medianEthereumPrice = new BigInteger("231690000000000000000");
+    Wad18 medianEthereumPrice = new Wad18("231690000000000000000");
     TokenToEthSwapInput tokenToEthSwapInput =
-        uniswap.getSellDaiParameters(balances, medianEthereumPrice);
+            uniswap.getSellDaiParameters(balances, medianEthereumPrice);
     assertNull(tokenToEthSwapInput);
   }
 

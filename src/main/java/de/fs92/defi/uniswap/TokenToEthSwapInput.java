@@ -1,15 +1,14 @@
 package de.fs92.defi.uniswap;
 
-import java.math.BigInteger;
+import de.fs92.defi.numberutil.Wad18;
 
 public class TokenToEthSwapInput {
-  public final BigInteger minEth;
-  public final BigInteger deadline;
-  public final BigInteger tokenSold;
-  public final BigInteger potentialProfit;
+  public final Wad18 minEth;
+  public final Wad18 deadline;
+  public final Wad18 tokenSold;
+  public final Wad18 potentialProfit;
 
-  public TokenToEthSwapInput(
-      BigInteger minEth, BigInteger deadline, BigInteger tokenSold, BigInteger potentialProfit) {
+  public TokenToEthSwapInput(Wad18 minEth, Wad18 deadline, Wad18 tokenSold, Wad18 potentialProfit) {
     this.minEth = minEth;
     this.deadline = deadline;
     this.tokenSold = tokenSold;

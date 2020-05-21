@@ -6,6 +6,7 @@ import de.fs92.defi.dai.Dai;
 import de.fs92.defi.flipper.Flipper;
 import de.fs92.defi.gasprovider.GasProvider;
 import de.fs92.defi.medianizer.Medianizer;
+import de.fs92.defi.numberutil.Wad18;
 import de.fs92.defi.oasis.Oasis;
 import de.fs92.defi.uniswap.Uniswap;
 import de.fs92.defi.util.Balances;
@@ -26,6 +27,7 @@ public class Main {
       LoggerFactory.getLogger(MethodHandles.lookup().lookupClass().getSimpleName());
   private static final boolean IS_DEVELOPMENT_ENVIRONMENT = true;
 
+  // todo: fix log output, then fix readme, then add gif here
   public static void main(String[] args) {
     logger.trace("NEW START");
     JavaProperties javaProperties = new JavaProperties(IS_DEVELOPMENT_ENVIRONMENT);
@@ -34,45 +36,45 @@ public class Main {
     String infuraProjectId = javaProperties.getValue("infuraProjectId");
     String wallet = javaProperties.getValue("wallet");
     boolean playSoundOnTransaction =
-        Boolean.parseBoolean(javaProperties.getValue("playSoundOnTransaction"));
+            Boolean.parseBoolean(javaProperties.getValue("playSoundOnTransaction"));
     boolean transactionsRequireConfirmation =
-        Boolean.parseBoolean(javaProperties.getValue("transactionsRequireConfirmation"));
+            Boolean.parseBoolean(javaProperties.getValue("transactionsRequireConfirmation"));
 
     CircuitBreaker circuitBreaker = new CircuitBreaker();
     Web3j web3j = new Web3jProvider(infuraProjectId).web3j;
     Credentials credentials = new Wallet(password, wallet).getCredentials();
     GasProvider gasProvider =
-        new GasProvider(
-            web3j,
-            BigInteger.valueOf(Long.parseLong(javaProperties.getValue("minimumGasPrice"))),
-            BigInteger.valueOf(Long.parseLong(javaProperties.getValue("maximumGasPrice"))));
+            new GasProvider(
+                    web3j,
+                    new Wad18(BigInteger.valueOf(Long.parseLong(javaProperties.getValue("minimumGasPrice")))),
+                    new Wad18(BigInteger.valueOf(Long.parseLong(javaProperties.getValue("maximumGasPrice")))));
     Permissions permissions =
-        new Permissions(transactionsRequireConfirmation, playSoundOnTransaction);
+            new Permissions(transactionsRequireConfirmation, playSoundOnTransaction);
     ContractNeedsProvider contractNeedsProvider =
-        new ContractNeedsProvider(web3j, credentials, gasProvider, permissions, circuitBreaker);
+            new ContractNeedsProvider(web3j, credentials, gasProvider, permissions, circuitBreaker);
 
     Medianizer.setMedianizerContract(contractNeedsProvider);
     Dai dai =
-        new Dai(
-            contractNeedsProvider,
-            Double.parseDouble(javaProperties.getValue("minimumDaiNecessaryForSaleAndLending")));
+            new Dai(
+                    contractNeedsProvider,
+                    Double.parseDouble(javaProperties.getValue("minimumDaiNecessaryForSaleAndLending")));
     Weth weth = new Weth(contractNeedsProvider);
     CompoundDai compoundDai = new CompoundDai(contractNeedsProvider);
     Ethereum ethereum =
-        new Ethereum(
-            contractNeedsProvider,
-            Double.parseDouble(javaProperties.getValue("minimumEthereumReserveUpperLimit")),
-            Double.parseDouble(javaProperties.getValue("minimumEthereumReserveLowerLimit")),
-            Double.parseDouble(javaProperties.getValue("minimumEthereumNecessaryForSale")));
+            new Ethereum(
+                    contractNeedsProvider,
+                    Double.parseDouble(javaProperties.getValue("minimumEthereumReserveUpperLimit")),
+                    Double.parseDouble(javaProperties.getValue("minimumEthereumReserveLowerLimit")),
+                    Double.parseDouble(javaProperties.getValue("minimumEthereumNecessaryForSale")));
 
     Balances balances = new Balances(dai, weth, compoundDai, ethereum);
 
     Oasis oasis = new Oasis(contractNeedsProvider, compoundDai, weth);
     Uniswap uniswap = new Uniswap(contractNeedsProvider, javaProperties, compoundDai, weth);
     Flipper flipper =
-        new Flipper(
-            contractNeedsProvider,
-            Double.parseDouble(javaProperties.getValue("minimumFlipAuctionProfit")));
+            new Flipper(
+                    contractNeedsProvider,
+                    Double.parseDouble(javaProperties.getValue("minimumFlipAuctionProfit")));
 
     dai.getApproval().check(uniswap);
     dai.getApproval().check(oasis);
@@ -80,15 +82,20 @@ public class Main {
     weth.getApproval().check(oasis);
 
     while (circuitBreaker.getContinueRunning()) {
-      balances.updateBalance(60);
-      if (circuitBreaker.isAllowingOperations(3)) {
-        balances.checkEnoughEthereumForGas(circuitBreaker, ethereum);
-        oasis.checkIfSellDaiIsProfitableThenDoIt(balances);
-        oasis.checkIfBuyDaiIsProfitableThenDoIt(balances);
-        uniswap.checkIfSellDaiIsProfitableThenDoIt(balances);
-        uniswap.checkIfBuyDaiIsProfitableThenDoIt(balances);
-        compoundDai.lendDai(balances);
-        flipper.checkIfThereAreProfitableFlipAuctions(balances);
+      try {
+        balances.updateBalance(60);
+        if (circuitBreaker.isAllowingOperations(3)) {
+          balances.checkEnoughEthereumForGas(circuitBreaker, ethereum);
+          oasis.checkIfSellDaiIsProfitableThenDoIt(balances);
+          oasis.checkIfBuyDaiIsProfitableThenDoIt(balances);
+          uniswap.checkIfSellDaiIsProfitableThenDoIt(balances);
+          uniswap.checkIfBuyDaiIsProfitableThenDoIt(balances);
+          compoundDai.lendDai(balances);
+          flipper.checkIfThereAreProfitableFlipAuctions(balances);
+        }
+      } catch (Exception e) {
+        logger.error("Exception", e);
+        circuitBreaker.stopRunning();
       }
 
       List<Long> failedTransactions = circuitBreaker.getFailedTransactions();

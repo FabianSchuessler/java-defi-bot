@@ -2,15 +2,13 @@ package de.fs92.defi.compoundeth;
 
 import de.fs92.defi.contractneedsprovider.ContractNeedsProvider;
 import de.fs92.defi.contractneedsprovider.Permissions;
+import de.fs92.defi.numberutil.Wad18;
 import de.fs92.defi.util.Balances;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.LoggerFactory;
 
 import java.lang.invoke.MethodHandles;
 import java.math.BigInteger;
-
-import static de.fs92.defi.util.NumberUtil.getFullPrecision;
-import static de.fs92.defi.util.NumberUtil.multiply;
 
 /**
  * @deprecated This class is currently unused. It can be used to borrow DAI against WETH, but
@@ -31,48 +29,48 @@ public class CompoundEth {
     this.permissions = contractNeedsProvider.getPermissions();
   }
 
-  static BigInteger getExchangeRate() {
+  static Wad18 getExchangeRate() {
     try {
-      return contract.exchangeRateStored().send();
+      return new Wad18(contract.exchangeRateStored().send());
     } catch (Exception e) {
       logger.error(EXCEPTION, e);
     }
-    return BigInteger.ZERO;
+    return Wad18.ZERO;
   }
 
-  void borrow(BigInteger borrowAmount) {
-    if (permissions.check("COMPOUND ETH BORROW " + getFullPrecision(borrowAmount))) {
+  void borrow(Wad18 borrowAmount) {
+    if (permissions.check("COMPOUND ETH BORROW " + borrowAmount)) {
       try {
-        contract.borrow(borrowAmount).send();
-        logger.warn("BORROW ETH {}", getFullPrecision(borrowAmount));
+        contract.borrow(borrowAmount.toBigInteger()).send();
+        logger.warn("BORROW ETH {}", borrowAmount);
       } catch (Exception e) {
         logger.error(EXCEPTION, e);
       }
     }
   }
 
-  void repayBorrow(BigInteger repayAmount) {
-    if (permissions.check("COMPOUND ETH REPAY " + getFullPrecision(repayAmount))) {
+  void repayBorrow(Wad18 repayAmount) {
+    if (permissions.check("COMPOUND ETH REPAY " + repayAmount)) {
       try {
-        contract.repayBorrow(repayAmount).send();
-        logger.warn("REPAY ETH {}", getFullPrecision(repayAmount));
+        contract.repayBorrow(repayAmount.toBigInteger()).send();
+        logger.warn("REPAY ETH {}", repayAmount);
       } catch (Exception e) {
         logger.error(EXCEPTION, e);
       }
     }
   }
 
-  BigInteger getCTokenBalance(String ethereumAddress) {
+  Wad18 getCTokenBalance(String ethereumAddress) {
     try {
-      return contract.balanceOf(ethereumAddress).send();
+      return new Wad18(contract.balanceOf(ethereumAddress).send());
     } catch (Exception e) {
       logger.error(EXCEPTION, e);
     }
-    return BigInteger.ZERO;
+    return Wad18.ZERO;
   }
 
-  BigInteger getBalance(String ethereumAddress) {
-    return multiply(getExchangeRate(), getCTokenBalance(ethereumAddress));
+  Wad18 getBalance(String ethereumAddress) {
+    return getExchangeRate().multiply(getCTokenBalance(ethereumAddress));
   }
 
   // borrow dai against weth and sell it, if dai price is high

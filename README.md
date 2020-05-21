@@ -11,7 +11,14 @@ java-defi-bot is an application that aims to do beneficial actions on the Ethere
     $ echo $JAVA_HOME
     C:\Program Files\Java\jdk-14.0.1
 ```
-- [Infura Project ID](https://infura.io/) (Alternatives would be an own Ethereum Node or Quiknode)
+- Connection to Ethereum Network
+    - [Infura Project ID](https://infura.io/)
+    
+    Alternatives:
+    - [own Ethereum Node](https://docs.ethhub.io/using-ethereum/running-an-ethereum-node/) 
+    - [Quiknode](https://www.quiknode.io/) 
+    - AWS
+    
 - Ethereum Wallet as keystore file including password from services such as [MyEtherWallet](https://www.myetherwallet.com/)
 - [Maven](https://maven.apache.org/download.cgi)
 ```
@@ -47,7 +54,7 @@ testProperty=true
 __Make sure to never commit your ```config.properties``` file!__
 
 - Make git stop tracking your config file ```git update-index --skip-worktree ./config.properties```
-- For adding changes to config file afterwards ```git update-index --no-skip-worktree ./config.properties```
+- Make git start tracking your config file again ```git update-index --no-skip-worktree ./config.properties```
 
 ### Compile
 
@@ -62,7 +69,7 @@ __Make sure to never commit your ```config.properties``` file!__
 ### Run 
 
 - Either just run it in the IDE of your choice
-- or make sure the compiled application has access to the ```config.properties``` file```java -jar java-defi-bot-0.1-jar-with-dependencies.jar```
+- or execute the compiled application ```java -jar java-defi-bot-0.1-jar-with-dependencies.jar``` and make sure it has access to the ```config.properties``` file
 
 ### Logs
 
@@ -75,7 +82,7 @@ You will find the logs in ```./logs```.
 - sells DAI, if DAI > $1.00 on Uniswap ```uniswap.checkIfSellDaiIsProfitableThenDoIt(balances);```
 - buys DAI, if DAI < $1.00 on Uniswap ```uniswap.checkIfBuyDaiIsProfitableThenDoIt(balances);```
 - earns interest on Compound, if there is no market action ```compoundDai.lendDai(balances);```
-- listens for flip auctions ```flipper.checkIfThereAreProfitableFlipAuctions(balances);```
+- bids on flip auctions ```flipper.checkIfThereAreProfitableFlipAuctions(balances);```
 
 
 ## Contribute

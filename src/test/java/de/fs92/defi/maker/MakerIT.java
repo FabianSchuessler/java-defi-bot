@@ -2,20 +2,19 @@ package de.fs92.defi.maker;
 
 import de.fs92.defi.contractneedsprovider.*;
 import de.fs92.defi.gasprovider.GasProvider;
+import de.fs92.defi.numberutil.Wad18;
 import de.fs92.defi.util.JavaProperties;
 import org.junit.jupiter.api.BeforeEach;
 import org.web3j.crypto.Credentials;
 import org.web3j.protocol.Web3j;
-
-import java.math.BigInteger;
 
 public class MakerIT {
   private static final String TRAVIS_INFURA_PROJECT_ID = "TRAVIS_INFURA_PROJECT_ID";
   private static final String TRAVIS_WALLET = "TRAVIS_WALLET";
   private static final String TRAVIS_PASSWORD = "TRAVIS_PASSWORD";
 
-  private static final BigInteger minimumGasPrice = BigInteger.valueOf(1_000000000);
-  private static final BigInteger maximumGasPrice = BigInteger.valueOf(200_000000000L);
+  private static final Wad18 minimumGasPrice = new Wad18(1_000000000);
+  private static final Wad18 maximumGasPrice = new Wad18(200_000000000L);
 
   Maker maker;
 

@@ -13,8 +13,8 @@ import org.web3j.protocol.core.methods.response.TransactionReceipt;
 import java.lang.invoke.MethodHandles;
 import java.math.BigInteger;
 
-import static de.fs92.defi.util.NumberUtil.UINT_MAX;
-import static de.fs92.defi.util.NumberUtil.getMachineReadable;
+import static de.fs92.defi.numberutil.NumberUtil.UINT_MAX;
+import static de.fs92.defi.numberutil.NumberUtil.getMachineReadable;
 
 public class Dai {
   public static final String ADDRESS = "0x6b175474e89094c44da98b954eedeac495271d0f";
@@ -41,7 +41,7 @@ public class Dai {
   }
 
   /** @deprecated DO NOT USE CDP ADDRESS THIS IS WRONG ADDRESS */
-  @Deprecated
+  @Deprecated(since = "0.0.1", forRemoval = false)
   private void cdpUnlockDai() {
     try {
       TransactionReceipt transferReceipt = daiContract.approve(CDP_ADDRESS, UINT_MAX).send();
