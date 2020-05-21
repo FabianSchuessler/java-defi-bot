@@ -198,7 +198,8 @@ class AuctionTest {
                 new BigInteger("1588266341"),
                 "0x42A142cc082255CaEE58E3f30dc6d4Fc3056b6A7",
                 "0xA950524441892A31ebddF91d3cEEFa04Bf454466",
-                new BigInteger("37299123089429162514476831876850683361693243730"));
+                new BigInteger("37299123089429162514000000000000000000000000000"));
+    // INFO: the actual value is 37.29912308942916251456 but due to 18 decimals the 56 gets lost.
     Auction auction = new Auction(BigInteger.ONE, auctionTuple);
     assertTrue(auction.isDent(new Wad18(1030000000000000000L)));
   }
