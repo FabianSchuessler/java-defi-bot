@@ -8,37 +8,37 @@ import java.math.BigInteger;
 import java.math.RoundingMode;
 
 public class NumberWrapper implements Comparable<NumberWrapper> {
-    final BigDecimal bigDecimal;
-    final int decimals;
+    final BigDecimal BIG_DECIMAL;
+    final int DECIMALS;
 
-    public NumberWrapper(String number, int decimals) {
-        this.bigDecimal = new BigDecimal(number);
-        this.decimals = decimals;
+    public NumberWrapper(String number, int DECIMALS) {
+        this.BIG_DECIMAL = new BigDecimal(number);
+        this.DECIMALS = DECIMALS;
     }
 
-    public NumberWrapper(int number, int decimals) {
-        this.bigDecimal = BigDecimal.valueOf(number);
-        this.decimals = decimals;
+    public NumberWrapper(int number, int DECIMALS) {
+        this.BIG_DECIMAL = BigDecimal.valueOf(number);
+        this.DECIMALS = DECIMALS;
     }
 
-    public NumberWrapper(long number, int decimals) {
-        this.bigDecimal = BigDecimal.valueOf(number);
-        this.decimals = decimals;
+    public NumberWrapper(long number, int DECIMALS) {
+        this.BIG_DECIMAL = BigDecimal.valueOf(number);
+        this.DECIMALS = DECIMALS;
     }
 
-    public NumberWrapper(int decimals) {
-        this.bigDecimal = new BigDecimal(BigInteger.ZERO);
-        this.decimals = decimals;
+    public NumberWrapper(int DECIMALS) {
+        this.BIG_DECIMAL = new BigDecimal(BigInteger.ZERO);
+        this.DECIMALS = DECIMALS;
     }
 
-    public NumberWrapper(BigInteger bigInteger, int decimals) {
-        this.bigDecimal = new BigDecimal(bigInteger);
-        this.decimals = decimals;
+    public NumberWrapper(BigInteger bigInteger, int DECIMALS) {
+        this.BIG_DECIMAL = new BigDecimal(bigInteger);
+        this.DECIMALS = DECIMALS;
     }
 
-    public NumberWrapper(BigDecimal bigDecimal, int decimals) {
-        this.bigDecimal = bigDecimal;
-        this.decimals = decimals;
+    public NumberWrapper(BigDecimal BIG_DECIMAL, int DECIMALS) {
+        this.BIG_DECIMAL = BIG_DECIMAL;
+        this.DECIMALS = DECIMALS;
     }
 
     public NumberWrapper divide(@NotNull BigInteger divisorWrapper) {
@@ -50,40 +50,40 @@ public class NumberWrapper implements Comparable<NumberWrapper> {
         if (divisor.compareTo(BigDecimal.ZERO) == 0)
             throw new IllegalArgumentException("Argument 'divisor' is 0");
         return new NumberWrapper(
-                bigDecimal
-                        .multiply(BigDecimal.valueOf(Math.pow(10, decimals)))
+                BIG_DECIMAL
+                        .multiply(BigDecimal.valueOf(Math.pow(10, DECIMALS)))
                         .divide(divisor, 0, RoundingMode.DOWN)
                         .stripTrailingZeros(),
-                decimals);
+                DECIMALS);
     }
 
     public NumberWrapper multiply(@NotNull NumberWrapper multiplicand) {
         return new NumberWrapper(
-                bigDecimal
+                BIG_DECIMAL
                         .multiply(multiplicand.toBigDecimal())
-                        .divide(BigDecimal.valueOf(Math.pow(10, decimals)), RoundingMode.DOWN),
-                decimals);
+                        .divide(BigDecimal.valueOf(Math.pow(10, DECIMALS)), RoundingMode.DOWN),
+                DECIMALS);
     }
 
     public BigInteger toBigInteger() {
-        return bigDecimal.toBigInteger();
+        return BIG_DECIMAL.toBigInteger();
     }
 
     public BigDecimal toBigDecimal() {
-        return bigDecimal;
+        return BIG_DECIMAL;
     }
 
     @Override
     public String toString() {
-        if (decimals == 18) {
-            return Convert.fromWei(bigDecimal, Convert.Unit.ETHER)
-                    .setScale(decimals, RoundingMode.DOWN)
+        if (DECIMALS == 18) {
+            return Convert.fromWei(BIG_DECIMAL, Convert.Unit.ETHER)
+                    .setScale(DECIMALS, RoundingMode.DOWN)
                     .toPlainString();
-        } else if (decimals > 18) {
+        } else if (DECIMALS > 18) {
             return Convert.fromWei(
-                    bigDecimal.divide(BigDecimal.valueOf(Math.pow(10, decimals - 18)), RoundingMode.DOWN),
+                    BIG_DECIMAL.divide(BigDecimal.valueOf(Math.pow(10, DECIMALS - 18.0)), RoundingMode.DOWN),
                     Convert.Unit.ETHER)
-                    .setScale(decimals, RoundingMode.DOWN)
+                    .setScale(DECIMALS, RoundingMode.DOWN)
                     .toPlainString();
         }
         throw new IllegalArgumentException("todo"); //todo
@@ -91,49 +91,50 @@ public class NumberWrapper implements Comparable<NumberWrapper> {
 
     public String toString(int decimals) {
         // todo: only works for decimal == 18
-        return Convert.fromWei(bigDecimal, Convert.Unit.ETHER)
+        return Convert.fromWei(BIG_DECIMAL, Convert.Unit.ETHER)
                 .setScale(decimals, RoundingMode.DOWN)
                 .toPlainString();
     }
 
     public NumberWrapper add(@NotNull NumberWrapper augend) {
-        return new Wad18(bigDecimal.add(augend.toBigDecimal()));
+        return new Wad18(BIG_DECIMAL.add(augend.toBigDecimal()));
     }
 
     public NumberWrapper subtract(@NotNull NumberWrapper subtrahend) {
-        return new Wad18(bigDecimal.subtract(subtrahend.toBigDecimal()));
-    }
-
-    public int compareTo(BigInteger compareObject) {
-        return bigDecimal.toBigInteger().compareTo(compareObject);
+        return new Wad18(BIG_DECIMAL.subtract(subtrahend.toBigDecimal()));
     }
 
     @Override
     public int compareTo(@NotNull NumberWrapper compareObject) {
         // TODO: check if this can be better
-        BigDecimal bigDecimal1 = bigDecimal.multiply(BigDecimal.valueOf(Math.pow(10, compareObject.decimals)));
-        BigDecimal bigDecimal2 = compareObject.toBigDecimal().multiply(BigDecimal.valueOf(Math.pow(10, decimals)));
+        BigDecimal bigDecimal1 = BIG_DECIMAL.multiply(BigDecimal.valueOf(Math.pow(10, compareObject.DECIMALS)));
+        BigDecimal bigDecimal2 = compareObject.toBigDecimal().multiply(BigDecimal.valueOf(Math.pow(10, DECIMALS)));
         return bigDecimal1.compareTo(bigDecimal2);
+    }
+
+    @Override
+    public int hashCode() {
+        return BIG_DECIMAL.intValue(); // INFO: check if this is a good idea
     }
 
     @Override
     public boolean equals(Object compareObject) {
         if (compareObject instanceof NumberWrapper) {
             NumberWrapper numberWrapper = (NumberWrapper) compareObject;
-            return bigDecimal.compareTo(numberWrapper.toBigDecimal()) == 0;
+            return BIG_DECIMAL.compareTo(numberWrapper.toBigDecimal()) == 0;
         }
         return false;
     } // todo: hashcode, null?
 
     public NumberWrapper min(@NotNull NumberWrapper compareObject) {
-        return new NumberWrapper(bigDecimal.min(compareObject.toBigDecimal()), this.decimals);
+        return new NumberWrapper(BIG_DECIMAL.min(compareObject.toBigDecimal()), this.DECIMALS);
     }
 
     public NumberWrapper max(@NotNull NumberWrapper compareObject) {
-        return new NumberWrapper(bigDecimal.max(compareObject.toBigDecimal()), this.decimals);
+        return new NumberWrapper(BIG_DECIMAL.max(compareObject.toBigDecimal()), this.DECIMALS);
     }
 
     public long longValue() {
-        return bigDecimal.longValue();
+        return BIG_DECIMAL.longValue();
     }
 }

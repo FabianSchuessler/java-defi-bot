@@ -72,7 +72,7 @@ public class Medianizer {
   static Wad18 getMedian(Wad18[] array) throws MedianException {
     array =
             Arrays.stream(array)
-                    .filter(n -> n.toBigInteger().compareTo(BigInteger.ZERO) > 0)
+                    .filter(n -> n.compareTo(Wad18.ZERO) > 0)
                     .sorted()
                     .toArray(Wad18[]::new);
 

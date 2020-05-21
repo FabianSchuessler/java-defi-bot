@@ -19,22 +19,22 @@ import java.io.IOException;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
-public class UniswapIT {
+class UniswapIT {
   private static final String TRAVIS_INFURA_PROJECT_ID = "TRAVIS_INFURA_PROJECT_ID";
   private static final String TRAVIS_WALLET = "TRAVIS_WALLET";
   private static final String TRAVIS_PASSWORD = "TRAVIS_PASSWORD";
 
-  public Uniswap uniswap;
-  public Balances balances;
-  public ContractNeedsProvider contractNeedsProvider;
-  public JavaProperties javaProperties;
-  public Weth weth;
-  public Ethereum ethereum;
-  public CompoundDai compoundDai;
-  public Dai dai;
+  Uniswap uniswap;
+  Balances balances;
+  ContractNeedsProvider contractNeedsProvider;
+  JavaProperties javaProperties;
+  Weth weth;
+  Ethereum ethereum;
+  CompoundDai compoundDai;
+  Dai dai;
 
   @BeforeEach
-  public void setUp() {
+  void setUp() {
     javaProperties = new JavaProperties(true);
 
     String infuraProjectId;
@@ -83,7 +83,7 @@ public class UniswapIT {
   }
 
   @Test
-  public void getProfitableBuyDaiOffer_someRealNumbers_returnExpectedCalculation() {
+  void getProfitableBuyDaiOffer_someRealNumbers_returnExpectedCalculation() {
     Wad18 buyableDaiAmount =
             new Wad18("4533813969247998520957"); // 4533.813969247998520957
     Wad18 medianEthereumPrice =
@@ -96,7 +96,7 @@ public class UniswapIT {
   }
 
   @Test
-  public void getBuyDaiParameters_buyableAmountIsZero_Null() throws Exception {
+  void getBuyDaiParameters_buyableAmountIsZero_Null() throws Exception {
     Wad18 medianEthereumPrice = new Wad18("231690000000000000000");
     EthToTokenSwapInput ethToTokenSwapInput =
             uniswap.getBuyDaiParameters(balances, medianEthereumPrice);
@@ -104,7 +104,7 @@ public class UniswapIT {
   }
 
   @Test
-  public void
+  void
       getBuyDaiParameters_buyableAmountIsBiggerThanZero_allEthToTokenSwapInputAttributesNonZero()
           throws Exception {
     Wad18 medianEthereumPrice = new Wad18("231690000000000000000");
@@ -114,7 +114,7 @@ public class UniswapIT {
   }
 
   @Test
-  public void getSellDaiParameters_buyableAmountIsZero_Null() throws IOException {
+  void getSellDaiParameters_buyableAmountIsZero_Null() throws IOException {
     // TODO: test should not depend on real balances
     Wad18 medianEthereumPrice = new Wad18("231690000000000000000");
     TokenToEthSwapInput tokenToEthSwapInput =
@@ -125,24 +125,24 @@ public class UniswapIT {
   // TODO: use Mockito set eth and weth balances to non-zero and do the following tests
 
   @Test
-  public void
+  void
       getSellDaiParameters_buyableAmountIsBiggerThanZero_allTokenToEthSwapInputAttributesNonZero() {}
 
   @Test
-  public void getProfitableBuyDaiOffer_triggerException_uniswapOfferZeroZero() {}
+  void getProfitableBuyDaiOffer_triggerException_uniswapOfferZeroZero() {}
 
   @Test
-  public void getProfitableBuyDaiOffer_lowerThanMinimumProfit_uniswapOfferZeroNonZero() {}
+  void getProfitableBuyDaiOffer_lowerThanMinimumProfit_uniswapOfferZeroNonZero() {}
 
   @Test
-  public void getProfitableBuyDaiOffer_higherThanMinimumProfit_uniswapOfferNonZeroNonZero() {}
+  void getProfitableBuyDaiOffer_higherThanMinimumProfit_uniswapOfferNonZeroNonZero() {}
 
   @Test
-  public void getProfitableSellDaiOffer_triggerException_uniswapOfferZeroZero() {}
+  void getProfitableSellDaiOffer_triggerException_uniswapOfferZeroZero() {}
 
   @Test
-  public void getProfitableSellDaiOffer_lowerThanMinimumProfit_uniswapOfferZeroNonZero() {}
+  void getProfitableSellDaiOffer_lowerThanMinimumProfit_uniswapOfferZeroNonZero() {}
 
   @Test
-  public void getProfitableSellDaiOffer_higherThanMinimumProfit_uniswapOfferNonZeroNonZero() {}
+  void getProfitableSellDaiOffer_higherThanMinimumProfit_uniswapOfferNonZeroNonZero() {}
 }

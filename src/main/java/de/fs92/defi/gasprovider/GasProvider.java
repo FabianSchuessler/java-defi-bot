@@ -151,8 +151,8 @@ public class GasProvider implements ContractGasProvider {
           double gasLimit,
           double percentageOfProfitAsFee)
           throws GasPriceException {
-    if (medianEthereumPrice.compareTo(BigInteger.ZERO) == 0
-            || potentialProfit.compareTo(BigInteger.ZERO) == 0
+    if (medianEthereumPrice.compareTo(Wad18.ZERO) == 0
+            || potentialProfit.compareTo(Wad18.ZERO) == 0
             || gasLimit == 0.0)
       throw new GasPriceException("calculateGasPriceAsAPercentageOfProfit Exception");
     // TODO: debug this method call

@@ -131,7 +131,7 @@ public class Uniswap implements AddressMethod {
                     medianEthereumPrice,
                     gasProvider.getPercentageOfProfitAsFee(
                             gasProvider.getFailedTransactionsWithinTheLastTwelveHoursForGasPriceArrayList()));
-    if (offer.buyableAmount.compareTo(BigInteger.ZERO) != 0) {
+    if (offer.buyableAmount.compareTo(Wad18.ZERO) != 0) {
       return calculateBuyDaiParameters(medianEthereumPrice, offer, balances);
     }
     return null;
@@ -147,7 +147,7 @@ public class Uniswap implements AddressMethod {
                     medianEthereumPrice,
                     gasProvider.getPercentageOfProfitAsFee(
                             gasProvider.getFailedTransactionsWithinTheLastTwelveHoursForGasPriceArrayList()));
-    if (offer.buyableAmount.compareTo(BigInteger.ZERO) != 0) {
+    if (offer.buyableAmount.compareTo(Wad18.ZERO) != 0) {
       return calculateSellDaiParameters(medianEthereumPrice, daiToSell, offer);
     }
     return null;

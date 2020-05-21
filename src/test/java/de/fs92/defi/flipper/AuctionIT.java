@@ -27,18 +27,18 @@ class AuctionIT {
   private static final String TRAVIS_WALLET = "TRAVIS_WALLET";
   private static final String TRAVIS_PASSWORD = "TRAVIS_PASSWORD";
 
-  public Uniswap uniswap;
-  public Balances balances;
-  public ContractNeedsProvider contractNeedsProvider;
-  public JavaProperties javaProperties;
-  public Weth weth;
-  public Ethereum ethereum;
-  public CompoundDai compoundDai;
-  public Dai dai;
+  Uniswap uniswap;
+  Balances balances;
+  ContractNeedsProvider contractNeedsProvider;
+  JavaProperties javaProperties;
+  Weth weth;
+  Ethereum ethereum;
+  CompoundDai compoundDai;
+  Dai dai;
   Credentials credentials;
 
   @BeforeEach
-  public void setUp() {
+  void setUp() {
     javaProperties = new JavaProperties(true);
 
     String infuraProjectId;
@@ -87,7 +87,7 @@ class AuctionIT {
   }
 
   @Test
-  public void isAffordable_maxDaiOwnedBiggerThanAuctionPrice_true() {
+  void isAffordable_maxDaiOwnedBiggerThanAuctionPrice_true() {
     Tuple8<BigInteger, BigInteger, String, BigInteger, BigInteger, String, String, BigInteger>
             auctionTuple =
             new Tuple8<>(
@@ -105,7 +105,7 @@ class AuctionIT {
   }
 
   @Test
-  public void isAffordable_maxDaiOwnedEqualAuctionPrice_false() {
+  void isAffordable_maxDaiOwnedEqualAuctionPrice_false() {
     Tuple8<BigInteger, BigInteger, String, BigInteger, BigInteger, String, String, BigInteger>
             auctionTuple =
             new Tuple8<>(
@@ -123,7 +123,7 @@ class AuctionIT {
   }
 
   @Test
-  public void isAffordable_maxDaiOwnedSmallerThanAuctionPrice_false() {
+  void isAffordable_maxDaiOwnedSmallerThanAuctionPrice_false() {
     Tuple8<BigInteger, BigInteger, String, BigInteger, BigInteger, String, String, BigInteger>
             auctionTuple =
             new Tuple8<>(
@@ -141,7 +141,7 @@ class AuctionIT {
   }
 
   @Test
-  public void isAffordable_minimumBidMakesAuctionTooExpensive_false() {
+  void isAffordable_minimumBidMakesAuctionTooExpensive_false() {
     Tuple8<BigInteger, BigInteger, String, BigInteger, BigInteger, String, String, BigInteger>
             auctionTuple =
             new Tuple8<>(

@@ -31,7 +31,7 @@ public class ProfitCalculator {
                     .max(potentialProfitBeforeCosts.multiply(new Wad18(getMachineReadable(percentageOfProfitAsFee))));
     Wad18 potentialProfitAfterCosts = potentialProfitBeforeCosts.subtract(maxTransactionCosts);
 
-    if (potentialProfitAfterCosts.compareTo(BigInteger.ZERO) > 0) {
+    if (potentialProfitAfterCosts.compareTo(Wad18.ZERO) > 0) {
       logger.trace("POTENTIAL PROFIT +{}{}", potentialProfitAfterCosts.toString(2), " DAI");
     } else {
       logger.trace("POTENTIAL PROFIT {}{}", potentialProfitAfterCosts.toString(2), " DAI");

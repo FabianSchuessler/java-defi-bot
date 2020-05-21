@@ -46,7 +46,7 @@ public class Rad45 extends NumberWrapper {
         if (divisor.compareTo(BigDecimal.ZERO) == 0)
             throw new IllegalArgumentException("Argument 'divisor' is 0");
         return new Wad18(
-                bigDecimal
+                BIG_DECIMAL
                         .multiply(BigDecimal.valueOf(Math.pow(10, DECIMALS)))
                         .divide(divisor, 0, RoundingMode.DOWN)
                         .stripTrailingZeros());
@@ -54,32 +54,27 @@ public class Rad45 extends NumberWrapper {
 
     @Override
     public Wad18 multiply(@NotNull NumberWrapper multiplicand) {
-        return new Wad18(bigDecimal
+        return new Wad18(BIG_DECIMAL
                 .multiply(multiplicand.toBigDecimal()).divide(BigDecimal.valueOf(Math.pow(10, DECIMALS)), RoundingMode.DOWN));
     }
 
     @Override
     public Wad18 add(@NotNull NumberWrapper augend) {
-        return new Wad18(bigDecimal.add(augend.toBigDecimal()));
+        return new Wad18(BIG_DECIMAL.add(augend.toBigDecimal()));
     }
 
     @Override
     public Wad18 subtract(@NotNull NumberWrapper subtrahend) {
-        return new Wad18(bigDecimal.subtract(subtrahend.toBigDecimal()));
-    }
-
-    @Override
-    public int compareTo(@NotNull NumberWrapper compareObject) {
-        return super.compareTo(compareObject);
+        return new Wad18(BIG_DECIMAL.subtract(subtrahend.toBigDecimal()));
     }
 
     @Override
     public Rad45 min(@NotNull NumberWrapper compareObject) {
-        return new Rad45(bigDecimal.min(compareObject.toBigDecimal()));
+        return new Rad45(BIG_DECIMAL.min(compareObject.toBigDecimal()));
     }
 
     @Override
     public Rad45 max(@NotNull NumberWrapper compareObject) {
-        return new Rad45(bigDecimal.max(compareObject.toBigDecimal()));
+        return new Rad45(BIG_DECIMAL.max(compareObject.toBigDecimal()));
     }
 }

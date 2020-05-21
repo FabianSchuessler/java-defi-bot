@@ -46,8 +46,6 @@ public class Auction {
   }
 
   boolean isDent(Wad18 minimumBidIncrease) {
-    System.out.println(totalDaiWanted);
-    System.out.println(bidAmountInDai.multiply(minimumBidIncrease));
     return totalDaiWanted.compareTo(bidAmountInDai.multiply(minimumBidIncrease)) <= 0;
   }
 
@@ -84,14 +82,14 @@ public class Auction {
   boolean isEmpty() {
     String burnAddress = "0x0000000000000000000000000000000000000000";
     boolean isEmpty =
-        bidAmountInDai.compareTo(BigInteger.ZERO) == 0
-            && collateralForSale.compareTo(BigInteger.ZERO) == 0
+        bidAmountInDai.compareTo(Rad45.ZERO) == 0
+            && collateralForSale.compareTo(Wad18.ZERO) == 0
             && highestBidder.equalsIgnoreCase(burnAddress)
-            && bidExpiry.compareTo(BigInteger.ZERO) == 0
-            && maxAuctionDuration.compareTo(BigInteger.ZERO) == 0
+            && bidExpiry.compareTo(Wad18.ZERO) == 0
+            && maxAuctionDuration.compareTo(Wad18.ZERO) == 0
             && addressOfAuctionedVault.equalsIgnoreCase(burnAddress)
             && recipientOfAuctionIncome.equalsIgnoreCase(burnAddress)
-            && totalDaiWanted.compareTo(BigInteger.ZERO) == 0;
+            && totalDaiWanted.compareTo(Rad45.ZERO) == 0;
     logger.trace("AUCTION IS EMPTY {}", isEmpty);
     return isEmpty;
   }

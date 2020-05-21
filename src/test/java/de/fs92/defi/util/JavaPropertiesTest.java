@@ -6,23 +6,23 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
-public class JavaPropertiesTest {
+class JavaPropertiesTest {
   private static final String TEST_PROPERTY = "testProperty";
   private static JavaProperties javaProperties;
 
   @BeforeAll
-  public static void setUp() {
+  static void setUp() {
     javaProperties = new JavaProperties(true);
   }
 
   @Test
-  public void getValue_getTestProperty_true() {
+  void getValue_getTestProperty_true() {
     String testProperty = javaProperties.getValue(TEST_PROPERTY);
     assertEquals("true", testProperty);
   }
 
   @Test
-  public void setValue_setTestProperty_falseThenTrue() {
+  void setValue_setTestProperty_falseThenTrue() {
     javaProperties.setValue(TEST_PROPERTY, "false");
     String testProperty = javaProperties.getValue(TEST_PROPERTY);
     assertEquals("false", testProperty);
@@ -32,7 +32,7 @@ public class JavaPropertiesTest {
   }
 
   @Test
-  public void getValue_checkAllImportantProperties_AllNotEmpty() {
+  void getValue_checkAllImportantProperties_AllNotEmpty() {
     assertFalse(javaProperties.getValue("infuraProjectId").isEmpty());
     assertFalse(javaProperties.getValue("password").isEmpty());
     assertFalse(javaProperties.getValue("transactionsRequireConfirmation").isEmpty());

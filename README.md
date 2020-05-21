@@ -92,6 +92,7 @@ Feel free to open merge requests.
 ## Developer Guide
 
 - Code Style: [Google Java Format](https://github.com/google/google-java-format/blob/master/README.md)
+- Linting: [Sonarlint](https://www.sonarlint.org/intellij/)
 - Add new smart contracts: [web3j](https://github.com/web3j/web3j)
 - Logging: SLF4J + logback is used as defined in ```./src/main/resources/logback.xml```
 - Update Maven Dependencies: ```mvn versions:use-latest-versions```

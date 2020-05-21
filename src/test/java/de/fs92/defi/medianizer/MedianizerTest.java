@@ -11,12 +11,12 @@ import java.math.BigInteger;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 
-public class MedianizerTest {
+class MedianizerTest {
   private static final org.slf4j.Logger logger =
       LoggerFactory.getLogger(MethodHandles.lookup().lookupClass().getSimpleName());
 
   @Test
-  public void getMedian_arrayWithRandomOrderAndZerosAndEvenLength_returnCalculation()
+  void getMedian_arrayWithRandomOrderAndZerosAndEvenLength_returnCalculation()
       throws MedianException {
     BigInteger expected = BigInteger.valueOf((11));
     BigInteger actual =
@@ -34,7 +34,7 @@ public class MedianizerTest {
   }
 
   @Test
-  public void getMedian_arrayWithUnevenLength_returnCalculation() throws MedianException {
+  void getMedian_arrayWithUnevenLength_returnCalculation() throws MedianException {
     BigInteger expected = BigInteger.TEN;
     BigInteger actual =
             Medianizer.getMedian(new Wad18[]{new Wad18(10), new Wad18(1), new Wad18(10)}).toBigInteger();
@@ -42,7 +42,7 @@ public class MedianizerTest {
   }
 
   @Test
-  public void getMedian_arrayWithEvenLength_returnCalculation() throws MedianException {
+  void getMedian_arrayWithEvenLength_returnCalculation() throws MedianException {
     BigInteger expected = BigInteger.valueOf(5);
     BigInteger actual =
             Medianizer.getMedian(
@@ -51,7 +51,7 @@ public class MedianizerTest {
   }
 
   @Test
-  public void getMedian_arrayWithAFewZeros_returnCalculation() throws MedianException {
+  void getMedian_arrayWithAFewZeros_returnCalculation() throws MedianException {
     BigInteger expected = BigInteger.TEN;
     BigInteger actual =
             Medianizer.getMedian(
@@ -60,7 +60,7 @@ public class MedianizerTest {
   }
 
   @Test
-  public void getMedian_arrayWithOnlyZeros_throwMedianException() {
+  void getMedian_arrayWithOnlyZeros_throwMedianException() {
     Wad18[] array = {new Wad18(0), new Wad18(0), new Wad18(0), new Wad18(0)};
     Assertions.assertThrows(MedianException.class, () -> Medianizer.getMedian(array));
   }

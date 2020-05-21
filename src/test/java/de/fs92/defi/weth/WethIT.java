@@ -8,7 +8,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.web3j.crypto.Credentials;
 import org.web3j.protocol.Web3j;
 
-public class WethIT {
+class WethIT {
   private static final String TRAVIS_INFURA_PROJECT_ID = "TRAVIS_INFURA_PROJECT_ID";
   private static final String TRAVIS_WALLET = "TRAVIS_WALLET";
   private static final String TRAVIS_PASSWORD = "TRAVIS_PASSWORD";
@@ -19,7 +19,7 @@ public class WethIT {
   Weth weth;
 
   @BeforeEach
-  public void setUp() {
+  void setUp() {
     String infuraProjectId;
     String password;
     String wallet;

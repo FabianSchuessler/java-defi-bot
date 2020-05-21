@@ -144,7 +144,7 @@ public class CompoundDai implements AddressMethod {
     logger.trace("CHECKING IF LENDING DAI IS PROFITABLE");
     if (balances.dai.isThereEnoughDaiForLending()) {
       Wad18 slowGasPrice = gasProvider.updateSlowGasPrice();
-      if (slowGasPrice.compareTo(BigInteger.ZERO) == 0) {
+      if (slowGasPrice.compareTo(Wad18.ZERO) == 0) {
         return;
       }
 
@@ -227,7 +227,7 @@ public class CompoundDai implements AddressMethod {
 
   public boolean canOtherProfitMethodsWorkWithoutCDaiConversion(
           @NotNull Balances balances, Wad18 profitComparator, Wad18 medianEthereumPrice) {
-    if (getBalanceInDai().compareTo(BigInteger.ZERO) == 0) {
+    if (getBalanceInDai().compareTo(Wad18.ZERO) == 0) {
       logger.info("CDAI CONVERSION NOT NECESSARY");
       return true;
     }

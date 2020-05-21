@@ -97,14 +97,14 @@ public class Ethereum {
   }
 
   public Wad18 getBalance() {
-    if (balance.compareTo(BigInteger.ZERO) != 0) logger.trace("ETH BALANCE {}{}", balance, " ETH");
+    if (balance.compareTo(Wad18.ZERO) != 0) logger.trace("ETH BALANCE {}{}", balance, " ETH");
     return balance;
   }
 
   public Wad18 getBalanceWithoutMinimumEthereumReserveUpperLimit() {
     Wad18 balanceWithoutMinimumEthereumReserveUpperLimit =
             Wad18.ZERO.max(balance.subtract(minimumEthereumReserveUpperLimit));
-    if (balanceWithoutMinimumEthereumReserveUpperLimit.compareTo(BigInteger.ZERO) != 0)
+    if (balanceWithoutMinimumEthereumReserveUpperLimit.compareTo(Wad18.ZERO) != 0)
       logger.trace(
               "ETH BALANCE WITHOUT MINIMUM ETHEREUM RESERVER UPPER LIMIT {}{}",
               balanceWithoutMinimumEthereumReserveUpperLimit,

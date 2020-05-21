@@ -25,7 +25,7 @@ public class Account {
   }
 
   public Wad18 getBalance() {
-    if (balance.compareTo(BigInteger.ZERO) != 0)
+    if (balance.compareTo(Wad18.ZERO) != 0)
       logger.trace("{} BALANCE {} {}", name, balance, name);
     return balance;
   }

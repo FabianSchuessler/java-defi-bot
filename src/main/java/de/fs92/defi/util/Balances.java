@@ -105,13 +105,13 @@ public class Balances {
         initialTotalUSDCounter++;
       }
 
-      if (sumEstimatedProfits.compareTo(BigInteger.ZERO) != 0)
+      if (sumEstimatedProfits.compareTo(Wad18.ZERO) != 0)
         logger.trace("TOTAL ARBITRAGE P&L {}{}", sumEstimatedProfits, " USD");
-      if (sumEstimatedMissedProfits.compareTo(BigInteger.ZERO) != 0)
+      if (sumEstimatedMissedProfits.compareTo(Wad18.ZERO) != 0)
         logger.trace("TOTAL MISSED PROFITS {}{}", sumEstimatedMissedProfits, " USD");
-      if (usd.subtract(initialTotalUSD).compareTo(BigInteger.ZERO) != 0)
+      if (usd.subtract(initialTotalUSD).compareTo(Wad18.ZERO) != 0)
         logger.trace("TOTAL P&L DURING EXECUTION {}{}", usd.subtract(initialTotalUSD), " USD");
-      if (usd.compareTo(BigInteger.ZERO) != 0)
+      if (usd.compareTo(Wad18.ZERO) != 0)
         logger.trace("TOTAL IN USD {}{}", usd.toString(2), " USD");
 
       minimumTradeProfitBuyDai = usd.multiply(new Wad18(getMachineReadable(0.00025)));
@@ -195,7 +195,7 @@ public class Balances {
     Wad18 ethereumAndWethBalance = wethBalance.add(ethereumBalance);
 
     if (ethereumBalance.compareTo(ethereum.minimumEthereumReserveLowerLimit) < 0
-            && wethBalance.compareTo(BigInteger.valueOf(10000000000000000L)) > 0) {
+            && wethBalance.compareTo(new Wad18(10000000000000000L)) > 0) {
 
       Wad18 toUnwrap =
               (ethereum.getBalanceWithoutMinimumEthereumReserveUpperLimit()).min(wethBalance);

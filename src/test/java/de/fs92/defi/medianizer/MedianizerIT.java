@@ -12,7 +12,7 @@ import org.web3j.protocol.Web3j;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class MedianizerIT {
+class MedianizerIT {
   private static final String TRAVIS_INFURA_PROJECT_ID = "TRAVIS_INFURA_PROJECT_ID";
   private static final String TRAVIS_WALLET = "TRAVIS_WALLET";
   private static final String TRAVIS_PASSWORD = "TRAVIS_PASSWORD";
@@ -21,10 +21,10 @@ public class MedianizerIT {
   private static final String TOO_LOW = "Error, value is too low";
   private static final Wad18 MINIMUM_ETH_PRICE = new Wad18("100000000000000000000");
   private static final Wad18 MAXIMUM_ETH_PRICE = new Wad18("500000000000000000000");
-  public static ContractNeedsProvider contractNeedsProvider;
+  static ContractNeedsProvider contractNeedsProvider;
 
   @BeforeEach
-  public void setUp() {
+  void setUp() {
     String infuraProjectId;
     String password;
     String wallet;
@@ -55,7 +55,7 @@ public class MedianizerIT {
   }
 
   @Test
-  public void getCoinbaseProEthPrice_simpleGet_returnPrice() {
+  void getCoinbaseProEthPrice_simpleGet_returnPrice() {
     Medianizer.setMedianizerContract(contractNeedsProvider);
     Wad18 coinbaseEthPrice = Medianizer.getCoinbaseProEthPrice();
     assertTrue(MINIMUM_ETH_PRICE.compareTo(coinbaseEthPrice) <= 0, TOO_LOW);
@@ -63,7 +63,7 @@ public class MedianizerIT {
   }
 
   @Test
-  public void getPrice_oneExecution_priceIsWithinReasonableBounds() throws MedianException {
+  void getPrice_oneExecution_priceIsWithinReasonableBounds() throws MedianException {
     Medianizer.setMedianizerContract(contractNeedsProvider);
     Wad18 median = Medianizer.getPrice();
     assertTrue(MINIMUM_ETH_PRICE.compareTo(median) <= 0, TOO_LOW);
@@ -71,7 +71,7 @@ public class MedianizerIT {
   }
 
   @Test
-  public void getPrice_twoExecutionsWithinPriceUpdateInterval_priceIsEqual()
+  void getPrice_twoExecutionsWithinPriceUpdateInterval_priceIsEqual()
       throws MedianException {
     Medianizer.setMedianizerContract(contractNeedsProvider);
     Wad18 firstMedian = Medianizer.getPrice();

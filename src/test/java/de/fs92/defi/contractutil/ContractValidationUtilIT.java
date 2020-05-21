@@ -15,7 +15,7 @@ import org.web3j.protocol.Web3j;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class ContractValidationUtilIT {
+class ContractValidationUtilIT {
   private static final String TRAVIS_INFURA_PROJECT_ID = "TRAVIS_INFURA_PROJECT_ID";
   private static final String TRAVIS_WALLET = "TRAVIS_WALLET";
   private static final String TRAVIS_PASSWORD = "TRAVIS_PASSWORD";
@@ -30,7 +30,7 @@ public class ContractValidationUtilIT {
   GasProvider gasProvider;
 
   @BeforeEach
-  public void setUp() {
+  void setUp() {
     String infuraProjectId;
     String password;
     String wallet;
@@ -53,7 +53,7 @@ public class ContractValidationUtilIT {
   }
 
   @Test
-  public void isContractValid_isValid_continueRunning() {
+  void isContractValid_isValid_continueRunning() {
     WethContract contract =
         WethContract.load(
             "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2", web3j, credentials, gasProvider);
@@ -63,7 +63,7 @@ public class ContractValidationUtilIT {
   }
 
   @Test
-  public void isContractValid_isNotValid_stopRunning() {
+  void isContractValid_isNotValid_stopRunning() {
     DaiContract contract =
         DaiContract.load(
             "0x0000000000000000000000000000000000000000", web3j, credentials, gasProvider);

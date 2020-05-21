@@ -4,6 +4,7 @@ import de.fs92.defi.compounddai.CompoundDai;
 import de.fs92.defi.contractneedsprovider.*;
 import de.fs92.defi.dai.Dai;
 import de.fs92.defi.gasprovider.GasProvider;
+import de.fs92.defi.numberutil.Rad45;
 import de.fs92.defi.numberutil.Wad18;
 import de.fs92.defi.util.Balances;
 import de.fs92.defi.util.Ethereum;
@@ -20,7 +21,7 @@ import java.util.ArrayList;
 import static de.fs92.defi.numberutil.NumberUtil.getMachineReadable;
 import static org.junit.jupiter.api.Assertions.*;
 
-public class FlipperIT {
+class FlipperIT {
   private static final String TRAVIS_INFURA_PROJECT_ID = "TRAVIS_INFURA_PROJECT_ID";
   private static final String TRAVIS_WALLET = "TRAVIS_WALLET";
   private static final String TRAVIS_PASSWORD = "TRAVIS_PASSWORD";
@@ -31,7 +32,7 @@ public class FlipperIT {
   Balances balances;
 
   @BeforeEach
-  public void setUp() {
+  void setUp() {
     String infuraProjectId;
     String password;
     String wallet;
@@ -77,23 +78,23 @@ public class FlipperIT {
   }
 
   @Test
-  public void getTotalAuctionCount_noParameters_biggerThan4888() {
+  void getTotalAuctionCount_noParameters_biggerThan4888() {
     BigInteger actualValue = flipper.getTotalAuctionCount();
     assertTrue(actualValue.compareTo(new BigInteger("4888")) >= 0);
   }
 
   @Test
-  public void getAuction_4885_attributesAreCorrect() {
+  void getAuction_4885_attributesAreCorrect() {
     Auction auction = flipper.getAuction(new BigInteger("4885"));
     assertEquals(
         0,
         auction.bidAmountInDai.compareTo(
-            new BigInteger("37299123089429162514476831876850683361693243730")));
-    assertEquals(0, auction.collateralForSale.compareTo(new BigInteger("175927491330994700")));
+            new Rad45("37299123089429162514476831876850683361693243730")));
+    assertEquals(0, auction.collateralForSale.compareTo(new Wad18("175927491330994700")));
     assertTrue(
         auction.highestBidder.equalsIgnoreCase("0x04bB161C4e7583CDAaDEe93A8b8E6125FD661E57"));
-    assertEquals(0, auction.bidExpiry.compareTo(new BigInteger("1588287896")));
-    assertEquals(0, auction.maxAuctionDuration.compareTo(new BigInteger("1588266341")));
+    assertEquals(0, auction.bidExpiry.compareTo(new Wad18("1588287896")));
+    assertEquals(0, auction.maxAuctionDuration.compareTo(new Wad18("1588266341")));
     assertTrue(
         auction.addressOfAuctionedVault.equalsIgnoreCase(
             "0x42A142cc082255CaEE58E3f30dc6d4Fc3056b6A7"));
@@ -103,11 +104,11 @@ public class FlipperIT {
     assertEquals(
         0,
         auction.totalDaiWanted.compareTo(
-            new BigInteger("37299123089429162514476831876850683361693243730")));
+            new Rad45("37299123089429162514476831876850683361693243730")));
   }
 
   @Test
-  public void getActiveAuctionList_noParameter_noException() {
+  void getActiveAuctionList_noParameter_noException() {
     BigInteger actualValue = flipper.getTotalAuctionCount();
     ArrayList<Auction> auctionList = flipper.getActiveAffordableAuctionList(actualValue, balances);
     Wad18 minimumBidIncrease = flipper.getMinimumBidIncrease();
@@ -118,21 +119,21 @@ public class FlipperIT {
   }
 
   @Test
-  public void getMinimumBidIncrease_noParameter_noException() {
+  void getMinimumBidIncrease_noParameter_noException() {
     Wad18 actualValue = flipper.getMinimumBidIncrease();
     assertEquals(new Wad18(getMachineReadable(1.03)), actualValue);
     assertDoesNotThrow(() -> flipper.getMinimumBidIncrease());
   }
 
   @Test
-  public void getBidLength_noParameter_noException() {
+  void getBidLength_noParameter_noException() {
     BigInteger actualValue = flipper.getBidDuration();
     assertEquals(BigInteger.valueOf(21600L), actualValue);
     assertDoesNotThrow(() -> flipper.getBidDuration());
   }
 
   @Test
-  public void getAuctionLength_noParameter_noException() {
+  void getAuctionLength_noParameter_noException() {
     BigInteger actualValue = flipper.getAuctionLength();
     assertEquals(BigInteger.valueOf(21600L), actualValue);
     assertDoesNotThrow(() -> flipper.getAuctionLength());

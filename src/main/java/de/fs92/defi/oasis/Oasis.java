@@ -104,7 +104,7 @@ public class Oasis implements AddressMethod {
                       balances,
                       gasProvider.getPercentageOfProfitAsFee(
                               gasProvider.getFailedTransactionsWithinTheLastTwelveHoursForGasPriceArrayList()));
-      if (bestOffer.offerId.compareTo(BigInteger.ZERO) != 0) {
+      if (bestOffer.offerId.compareTo(Wad18.ZERO) != 0) {
         String weiValue = "100000000"; // INFO: seems to be necessary due to rounding error
         Wad18 wethBalance = balances.weth.getAccount().getBalance();
         Wad18 ethBalance =
@@ -153,7 +153,7 @@ public class Oasis implements AddressMethod {
                       balances,
                       gasProvider.getPercentageOfProfitAsFee(
                               gasProvider.getFailedTransactionsWithinTheLastTwelveHoursForGasPriceArrayList()));
-      if (bestOffer.offerId.compareTo(BigInteger.ZERO) != 0) {
+      if (bestOffer.offerId.compareTo(Wad18.ZERO) != 0) {
         Wad18 ownConstraint = balances.getMaxDaiToSell().divide(bestOffer.bestOfferDaiPerEth);
         Wad18 offerConstraint = bestOffer.offerValues.get(Weth.ADDRESS);
         logger.debug("OWN CONSTRAINT {}", ownConstraint);
@@ -231,7 +231,7 @@ public class Oasis implements AddressMethod {
     logger.trace(
             "SELLABLE DAI AMOUNT {}{}", offerValues.get(Dai.ADDRESS), " DAI");
 
-    if (!offerValues.get(Weth.ADDRESS).equals(BigInteger.ZERO)) {
+    if (!offerValues.get(Weth.ADDRESS).equals(Wad18.ZERO)) {
       Wad18 bestOfferEthDaiRatioSellDai =
               offerValues.get(Dai.ADDRESS).divide(offerValues.get(Weth.ADDRESS));
       Wad18 bestOfferMedianRatio = bestOfferEthDaiRatioSellDai.divide(medianEthereumPrice);

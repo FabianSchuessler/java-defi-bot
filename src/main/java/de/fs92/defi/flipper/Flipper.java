@@ -32,7 +32,7 @@ public class Flipper {
   private final CircuitBreaker circuitBreaker;
   private final Wad18 minimumBidIncrease; // beg
   private final BigInteger startingBiddingBeforeEnd;
-  private final BigInteger minimumFlipAuctionProfit;
+  private final Wad18 minimumFlipAuctionProfit;
   private ArrayList<Auction> activeAuctionList;
   private BigInteger pastTotalAuctionCount;
 
@@ -47,7 +47,7 @@ public class Flipper {
     pastTotalAuctionCount = BigInteger.ZERO;
     minimumBidIncrease = getMinimumBidIncrease();
     activeAuctionList = new ArrayList<>();
-    this.minimumFlipAuctionProfit = getMachineReadable(minimumFlipAuctionProfit);
+    this.minimumFlipAuctionProfit = new Wad18(getMachineReadable(minimumFlipAuctionProfit));
     startingBiddingBeforeEnd = BigInteger.valueOf(300); // 5 minutes * 60 seconds
   }
 

@@ -4,6 +4,7 @@ import de.fs92.defi.contractneedsprovider.ContractNeedsProvider;
 import de.fs92.defi.contractutil.Account;
 import de.fs92.defi.contractutil.Approval;
 import de.fs92.defi.gasprovider.GasProvider;
+import de.fs92.defi.numberutil.Wad18;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.LoggerFactory;
 import org.web3j.crypto.Credentials;
@@ -22,7 +23,7 @@ public class Dai {
       LoggerFactory.getLogger(MethodHandles.lookup().lookupClass().getSimpleName());
   private static final String CDP_ADDRESS = "0x0000000000000000000000000000000000000000";
   private static final String EXCEPTION = "Exception";
-  public final BigInteger minimumDaiNecessaryForSaleAndLending;
+  public final Wad18 minimumDaiNecessaryForSaleAndLending;
   private final DaiContract daiContract;
   private final Account account;
   private final Approval approval;
@@ -33,8 +34,8 @@ public class Dai {
     Web3j web3j = contractNeedsProvider.getWeb3j();
     Credentials credentials = contractNeedsProvider.getCredentials();
     GasProvider gasProvider = contractNeedsProvider.getGasProvider();
-    this.minimumDaiNecessaryForSaleAndLending =
-        getMachineReadable(minimumDaiNecessaryForSaleAndLending);
+    this.minimumDaiNecessaryForSaleAndLending = new Wad18(
+        getMachineReadable(minimumDaiNecessaryForSaleAndLending));
     daiContract = DaiContract.load(ADDRESS, web3j, credentials, gasProvider);
     account = new Account(daiContract, credentials, "DAI");
     approval = new Approval(daiContract, contractNeedsProvider);

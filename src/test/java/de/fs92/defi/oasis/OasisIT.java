@@ -16,7 +16,7 @@ import java.math.BigInteger;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class OasisIT {
+class OasisIT {
   private static final String TRAVIS_INFURA_PROJECT_ID = "TRAVIS_INFURA_PROJECT_ID";
   private static final String TRAVIS_WALLET = "TRAVIS_WALLET";
   private static final String TRAVIS_PASSWORD = "TRAVIS_PASSWORD";
@@ -27,7 +27,7 @@ public class OasisIT {
   Oasis oasis;
 
   @BeforeEach
-  public void setUp() {
+  void setUp() {
     String infuraProjectId;
     String password;
     String wallet;
@@ -57,7 +57,7 @@ public class OasisIT {
   }
 
   @Test
-  public void getOffer_nonExistingOffer_DaiOrWethMissingException() {
+  void getOffer_nonExistingOffer_DaiOrWethMissingException() {
     Exception exception =
             assertThrows(DaiOrWethMissingException.class, () -> oasis.getOffer(new Wad18(0)));
     String actualMessage = exception.getMessage();
@@ -65,30 +65,30 @@ public class OasisIT {
   }
 
   @Test
-  public void getBestOffer_buyDai_returnOffer() {
+  void getBestOffer_buyDai_returnOffer() {
     Wad18 actual = oasis.getBestOffer(Dai.ADDRESS, Weth.ADDRESS);
     assertNotEquals(BigInteger.ZERO, actual.toBigInteger());
     assertNotNull(actual);
   }
 
   @Test
-  public void getBestOffer_sellDai_returnOffer() {
+  void getBestOffer_sellDai_returnOffer() {
     Wad18 actual = oasis.getBestOffer(Weth.ADDRESS, Dai.ADDRESS);
     assertNotEquals(BigInteger.ZERO, actual.toBigInteger());
     assertNotNull(actual);
   }
 
   @Test
-  public void buyDaiSellWethIsProfitable_triggerException_emptyOasisDexOffer() {
+  void buyDaiSellWethIsProfitable_triggerException_emptyOasisDexOffer() {
     //    oasisDex.buyDaiSellWethIsProfitable();
   }
 
   @Test
-  public void buyDaiSellWethIsProfitable_realValues_OasisDexOffer() {}
+  void buyDaiSellWethIsProfitable_realValues_OasisDexOffer() {}
 
   @Test
-  public void sellDaiBuyWethIsProfitable_triggerException_emptyOasisDexOffer() {}
+  void sellDaiBuyWethIsProfitable_triggerException_emptyOasisDexOffer() {}
 
   @Test
-  public void sellDaiBuyWethIsProfitable_realValues_OasisDexOffer() {}
+  void sellDaiBuyWethIsProfitable_realValues_OasisDexOffer() {}
 }

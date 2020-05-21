@@ -12,7 +12,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class AuctionTest {
 
   @Test
-  public void isEmpty_emptyParameters_True() {
+  void isEmpty_emptyParameters_True() {
     Tuple8<BigInteger, BigInteger, String, BigInteger, BigInteger, String, String, BigInteger>
         auctionTuple =
             new Tuple8<>(
@@ -29,7 +29,7 @@ class AuctionTest {
   }
 
   @Test
-  public void isEmpty_notEmptyParameters_False() {
+  void isEmpty_notEmptyParameters_False() {
     Tuple8<BigInteger, BigInteger, String, BigInteger, BigInteger, String, String, BigInteger>
         auctionTuple =
             new Tuple8<>(
@@ -46,7 +46,7 @@ class AuctionTest {
   }
 
   @Test
-  public void isCompleted_completedAuction_True() {
+  void isCompleted_completedAuction_True() {
     Tuple8<BigInteger, BigInteger, String, BigInteger, BigInteger, String, String, BigInteger>
         auctionTuple =
             new Tuple8<>(
@@ -63,7 +63,7 @@ class AuctionTest {
   }
 
   @Test
-  public void isCompleted_runningAuction_False() {
+  void isCompleted_runningAuction_False() {
     long currentUnixTimePlusFiveMinutes = System.currentTimeMillis() / 1000L + 300L;
     Tuple8<BigInteger, BigInteger, String, BigInteger, BigInteger, String, String, BigInteger>
         auctionTuple =
@@ -81,7 +81,7 @@ class AuctionTest {
   }
 
   @Test
-  public void getPotentialProfit_someParameters_correctResult() {
+  void getPotentialProfit_someParameters_correctResult() {
     Tuple8<BigInteger, BigInteger, String, BigInteger, BigInteger, String, String, BigInteger>
             auctionTuple =
             new Tuple8<>(
@@ -101,7 +101,7 @@ class AuctionTest {
   }
 
   @Test
-  public void isActive_NotCompletedNotEmpty_True() {
+  void isActive_NotCompletedNotEmpty_True() {
     long currentUnixTimePlusFiveMinutes = System.currentTimeMillis() / 1000L + 300L;
     Tuple8<BigInteger, BigInteger, String, BigInteger, BigInteger, String, String, BigInteger>
         auctionTuple =
@@ -119,7 +119,7 @@ class AuctionTest {
   }
 
   @Test
-  public void isActive_Empty_False() {
+  void isActive_Empty_False() {
     Tuple8<BigInteger, BigInteger, String, BigInteger, BigInteger, String, String, BigInteger>
         auctionTuple =
             new Tuple8<>(
@@ -136,7 +136,7 @@ class AuctionTest {
   }
 
   @Test
-  public void isActive_Completed_False() {
+  void isActive_Completed_False() {
     Tuple8<BigInteger, BigInteger, String, BigInteger, BigInteger, String, String, BigInteger>
         auctionTuple =
             new Tuple8<>(
