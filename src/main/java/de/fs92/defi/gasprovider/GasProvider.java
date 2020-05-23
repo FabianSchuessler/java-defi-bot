@@ -24,13 +24,13 @@ public class GasProvider implements ContractGasProvider {
   static final String GWEI = " GWEI";
   private static final String GAS_PRICE_EXCEPTION = "GasPriceException";
   private static final org.slf4j.Logger logger =
-          LoggerFactory.getLogger(MethodHandles.lookup().lookupClass().getSimpleName());
+      LoggerFactory.getLogger(MethodHandles.lookup().lookupClass().getSimpleName());
   final Wad18 minimumGasPrice;
   final Wad18 maximumGasPrice;
   final Web3j web3j;
   Wad18 gasPrice;
   private List<Long> failedTransactionsWithinTheLastTwelveHoursForGasPriceArrayList =
-          new ArrayList<>();
+      new ArrayList<>();
 
   public GasProvider(Web3j web3j, Wad18 minimumGasPrice, Wad18 maximumGasPrice) {
     this.web3j = web3j;
@@ -94,11 +94,11 @@ public class GasProvider implements ContractGasProvider {
     }
     try {
       double percentageOfProfitAsFee =
-              getPercentageOfProfitAsFee(
-                      failedTransactionsWithinTheLastTwelveHoursForGasPriceArrayList.size());
+          getPercentageOfProfitAsFee(
+              failedTransactionsWithinTheLastTwelveHoursForGasPriceArrayList.size());
       Wad18 gasPriceBasedOnProfit =
-              calculateGasPriceAsAPercentageOfProfit(
-                      medianEthereumPrice, potentialProfit, 300000.0, percentageOfProfitAsFee);
+          calculateGasPriceAsAPercentageOfProfit(
+              medianEthereumPrice, potentialProfit, 300000.0, percentageOfProfitAsFee);
       // instead of fixed
       fastGasPrice = fastGasPrice.max(gasPriceBasedOnProfit);
     } catch (GasPriceException e) {
@@ -120,9 +120,9 @@ public class GasProvider implements ContractGasProvider {
     try {
       Wad18 web3jResult = new Wad18(web3j.ethGasPrice().send().getGasPrice());
       logger.trace(
-              "WEB3J SUGGESTS GP {}{}",
-              Convert.fromWei(web3jResult.toString(), Convert.Unit.GWEI),
-              GWEI);
+          "WEB3J SUGGESTS GP {}{}",
+          Convert.fromWei(web3jResult.toString(), Convert.Unit.GWEI),
+          GWEI);
       slowGasPrice = slowGasPrice.min(web3jResult);
     } catch (IOException e) {
       logger.error("IOException", e);
@@ -135,38 +135,38 @@ public class GasProvider implements ContractGasProvider {
   public double getPercentageOfProfitAsFee(
       int failedTransactionsWithinTheLastTwelveHoursForGasPriceArrayListSize) {
     double percentageOfProfitAsFee =
-            Math.min(
-                    0.35,
-                    ((double) failedTransactionsWithinTheLastTwelveHoursForGasPriceArrayListSize * 5.0
-                            + 10.0)
-                            / 100.0);
-    logger.trace("GP PERCENTAGE OF PROFIT {}", percentageOfProfitAsFee);
+        Math.min(
+            0.35,
+            ((double) failedTransactionsWithinTheLastTwelveHoursForGasPriceArrayListSize * 5.0
+                    + 10.0)
+                / 100.0);
+    logger.trace("GAS PRICE IS AT LEAST {}% OF POTENTIAL PROFIT", percentageOfProfitAsFee * 100);
 
     return percentageOfProfitAsFee;
   }
 
   Wad18 calculateGasPriceAsAPercentageOfProfit(
-          @NotNull Wad18 medianEthereumPrice,
-          Wad18 potentialProfit,
-          double gasLimit,
-          double percentageOfProfitAsFee)
-          throws GasPriceException {
+      @NotNull Wad18 medianEthereumPrice,
+      Wad18 potentialProfit,
+      double gasLimit,
+      double percentageOfProfitAsFee)
+      throws GasPriceException {
     if (medianEthereumPrice.compareTo(Wad18.ZERO) == 0
-            || potentialProfit.compareTo(Wad18.ZERO) == 0
-            || gasLimit == 0.0)
+        || potentialProfit.compareTo(Wad18.ZERO) == 0
+        || gasLimit == 0.0)
       throw new GasPriceException("calculateGasPriceAsAPercentageOfProfit Exception");
     // TODO: debug this method call
     Wad18 feeInEth =
-            potentialProfit
-                    .multiply(new Wad18(getMachineReadable(percentageOfProfitAsFee)))
-                    .divide(medianEthereumPrice); // 0.049307620043223397 0.04930762004
+        potentialProfit
+            .multiply(new Wad18(getMachineReadable(percentageOfProfitAsFee)))
+            .divide(medianEthereumPrice); // 0.049307620043223397 0.04930762004
     logger.trace("EST. TRANSACTION FEE {}{}", feeInEth.multiply(medianEthereumPrice), " DAI");
 
     Wad18 gasPriceBasedOnProfit = feeInEth.divide(new Wad18(getMachineReadable(gasLimit)));
     logger.trace(
-            "PROFIT SUGGESTS GP {}{}",
-            Convert.fromWei(gasPriceBasedOnProfit.toBigInteger().toString(), Convert.Unit.GWEI),
-            GWEI);
+        "PROFIT SUGGESTS GP {}{}",
+        Convert.fromWei(gasPriceBasedOnProfit.toBigInteger().toString(), Convert.Unit.GWEI),
+        GWEI);
 
     return gasPriceBasedOnProfit;
   }

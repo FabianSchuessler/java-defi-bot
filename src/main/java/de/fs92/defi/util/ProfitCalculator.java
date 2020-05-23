@@ -5,7 +5,6 @@ import org.jetbrains.annotations.NotNull;
 import org.slf4j.LoggerFactory;
 
 import java.lang.invoke.MethodHandles;
-import java.math.BigInteger;
 
 import static de.fs92.defi.numberutil.NumberUtil.getMachineReadable;
 
@@ -21,14 +20,16 @@ public class ProfitCalculator {
   // ethtokenswapinput and
   // tokentoethswapinput
   public static Wad18 getPotentialProfit(
-          Wad18 bestOfferMedianRatio, Wad18 toSellInDAI, double percentageOfProfitAsFee) {
+      Wad18 bestOfferMedianRatio, Wad18 toSellInDAI, double percentageOfProfitAsFee) {
     Wad18 potentialProfitBeforeCosts =
-            new Wad18(getMachineReadable(1.0)).subtract(bestOfferMedianRatio).multiply(toSellInDAI);
+        new Wad18(getMachineReadable(1.0)).subtract(bestOfferMedianRatio).multiply(toSellInDAI);
     logger.trace(
-            "POTENTIAL PROFIT BEFORE COSTS {}{}", potentialProfitBeforeCosts.toString(5), " DAI");
+        "POTENTIAL PROFIT BEFORE COSTS {}{}", potentialProfitBeforeCosts.toString(5), " DAI");
     Wad18 maxTransactionCosts =
-            new Wad18(getMachineReadable(0.50))
-                    .max(potentialProfitBeforeCosts.multiply(new Wad18(getMachineReadable(percentageOfProfitAsFee))));
+        new Wad18(getMachineReadable(0.50))
+            .max(
+                potentialProfitBeforeCosts.multiply(
+                    new Wad18(getMachineReadable(percentageOfProfitAsFee))));
     Wad18 potentialProfitAfterCosts = potentialProfitBeforeCosts.subtract(maxTransactionCosts);
 
     if (potentialProfitAfterCosts.compareTo(Wad18.ZERO) > 0) {

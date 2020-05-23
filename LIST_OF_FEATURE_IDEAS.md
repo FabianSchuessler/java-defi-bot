@@ -5,6 +5,7 @@
 - Have a look at MakerDao Auction Keep and their API usage about Price Feeds
 
 # New Features
+- Check if selling ETH to participate in DAI auction is profitable
 - Add deal for flip auctions
 - Add [Uniswap V2](https://uniswap.org/blog/uniswap-v2/)
 - Move wait time to config? private static final int WAIT_TIME = 60 * 60 * 1000; // 60 minutes

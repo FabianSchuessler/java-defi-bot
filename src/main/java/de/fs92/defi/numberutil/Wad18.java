@@ -9,30 +9,30 @@ import java.math.RoundingMode;
 public class Wad18 extends NumberWrapper {
   public static final Wad18 ZERO = new Wad18(0);
   public static final Wad18 ONE = new Wad18(1);
-  private static final int DECIMALS = 18;
+  private static final int WAD18_DECIMALS = 18;
 
   public Wad18() {
-    super(DECIMALS);
+    super(WAD18_DECIMALS);
   }
 
   public Wad18(int number) {
-    super(number, DECIMALS);
+    super(number, WAD18_DECIMALS);
   }
 
   public Wad18(String number) {
-    super(number, DECIMALS);
+    super(number, WAD18_DECIMALS);
   }
 
   public Wad18(long number) {
-    super(number, DECIMALS);
+    super(number, WAD18_DECIMALS);
   }
 
   public Wad18(BigInteger bigInteger) {
-    super(bigInteger, DECIMALS);
+    super(bigInteger, WAD18_DECIMALS);
   }
 
   public Wad18(BigDecimal bigDecimal) {
-    super(bigDecimal, DECIMALS);
+    super(bigDecimal, WAD18_DECIMALS);
   }
 
   @Override
@@ -46,8 +46,8 @@ public class Wad18 extends NumberWrapper {
     if (divisor.compareTo(BigDecimal.ZERO) == 0)
       throw new IllegalArgumentException("Argument 'divisor' is 0");
     return new Wad18(
-            BIG_DECIMAL
-                    .multiply(BigDecimal.valueOf(Math.pow(10, DECIMALS)))
+            bigDecimal
+                    .multiply(BigDecimal.valueOf(Math.pow(10, WAD18_DECIMALS)))
                     .divide(divisor, 0, RoundingMode.DOWN)
                     .stripTrailingZeros());
   }
@@ -55,28 +55,28 @@ public class Wad18 extends NumberWrapper {
   @Override
   public Wad18 multiply(@NotNull NumberWrapper multiplicand) {
     return new Wad18(
-            BIG_DECIMAL
+            bigDecimal
                     .multiply(multiplicand.toBigDecimal())
-                    .divide(BigDecimal.valueOf(Math.pow(10, DECIMALS)), RoundingMode.DOWN));
+                    .divide(BigDecimal.valueOf(Math.pow(10, WAD18_DECIMALS)), RoundingMode.DOWN));
   }
 
   @Override
   public Wad18 add(@NotNull NumberWrapper augend) {
-    return new Wad18(BIG_DECIMAL.add(augend.toBigDecimal()));
+    return new Wad18(bigDecimal.add(augend.toBigDecimal()));
   }
 
   @Override
   public Wad18 subtract(@NotNull NumberWrapper subtrahend) {
-    return new Wad18(BIG_DECIMAL.subtract(subtrahend.toBigDecimal()));
+    return new Wad18(bigDecimal.subtract(subtrahend.toBigDecimal()));
   }
 
   @Override
   public Wad18 min(@NotNull NumberWrapper compareObject) {
-    return new Wad18(BIG_DECIMAL.min(compareObject.toBigDecimal()));
+    return new Wad18(bigDecimal.min(compareObject.toBigDecimal()));
   }
 
   @Override
   public Wad18 max(@NotNull NumberWrapper compareObject) {
-    return new Wad18(BIG_DECIMAL.max(compareObject.toBigDecimal()));
+    return new Wad18(bigDecimal.max(compareObject.toBigDecimal()));
   }
 }

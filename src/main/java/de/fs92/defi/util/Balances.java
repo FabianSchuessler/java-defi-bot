@@ -12,14 +12,13 @@ import org.slf4j.LoggerFactory;
 
 import java.lang.invoke.MethodHandles;
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.math.RoundingMode;
 
 import static de.fs92.defi.numberutil.NumberUtil.getMachineReadable;
 
 public class Balances {
   private static final org.slf4j.Logger logger =
-          LoggerFactory.getLogger(MethodHandles.lookup().lookupClass().getSimpleName());
+      LoggerFactory.getLogger(MethodHandles.lookup().lookupClass().getSimpleName());
 
   // contracts
   public final Dai dai;
@@ -92,12 +91,11 @@ public class Balances {
       Wad18 ethBalance = ethereum.getBalance();
 
       usd =
-
-              ethBalance
-                      .multiply(medianEthereumPrice)
-                      .add(wethBalance.multiply(medianEthereumPrice))
-                      .add(daiBalance)
-                      .add(cdaiBalance);
+          ethBalance
+              .multiply(medianEthereumPrice)
+              .add(wethBalance.multiply(medianEthereumPrice))
+              .add(daiBalance)
+              .add(cdaiBalance);
 
       // Gets executed just once at the beginning. Initializes initialTotalUSD.
       if (initialTotalUSDCounter == 0) {
@@ -116,11 +114,11 @@ public class Balances {
 
       minimumTradeProfitBuyDai = usd.multiply(new Wad18(getMachineReadable(0.00025)));
       logger.trace(
-              "MINIMUM TRADE PROFIT BUY DAI {}{}", minimumTradeProfitBuyDai.toString(2), " DAI");
+          "MINIMUM TRADE PROFIT BUY DAI {}{}", minimumTradeProfitBuyDai.toString(2), " DAI");
 
       minimumTradeProfitSellDai = usd.multiply(new Wad18(getMachineReadable(0.0025)));
       logger.trace(
-              "MINIMUM TRADE PROFIT SELL DAI {}{}", minimumTradeProfitSellDai.toString(2), " DAI");
+          "MINIMUM TRADE PROFIT SELL DAI {}{}", minimumTradeProfitSellDai.toString(2), " DAI");
 
       // Checks if the bot made a big loss.
       // For some reason the DAI balance can be wrongly zero instead of the actual value. This means
@@ -134,10 +132,10 @@ public class Balances {
       }
 
       logger.trace(
-              "HOLDING {}% DAI + CDAI AS A PERCENTAGE OVER TIME OF TOTAL ASSET VALUE", // todo:
-              // negative???
-              round(
-                      currentOwnershipRatio(medianEthereumPrice, ethBalance, daiBalance, wethBalance), 2));
+          "HOLDING {}% DAI + CDAI AS A PERCENTAGE OVER TIME OF TOTAL ASSET VALUE", // todo:
+          // negative???
+          round(
+              currentOwnershipRatio(medianEthereumPrice, ethBalance, daiBalance, wethBalance), 2));
 
     } catch (Exception e) {
       logger.error("Exception", e);
@@ -147,24 +145,24 @@ public class Balances {
 
   /**
    * @return 0 if no dai/cdai was owned during the execution of the program, 100 if no eth/weth was
-   * owned
+   *     owned
    */
   private double currentOwnershipRatio(
-          Wad18 medianEthereumPrice,
-          @NotNull Wad18 ethBalance,
-          @NotNull Wad18 daiBalance,
-          Wad18 wethBalance) {
+      Wad18 medianEthereumPrice,
+      @NotNull Wad18 ethBalance,
+      @NotNull Wad18 daiBalance,
+      Wad18 wethBalance) {
     // TODO: add tests for this method
 
     long timeDifference = System.currentTimeMillis() - pastTime;
     pastTime = System.currentTimeMillis();
 
     totalDaiRatio +=
-            timeDifference * daiBalance.add(compoundDai.getBalanceInDai()).multiply(usd).longValue();
+        timeDifference * daiBalance.add(compoundDai.getBalanceInDai()).multiply(usd).longValue();
 
     totalEthRatio +=
-            timeDifference
-                    * ethBalance.add(wethBalance).multiply(medianEthereumPrice).divide(usd).longValue();
+        timeDifference
+            * ethBalance.add(wethBalance).multiply(medianEthereumPrice).divide(usd).longValue();
 
     if (totalDaiRatio == 0.0) return 0.0;
     return (totalDaiRatio * 10000) / ((totalEthRatio + totalDaiRatio) * 100);
@@ -195,10 +193,10 @@ public class Balances {
     Wad18 ethereumAndWethBalance = wethBalance.add(ethereumBalance);
 
     if (ethereumBalance.compareTo(ethereum.minimumEthereumReserveLowerLimit) < 0
-            && wethBalance.compareTo(new Wad18(10000000000000000L)) > 0) {
+        && wethBalance.compareTo(new Wad18(10000000000000000L)) > 0) {
 
       Wad18 toUnwrap =
-              (ethereum.getBalanceWithoutMinimumEthereumReserveUpperLimit()).min(wethBalance);
+          (ethereum.getBalanceWithoutMinimumEthereumReserveUpperLimit()).min(wethBalance);
 
       logger.info("UNWRAP {}", toUnwrap);
       try {
@@ -219,7 +217,7 @@ public class Balances {
             .getBalance()
             .add(compoundDai.getBalanceInDai())
             .compareTo(dai.minimumDaiNecessaryForSaleAndLending)
-            <= 0;
+        <= 0;
   }
 
   public Wad18 getMaxDaiToSell() { // todo: test this method
@@ -247,7 +245,7 @@ public class Balances {
   public boolean isThereTooFewEthAndWethForSaleAndLending(@NotNull Ethereum ethereum) {
     Wad18 wethBalance = weth.getAccount().getBalance();
     Wad18 ethAndWethBalance =
-            wethBalance.add(ethereum.getBalanceWithoutMinimumEthereumReserveUpperLimit());
+        wethBalance.add(ethereum.getBalanceWithoutMinimumEthereumReserveUpperLimit());
     return ethAndWethBalance.compareTo(ethereum.minimumEthereumNecessaryForSale) <= 0;
   }
 

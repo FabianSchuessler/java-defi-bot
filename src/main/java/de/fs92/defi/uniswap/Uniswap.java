@@ -111,42 +111,43 @@ public class Uniswap implements AddressMethod {
     }
   }
 
-  EthToTokenSwapInput getBuyDaiParameters(
-          @NotNull Balances balances, Wad18 medianEthereumPrice) throws Exception {
+  EthToTokenSwapInput getBuyDaiParameters(@NotNull Balances balances, Wad18 medianEthereumPrice)
+      throws Exception {
     Wad18 wethBalance = balances.weth.getAccount().getBalance();
     Wad18 ethToSell =
-            wethBalance.add(balances.ethereum.getBalanceWithoutMinimumEthereumReserveUpperLimit());
+        wethBalance.add(balances.ethereum.getBalanceWithoutMinimumEthereumReserveUpperLimit());
     Wad18 buyableDaiAmount;
     try {
-      buyableDaiAmount = new Wad18(this.uniswapContract.getEthToTokenInputPrice(ethToSell.toBigInteger()).send());
+      buyableDaiAmount =
+          new Wad18(this.uniswapContract.getEthToTokenInputPrice(ethToSell.toBigInteger()).send());
     } catch (Exception e) {
       logger.error(EXCEPTION, e);
       return null;
     }
     UniswapOffer offer =
-            getProfitableBuyDaiOffer(
-                    buyableDaiAmount,
-                    ethToSell,
-                    balances,
-                    medianEthereumPrice,
-                    gasProvider.getPercentageOfProfitAsFee(
-                            gasProvider.getFailedTransactionsWithinTheLastTwelveHoursForGasPriceArrayList()));
+        getProfitableBuyDaiOffer(
+            buyableDaiAmount,
+            ethToSell,
+            balances,
+            medianEthereumPrice,
+            gasProvider.getPercentageOfProfitAsFee(
+                gasProvider.getFailedTransactionsWithinTheLastTwelveHoursForGasPriceArrayList()));
     if (offer.buyableAmount.compareTo(Wad18.ZERO) != 0) {
       return calculateBuyDaiParameters(medianEthereumPrice, offer, balances);
     }
     return null;
   }
 
-  TokenToEthSwapInput getSellDaiParameters(
-          @NotNull Balances balances, Wad18 medianEthereumPrice) throws IOException {
+  TokenToEthSwapInput getSellDaiParameters(@NotNull Balances balances, Wad18 medianEthereumPrice)
+      throws IOException {
     Wad18 daiToSell = balances.getMaxDaiToSell(); // TODO: test this line
     UniswapOffer offer =
-            getProfitableSellDaiOffer(
-                    daiToSell,
-                    balances,
-                    medianEthereumPrice,
-                    gasProvider.getPercentageOfProfitAsFee(
-                            gasProvider.getFailedTransactionsWithinTheLastTwelveHoursForGasPriceArrayList()));
+        getProfitableSellDaiOffer(
+            daiToSell,
+            balances,
+            medianEthereumPrice,
+            gasProvider.getPercentageOfProfitAsFee(
+                gasProvider.getFailedTransactionsWithinTheLastTwelveHoursForGasPriceArrayList()));
     if (offer.buyableAmount.compareTo(Wad18.ZERO) != 0) {
       return calculateSellDaiParameters(medianEthereumPrice, daiToSell, offer);
     }
@@ -155,36 +156,34 @@ public class Uniswap implements AddressMethod {
 
   @NotNull
   private EthToTokenSwapInput calculateBuyDaiParameters(
-          Wad18 medianEthereumPrice, UniswapOffer offer, @NotNull Balances balances)
+      Wad18 medianEthereumPrice, UniswapOffer offer, @NotNull Balances balances)
       throws IOException {
     long currentUnixTimePlusFiveMinutes = System.currentTimeMillis() / 1000L + 300L;
     logger.info("UNISWAP BUY DAI PROFIT CALCULATION");
     logger.trace("ALTERNATIVE DEADLINE {}", currentUnixTimePlusFiveMinutes);
 
-    Wad18 deadline = new Wad18(
+    Wad18 deadline =
+        new Wad18(
             web3j
-                    .ethGetBlockByNumber(DefaultBlockParameterName.LATEST, false)
-                    .send()
-                    .getBlock()
-                    .getTimestamp()
-                    .add(BigInteger.valueOf(300)));
+                .ethGetBlockByNumber(DefaultBlockParameterName.LATEST, false)
+                .send()
+                .getBlock()
+                .getTimestamp()
+                .add(BigInteger.valueOf(300)));
     Wad18 wethBalance = balances.weth.getAccount().getBalance();
     if (wethBalance.compareTo(
             balances
-                    .ethereum
-                    .minimumEthereumReserveUpperLimit) // TODO: move this line up in the method
-            // hierarchy
-            // hierarchy
-            > 0) { // TODO: check this line
+                .ethereum
+                .minimumEthereumReserveUpperLimit) // TODO: move this line up in the method
+        // hierarchy
+        // hierarchy
+        > 0) { // TODO: check this line
       logger.trace(PROFIT, offer.profit);
       weth.weth2Eth(
-              balances,
-              offer.profit,
-              medianEthereumPrice,
-              balances.weth.getAccount().getBalance());
+          balances, offer.profit, medianEthereumPrice, balances.weth.getAccount().getBalance());
     }
     Wad18 profitWillingToGiveUp =
-            offer.profit.multiply(new Wad18(getMachineReadable(buyProfitPercentage)));
+        offer.profit.multiply(new Wad18(getMachineReadable(buyProfitPercentage)));
     Wad18 actualProfitInUSD = offer.profit.subtract(profitWillingToGiveUp);
     Wad18 minTokens = offer.buyableAmount.subtract(profitWillingToGiveUp);
     Wad18 ethSold = balances.ethereum.getBalanceWithoutMinimumEthereumReserveUpperLimit();
@@ -192,9 +191,9 @@ public class Uniswap implements AddressMethod {
     // https://stackoverflow.com/questions/39506891/why-is-zoneoffset-utc-zoneid-ofutc
     String timeZone = TimeZone.getDefault().getID();
     String formattedDeadline =
-            Instant.ofEpochSecond(currentUnixTimePlusFiveMinutes)
-                    .atZone(ZoneId.of(timeZone))
-                    .format(dtf);
+        Instant.ofEpochSecond(currentUnixTimePlusFiveMinutes)
+            .atZone(ZoneId.of(timeZone))
+            .format(dtf);
 
     logger.trace("PROFIT WILLING TO GIVE UP {}", profitWillingToGiveUp);
     logger.trace("ETH SOLD {}", ethSold);
@@ -206,29 +205,30 @@ public class Uniswap implements AddressMethod {
 
   @NotNull
   private TokenToEthSwapInput calculateSellDaiParameters(
-          Wad18 medianEthereumPrice, Wad18 daiToSell, @NotNull UniswapOffer offer)
-      throws IOException {
+      Wad18 medianEthereumPrice, Wad18 daiToSell, @NotNull UniswapOffer offer) throws IOException {
     long unixTime = System.currentTimeMillis() / 1000L + 300L;
     logger.trace("DEADLINE IN UNIX {}", unixTime);
-    Wad18 deadline = new Wad18(
+    Wad18 deadline =
+        new Wad18(
             web3j
-                    .ethGetBlockByNumber(DefaultBlockParameterName.LATEST, false)
-                    .send()
-                    .getBlock()
-                    .getTimestamp()
-                    .add(BigInteger.valueOf(300)));
+                .ethGetBlockByNumber(DefaultBlockParameterName.LATEST, false)
+                .send()
+                .getBlock()
+                .getTimestamp()
+                .add(BigInteger.valueOf(300)));
     Wad18 profitWillingToGiveUp =
-
-            offer.profit.multiply(new Wad18(getMachineReadable(sellProfitPercentage))).divide(
-                    daiToSell.divide(offer.buyableAmount));
+        offer
+            .profit
+            .multiply(new Wad18(getMachineReadable(sellProfitPercentage)))
+            .divide(daiToSell.divide(offer.buyableAmount));
     Wad18 actualProfitInUSD =
-            offer.profit.subtract(profitWillingToGiveUp.multiply(medianEthereumPrice));
+        offer.profit.subtract(profitWillingToGiveUp.multiply(medianEthereumPrice));
     Wad18 minEth = offer.buyableAmount.subtract(profitWillingToGiveUp);
 
     // https://stackoverflow.com/questions/39506891/why-is-zoneoffset-utc-zoneid-ofutc
     String timeZone = TimeZone.getDefault().getID();
     String formatedDeadline =
-            Instant.ofEpochSecond(unixTime).atZone(ZoneId.of(timeZone)).format(dtf);
+        Instant.ofEpochSecond(unixTime).atZone(ZoneId.of(timeZone)).format(dtf);
 
     logger.info("PROFIT WILLING TO GIVE UP {}", profitWillingToGiveUp);
     logger.info("TOKEN SOLD {}", minEth);
@@ -240,11 +240,11 @@ public class Uniswap implements AddressMethod {
 
   @NotNull
   UniswapOffer getProfitableBuyDaiOffer(
-          Wad18 buyableDaiAmount,
-          Wad18 ethToSell,
-          @NotNull Balances balances,
-          Wad18 medianEthereumPrice,
-          double percentageOfProfitAsFee) {
+      Wad18 buyableDaiAmount,
+      Wad18 ethToSell,
+      @NotNull Balances balances,
+      Wad18 medianEthereumPrice,
+      double percentageOfProfitAsFee) {
     logger.trace("BUYABLE DAI AMOUNT {} DAI", buyableDaiAmount);
 
     Wad18 uniswapBuyDaiPrice = buyableDaiAmount.divide(ethToSell);
@@ -257,7 +257,7 @@ public class Uniswap implements AddressMethod {
     // BigDecimal(buyableDaiAmount).subtract(multiply(medianEthereumPrice, new
     // BigDecimal(ethToSell))); // without transaction costs
     Wad18 potentialProfit =
-            getPotentialProfit(bestOfferMedianRatio, buyableDaiAmount, percentageOfProfitAsFee);
+        getPotentialProfit(bestOfferMedianRatio, buyableDaiAmount, percentageOfProfitAsFee);
 
     if (potentialProfit.compareTo(balances.getMinimumTradeProfitBuyDai()) > 0)
       return new UniswapOffer(buyableDaiAmount, potentialProfit);
@@ -266,12 +266,13 @@ public class Uniswap implements AddressMethod {
 
   @NotNull
   UniswapOffer getProfitableSellDaiOffer(
-          Wad18 daiToSell,
-          Balances balances,
-          Wad18 medianEthereumPrice,
-          double percentageOfProfitAsFee) {
+      Wad18 daiToSell,
+      Balances balances,
+      Wad18 medianEthereumPrice,
+      double percentageOfProfitAsFee) {
     try {
-      Wad18 buyableEthAmount = new Wad18(this.uniswapContract.getTokenToEthInputPrice(daiToSell.toBigInteger()).send());
+      Wad18 buyableEthAmount =
+          new Wad18(this.uniswapContract.getTokenToEthInputPrice(daiToSell.toBigInteger()).send());
       logger.info("BUYABLE ETH AMOUNT {} ETH", buyableEthAmount);
 
       Wad18 ethDaiRatio = daiToSell.divide(buyableEthAmount);
@@ -281,7 +282,7 @@ public class Uniswap implements AddressMethod {
       logger.info("OFFER-MEDIAN RATIO {}", bestOfferMedianRatio.toString(5));
 
       Wad18 potentialProfit =
-              getPotentialProfit(bestOfferMedianRatio, daiToSell, percentageOfProfitAsFee);
+          getPotentialProfit(bestOfferMedianRatio, daiToSell, percentageOfProfitAsFee);
 
       if (potentialProfit.compareTo(balances.getMinimumTradeProfitSellDai()) > 0)
         return new UniswapOffer(buyableEthAmount, potentialProfit);
@@ -294,18 +295,18 @@ public class Uniswap implements AddressMethod {
   }
 
   private void buyDaiTransaction(
-          EthToTokenSwapInput ethToTokenSwapInput, Wad18 medianEthereumPrice, Balances balances) {
+      EthToTokenSwapInput ethToTokenSwapInput, Wad18 medianEthereumPrice, Balances balances) {
     if (permissions.check("UNISWAP BUY DAI")) {
       try {
         this.gasProvider.updateFastGasPrice(
-                medianEthereumPrice, ethToTokenSwapInput.potentialProfit);
+            medianEthereumPrice, ethToTokenSwapInput.potentialProfit);
         TransactionReceipt transferReceipt =
-                this.uniswapContract
-                        .ethToTokenSwapInput(
-                                ethToTokenSwapInput.minTokens.toBigInteger(),
-                                ethToTokenSwapInput.deadline.toBigInteger(),
-                                ethToTokenSwapInput.ethSold.toBigInteger())
-                        .send();
+            this.uniswapContract
+                .ethToTokenSwapInput(
+                    ethToTokenSwapInput.minTokens.toBigInteger(),
+                    ethToTokenSwapInput.deadline.toBigInteger(),
+                    ethToTokenSwapInput.ethSold.toBigInteger())
+                .send();
         TimeUnit.SECONDS.sleep(
             1); // for Balances to update, otherwise same (buy/sell) type of transaction happens,
         // although not enough balance weth/dai
@@ -338,18 +339,18 @@ public class Uniswap implements AddressMethod {
   }
 
   private void sellDaiTransaction(
-          TokenToEthSwapInput tokenToEthSwapInput, Wad18 medianEthereumPrice, Balances balances) {
+      TokenToEthSwapInput tokenToEthSwapInput, Wad18 medianEthereumPrice, Balances balances) {
     if (permissions.check("UNISWAP SELL DAI")) {
       try {
         this.gasProvider.updateFastGasPrice(
-                medianEthereumPrice, tokenToEthSwapInput.potentialProfit);
+            medianEthereumPrice, tokenToEthSwapInput.potentialProfit);
         TransactionReceipt transferReceipt =
-                this.uniswapContract
-                        .tokenToEthSwapInput(
-                                tokenToEthSwapInput.tokenSold.toBigInteger(),
-                                tokenToEthSwapInput.minEth.toBigInteger(),
-                                tokenToEthSwapInput.deadline.toBigInteger())
-                        .send();
+            this.uniswapContract
+                .tokenToEthSwapInput(
+                    tokenToEthSwapInput.tokenSold.toBigInteger(),
+                    tokenToEthSwapInput.minEth.toBigInteger(),
+                    tokenToEthSwapInput.deadline.toBigInteger())
+                .send();
         TimeUnit.SECONDS.sleep(
             1); // for Balances to update, otherwise same (buy/sell) type of transaction happens,
         // although not enough balance weth/dai

@@ -22,7 +22,7 @@ import static de.fs92.defi.numberutil.NumberUtil.getMachineReadable;
 
 public class Ethereum {
   private static final org.slf4j.Logger logger =
-          LoggerFactory.getLogger(MethodHandles.lookup().lookupClass().getSimpleName());
+      LoggerFactory.getLogger(MethodHandles.lookup().lookupClass().getSimpleName());
 
   public final Wad18 minimumEthereumReserveUpperLimit;
   public final Wad18 minimumEthereumReserveLowerLimit;
@@ -35,19 +35,19 @@ public class Ethereum {
   private Wad18 balance;
 
   public Ethereum(
-          @NotNull ContractNeedsProvider contractNeedsProvider,
-          double minimumEthereumReserveUpperLimit,
-          double minimumEthereumReserveLowerLimit,
-          double minimumEthereumNecessaryForSale) {
+      @NotNull ContractNeedsProvider contractNeedsProvider,
+      double minimumEthereumReserveUpperLimit,
+      double minimumEthereumReserveLowerLimit,
+      double minimumEthereumNecessaryForSale) {
     web3j = contractNeedsProvider.getWeb3j();
     permissions = contractNeedsProvider.getPermissions();
     credentials = contractNeedsProvider.getCredentials();
     this.minimumEthereumReserveUpperLimit =
-            new Wad18(getMachineReadable(minimumEthereumReserveUpperLimit));
+        new Wad18(getMachineReadable(minimumEthereumReserveUpperLimit));
     this.minimumEthereumReserveLowerLimit =
-            new Wad18(getMachineReadable(minimumEthereumReserveLowerLimit));
+        new Wad18(getMachineReadable(minimumEthereumReserveLowerLimit));
     this.minimumEthereumNecessaryForSale =
-            new Wad18(getMachineReadable(minimumEthereumNecessaryForSale));
+        new Wad18(getMachineReadable(minimumEthereumNecessaryForSale));
     balance = Wad18.ZERO;
   }
 
@@ -75,11 +75,11 @@ public class Ethereum {
     Wad18 oldBalance = balance; // todo: use account
     try {
       balance =
-              new Wad18(
-                      web3j
-                              .ethGetBalance(getAddress(), DefaultBlockParameterName.LATEST)
-                              .send()
-                              .getBalance());
+          new Wad18(
+              web3j
+                  .ethGetBalance(getAddress(), DefaultBlockParameterName.LATEST)
+                  .send()
+                  .getBalance());
     } catch (IOException e) {
       logger.error("IOException", e);
       balance = new Wad18();
@@ -103,12 +103,12 @@ public class Ethereum {
 
   public Wad18 getBalanceWithoutMinimumEthereumReserveUpperLimit() {
     Wad18 balanceWithoutMinimumEthereumReserveUpperLimit =
-            Wad18.ZERO.max(balance.subtract(minimumEthereumReserveUpperLimit));
+        Wad18.ZERO.max(balance.subtract(minimumEthereumReserveUpperLimit));
     if (balanceWithoutMinimumEthereumReserveUpperLimit.compareTo(Wad18.ZERO) != 0)
       logger.trace(
-              "ETH BALANCE WITHOUT MINIMUM ETHEREUM RESERVER UPPER LIMIT {}{}",
-              balanceWithoutMinimumEthereumReserveUpperLimit,
-              " ETH");
+          "ETH BALANCE WITHOUT MINIMUM ETHEREUM RESERVER UPPER LIMIT {}{}",
+          balanceWithoutMinimumEthereumReserveUpperLimit,
+          " ETH");
     return balanceWithoutMinimumEthereumReserveUpperLimit;
   }
 

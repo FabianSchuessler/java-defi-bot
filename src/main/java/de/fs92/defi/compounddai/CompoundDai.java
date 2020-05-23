@@ -23,14 +23,14 @@ import java.util.concurrent.TimeUnit;
 public class CompoundDai implements AddressMethod {
   public static final String ADDRESS = "0x5d3a536E4D6DbD6114cc1Ead35777bAB948E3643";
   public static final Wad18 gasLimit =
-          new Wad18(BigInteger.valueOf(200000)); // https://compound.finance/developers#gas-costs
+      new Wad18(BigInteger.valueOf(200000)); // https://compound.finance/developers#gas-costs
   private static final org.slf4j.Logger logger =
-          LoggerFactory.getLogger(MethodHandles.lookup().lookupClass().getSimpleName());
+      LoggerFactory.getLogger(MethodHandles.lookup().lookupClass().getSimpleName());
   private static final Wad18 secondsPerYear = new Wad18(BigInteger.valueOf(31557600));
   private static final Wad18 timeBetweenBlocks = new Wad18(BigInteger.valueOf(15));
   private static final int WAIT_TIME = 60 * 60 * 1000; // 60 minutes
   private static final Wad18 supplyRatePerYearMultiplicand =
-          secondsPerYear.divide(timeBetweenBlocks);
+      secondsPerYear.divide(timeBetweenBlocks);
   private static final String EXCEPTION = "Exception";
   private final CompoundDaiContract compoundDaiContract;
   private final GasProvider gasProvider;
@@ -53,7 +53,8 @@ public class CompoundDai implements AddressMethod {
       try {
         gasProvider.updateSlowGasPrice();
         logger.debug("MINT DAI {}", mintAmount);
-        TransactionReceipt transferReceipt = compoundDaiContract.mint(mintAmount.toBigInteger()).send();
+        TransactionReceipt transferReceipt =
+            compoundDaiContract.mint(mintAmount.toBigInteger()).send();
         afterTransaction(balances, medianEthereumPrice, transferReceipt);
       } catch (Exception e) {
         logger.error(EXCEPTION, e);
@@ -61,20 +62,19 @@ public class CompoundDai implements AddressMethod {
     }
   }
 
-  public void redeemAll(
-          Balances balances, Wad18 potentialProfit, Wad18 medianEthereumPrice) {
+  public void redeemAll(Balances balances, Wad18 potentialProfit, Wad18 medianEthereumPrice) {
     logger.debug("REDEEM ALL");
     redeem(balances, potentialProfit, medianEthereumPrice);
   }
 
-  public void redeem(
-          @NotNull Balances balances, Wad18 potentialProfit, Wad18 medianEthereumPrice) {
+  public void redeem(@NotNull Balances balances, Wad18 potentialProfit, Wad18 medianEthereumPrice) {
     Wad18 redeemAmount = account.getBalance();
     if (permissions.check("COMPOUND DAI REDEEM " + redeemAmount + " CDAI")) {
       try {
         gasProvider.updateFastGasPrice(medianEthereumPrice, potentialProfit);
         logger.debug("REDEEM CDAI {}", redeemAmount);
-        TransactionReceipt transferReceipt = compoundDaiContract.redeem(redeemAmount.toBigInteger()).send();
+        TransactionReceipt transferReceipt =
+            compoundDaiContract.redeem(redeemAmount.toBigInteger()).send();
         afterTransaction(balances, medianEthereumPrice, transferReceipt);
       } catch (Exception e) {
         logger.error(EXCEPTION, e);
@@ -83,15 +83,13 @@ public class CompoundDai implements AddressMethod {
   }
 
   private void afterTransaction(
-          @NotNull Balances balances,
-          Wad18 medianEthereumPrice,
-          TransactionReceipt transferReceipt)
-          throws InterruptedException {
+      @NotNull Balances balances, Wad18 medianEthereumPrice, TransactionReceipt transferReceipt)
+      throws InterruptedException {
     TimeUnit.SECONDS.sleep(1);
     balances.updateBalanceInformation(medianEthereumPrice);
     logger.info(
-            "Transaction complete, view it at https://etherscan.io/tx/{}",
-            transferReceipt.getTransactionHash());
+        "Transaction complete, view it at https://etherscan.io/tx/{}",
+        transferReceipt.getTransactionHash());
   }
 
   void borrow(Wad18 borrowAmount) {
@@ -158,9 +156,9 @@ public class CompoundDai implements AddressMethod {
 
       // 2 * 222.53 * 300,000 * 0.00000001 = 1.33518
       Wad18 transactionCosts =
-              new Wad18(BigInteger.TWO)
-                      .multiply(gasLimit)
-                      .multiply(slowGasPrice.multiply(medianEthereumPrice)); // in USD
+          new Wad18(BigInteger.TWO)
+              .multiply(gasLimit)
+              .multiply(slowGasPrice.multiply(medianEthereumPrice)); // in USD
       Wad18 possibleDailyInterest = getDailyInterest(balances.dai.getAccount().getBalance());
       if (transactionCosts.compareTo(possibleDailyInterest) < 0) {
         logger.trace("SUFFICIENT INTEREST TO LEND DAI ON COMPOUND");
@@ -169,19 +167,19 @@ public class CompoundDai implements AddressMethod {
           mint(balances, medianEthereumPrice);
         } else {
           logger.warn(
-                  "CURRENT CODE REQUIRES {} MINUTES BETWEEN LAST SUCCESSFUL TRANSACTION AND MINTING CDAI",
-                  WAIT_TIME);
+              "CURRENT CODE REQUIRES {} MINUTES BETWEEN LAST SUCCESSFUL TRANSACTION AND MINTING CDAI",
+              WAIT_TIME);
         }
       } else {
         logger.warn(
-                "CURRENT CODE REQUIRES THAT THE TRANSACTION COSTS {} ARE LOWER THAN THE DAILY INTEREST {}",
-                transactionCosts,
-                possibleDailyInterest);
+            "CURRENT CODE REQUIRES THAT THE TRANSACTION COSTS {} ARE LOWER THAN THE DAILY INTEREST {}",
+            transactionCosts,
+            possibleDailyInterest);
       }
       logger.trace(
-              "SLOW GAS PRICE {}{}",
-              Convert.fromWei(slowGasPrice.toString(), Convert.Unit.GWEI),
-              " GWEI");
+          "SLOW GAS PRICE {}{}",
+          Convert.fromWei(slowGasPrice.toString(), Convert.Unit.GWEI),
+          " GWEI");
       logger.trace("TRANSACTION COSTS {}{}", transactionCosts.toString(2), " DAI");
     } else {
       logger.info("NOT ENOUGH DAI TO LEND DAI ON COMPOUND");
@@ -207,13 +205,14 @@ public class CompoundDai implements AddressMethod {
 
   private Wad18 getDailyInterest(Wad18 amount) {
     logger.info("DAI OR SUPPLIED DAI BALANCE {}{}", amount, " DAI");
-    Wad18 dailyInterest = amount.multiply(getSupplyRate()).divide(new Wad18(BigInteger.valueOf(365)));
+    Wad18 dailyInterest =
+        amount.multiply(getSupplyRate()).divide(new Wad18(BigInteger.valueOf(365)));
     logger.info("DAILY INTEREST {}{}", dailyInterest, " DAI");
     return dailyInterest;
   }
 
   private boolean isAlternativeMoreProfitableThanLendingDai(
-          Balances balances, Wad18 profitComparator, Wad18 medianEthereumPrice) {
+      Balances balances, Wad18 profitComparator, Wad18 medianEthereumPrice) {
     Wad18 dailyInterest = getCurrentDailyInterest();
     logger.info("PROFIT COMPARATOR {}{}", profitComparator, " DAI");
     if (profitComparator.compareTo(dailyInterest.add(balances.minimumTradeProfit)) > 0) {
@@ -226,13 +225,13 @@ public class CompoundDai implements AddressMethod {
   }
 
   public boolean canOtherProfitMethodsWorkWithoutCDaiConversion(
-          @NotNull Balances balances, Wad18 profitComparator, Wad18 medianEthereumPrice) {
+      @NotNull Balances balances, Wad18 profitComparator, Wad18 medianEthereumPrice) {
     if (getBalanceInDai().compareTo(Wad18.ZERO) == 0) {
       logger.info("CDAI CONVERSION NOT NECESSARY");
       return true;
     }
     return isAlternativeMoreProfitableThanLendingDai(
-            balances, profitComparator, medianEthereumPrice);
+        balances, profitComparator, medianEthereumPrice);
   }
 
   public String getAddress() {

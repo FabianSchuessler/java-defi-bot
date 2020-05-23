@@ -61,26 +61,26 @@ public class Medianizer {
 
   private static void updateMedian() throws MedianException {
     Wad18 newMedian =
-            getMedian(
-                    new Wad18[]{
-                            getKrakenEthPrice(), getMakerDAOEthPrice(), getCoinbaseProEthPrice()
-                    });
+        getMedian(
+            new Wad18[] {getKrakenEthPrice(), getMakerDAOEthPrice(), getCoinbaseProEthPrice()});
     if (newMedian.equals(Wad18.ZERO)) throw new MedianException("MEDIAN IS ZERO EXCEPTION");
     median = newMedian;
   }
 
   static Wad18 getMedian(Wad18[] array) throws MedianException {
     array =
-            Arrays.stream(array)
-                    .filter(n -> n.compareTo(Wad18.ZERO) > 0)
-                    .sorted()
-                    .toArray(Wad18[]::new);
+        Arrays.stream(array)
+            .filter(n -> n.compareTo(Wad18.ZERO) > 0)
+            .sorted()
+            .toArray(Wad18[]::new);
 
     logger.trace("MEDIAN {}", Arrays.toString(array));
     if (array.length == 0) throw new MedianException("ARRAY IS EMPTY");
     if (array.length == 1) throw new MedianException("TOO FEW PRICE FEEDS");
     if (array.length % 2 == 0)
-      return array[array.length / 2].add(array[array.length / 2 - 1]).divide(getMachineReadable(2.0));
+      return array[array.length / 2]
+          .add(array[array.length / 2 - 1])
+          .divide(getMachineReadable(2.0));
     else return array[array.length / 2];
   }
 
@@ -108,12 +108,14 @@ public class Medianizer {
   private static Wad18 getCryptocompareEthPrice() {
     Wad18 ethPrice = new Wad18();
     try (Scanner scanner =
-                 new Scanner(
-                         new URL("https://min-api.cryptocompare.com/data/price?fsym=ETH&tsyms=USD").openStream(),
-                         StandardCharsets.UTF_8)) {
+        new Scanner(
+            new URL("https://min-api.cryptocompare.com/data/price?fsym=ETH&tsyms=USD").openStream(),
+            StandardCharsets.UTF_8)) {
       String input = scanner.useDelimiter("\\A").next();
       String[] parts = input.split("\"");
-      ethPrice = new Wad18(getMachineReadable(Double.valueOf(parts[2].substring(1, parts[2].length() - 1))));
+      ethPrice =
+          new Wad18(
+              getMachineReadable(Double.valueOf(parts[2].substring(1, parts[2].length() - 1))));
     } catch (Exception e) {
       logger.error(EXCEPTION, e);
     }
@@ -130,9 +132,9 @@ public class Medianizer {
   private static Wad18 getKrakenEthPrice() {
     Wad18 ethPrice = new Wad18();
     try (Scanner scanner =
-                 new Scanner(
-                         new URL("https://api.kraken.com/0/public/Ticker?pair=ETHUSD").openStream(),
-                         StandardCharsets.UTF_8)) {
+        new Scanner(
+            new URL("https://api.kraken.com/0/public/Ticker?pair=ETHUSD").openStream(),
+            StandardCharsets.UTF_8)) {
       String input = scanner.useDelimiter("\\A").next();
       String[] parts = input.split("\"");
       BigInteger bid = getMachineReadable(Double.valueOf(parts[9]));
@@ -154,9 +156,9 @@ public class Medianizer {
   static Wad18 getCoinbaseProEthPrice() {
     Wad18 ethPrice = new Wad18();
     try (Scanner scanner =
-                 new Scanner(
-                         new URL("https://api.coinbase.com/v2/prices/ETH-USD/spot").openStream(),
-                         StandardCharsets.UTF_8)) {
+        new Scanner(
+            new URL("https://api.coinbase.com/v2/prices/ETH-USD/spot").openStream(),
+            StandardCharsets.UTF_8)) {
       String input = scanner.useDelimiter("\\A").next();
       String[] parts = input.split("\"");
       ethPrice = new Wad18(getMachineReadable(Double.valueOf(parts[13])));

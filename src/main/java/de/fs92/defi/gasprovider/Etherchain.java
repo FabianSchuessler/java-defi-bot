@@ -26,17 +26,17 @@ public class Etherchain {
       URL url = new URL("https://www.etherchain.org/api/gasPriceOracle");
       URLConnection hc = url.openConnection();
       hc.setRequestProperty(
-              "User-Agent",
-              "Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.4; en-US; rv:1.9.2.2) Gecko/20100316 Firefox/3.6.2");
+          "User-Agent",
+          "Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.4; en-US; rv:1.9.2.2) Gecko/20100316 Firefox/3.6.2");
       String out =
-              new Scanner(hc.getInputStream(), StandardCharsets.UTF_8).useDelimiter("\\A").next();
+          new Scanner(hc.getInputStream(), StandardCharsets.UTF_8).useDelimiter("\\A").next();
       String[] parts = out.split("\"");
       Wad18 gasPrice = new Wad18(Convert.toWei(parts[15], Convert.Unit.GWEI).toBigInteger());
 
       logger.trace(
-              "ETHERCHAIN SUGGESTS GP {}{}",
-              Convert.fromWei(gasPrice.toBigInteger().toString(), Convert.Unit.GWEI),
-              " GWEI");
+          "ETHERCHAIN SUGGESTS GP {}{}",
+          Convert.fromWei(gasPrice.toBigInteger().toString(), Convert.Unit.GWEI),
+          " GWEI");
       return gasPrice;
     } catch (IOException e) {
       logger.error("IOException", e);

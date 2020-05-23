@@ -18,14 +18,14 @@ import static de.fs92.defi.numberutil.NumberUtil.getMachineReadable;
 /**
  * @deprecated This class is currently unused. It was created for SCD and has to be updated to MCD.
  */
-@Deprecated(since = "0.0.1", forRemoval = false)
+@Deprecated(since = "0.0.1")
 public class Maker {
   private static final org.slf4j.Logger logger =
-          LoggerFactory.getLogger(MethodHandles.lookup().lookupClass().getSimpleName());
+      LoggerFactory.getLogger(MethodHandles.lookup().lookupClass().getSimpleName());
   private static final String ADDRESS = "0x448a5065aeBB8E423F0896E6c5D525C040f59af3";
   private static final Wad18 liquidationRatio = new Wad18(getMachineReadable(1.5));
   private static final String CDP_ID =
-          "0x0000000000000000000000000000000000000000000000000000000000000000"; // TODO: Get own cdp ID
+      "0x0000000000000000000000000000000000000000000000000000000000000000"; // TODO: Get own cdp ID
   private static final Wad18 MAX_LIQUIDATION_PRICE = new Wad18(getMachineReadable(100.0));
   private final MakerContract makerContract;
   private Wad18 drawableDai;
@@ -40,7 +40,7 @@ public class Maker {
 
   private void updateCDPInformation(Balances balances) throws Exception {
     Tuple4<String, BigInteger, BigInteger, BigInteger> cupsResult =
-            makerContract.cups(Numeric.hexStringToByteArray(CDP_ID)).send();
+        makerContract.cups(Numeric.hexStringToByteArray(CDP_ID)).send();
 
     Wad18 lockedEth = new Wad18(cupsResult.component2()); // ink is the locked ETH
     Wad18 outstandingDaiDebt = new Wad18(cupsResult.component3()); // art is outstanding dai debt
@@ -48,7 +48,7 @@ public class Maker {
 
     // (Stability Debt * Liquidation Ratio) / Collateral = Liquidation Price
     Wad18 currentLiquidationPrice =
-            outstandingDaiDebt.multiply(liquidationRatio).multiply(lockedEth);
+        outstandingDaiDebt.multiply(liquidationRatio).multiply(lockedEth);
 
     // INFO: drawable dai does not include owned eth
     if (MAX_LIQUIDATION_PRICE.compareTo(currentLiquidationPrice) > 0) {

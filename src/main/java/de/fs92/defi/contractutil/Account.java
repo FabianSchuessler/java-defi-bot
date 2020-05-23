@@ -5,7 +5,6 @@ import org.slf4j.LoggerFactory;
 import org.web3j.crypto.Credentials;
 
 import java.lang.invoke.MethodHandles;
-import java.math.BigInteger;
 
 public class Account {
   private static final org.slf4j.Logger logger =
@@ -25,8 +24,7 @@ public class Account {
   }
 
   public Wad18 getBalance() {
-    if (balance.compareTo(Wad18.ZERO) != 0)
-      logger.trace("{} BALANCE {} {}", name, balance, name);
+    if (balance.compareTo(Wad18.ZERO) != 0) logger.trace("{} BALANCE {} {}", name, balance, name);
     return balance;
   }
 

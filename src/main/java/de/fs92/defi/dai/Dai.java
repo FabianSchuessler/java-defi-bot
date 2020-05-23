@@ -12,7 +12,6 @@ import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.methods.response.TransactionReceipt;
 
 import java.lang.invoke.MethodHandles;
-import java.math.BigInteger;
 
 import static de.fs92.defi.numberutil.NumberUtil.UINT_MAX;
 import static de.fs92.defi.numberutil.NumberUtil.getMachineReadable;
@@ -34,8 +33,8 @@ public class Dai {
     Web3j web3j = contractNeedsProvider.getWeb3j();
     Credentials credentials = contractNeedsProvider.getCredentials();
     GasProvider gasProvider = contractNeedsProvider.getGasProvider();
-    this.minimumDaiNecessaryForSaleAndLending = new Wad18(
-        getMachineReadable(minimumDaiNecessaryForSaleAndLending));
+    this.minimumDaiNecessaryForSaleAndLending =
+        new Wad18(getMachineReadable(minimumDaiNecessaryForSaleAndLending));
     daiContract = DaiContract.load(ADDRESS, web3j, credentials, gasProvider);
     account = new Account(daiContract, credentials, "DAI");
     approval = new Approval(daiContract, contractNeedsProvider);

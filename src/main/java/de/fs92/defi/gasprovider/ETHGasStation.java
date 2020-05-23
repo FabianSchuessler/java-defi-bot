@@ -25,9 +25,9 @@ public class ETHGasStation {
   static Wad18 getFastestGasPrice() throws GasPriceException {
     Wad18 gasPrice = getGasPrice(4);
     logger.trace(
-            "ETHERGASSTATION SUGGESTS GP {}{}",
-            Convert.fromWei(gasPrice.toBigInteger().toString(), Convert.Unit.GWEI),
-            " GWEI");
+        "ETHERGASSTATION SUGGESTS GP {}{}",
+        Convert.fromWei(gasPrice.toBigInteger().toString(), Convert.Unit.GWEI),
+        " GWEI");
     return gasPrice;
   }
 
@@ -35,9 +35,9 @@ public class ETHGasStation {
   static Wad18 getSafeLowGasPrice() throws GasPriceException {
     Wad18 gasPrice = getGasPrice(6);
     logger.trace(
-            "ETHERGASSTATION SUGGESTS GP {}{}",
-            Convert.fromWei(gasPrice.toBigInteger().toString(), Convert.Unit.GWEI),
-            " GWEI");
+        "ETHERGASSTATION SUGGESTS GP {}{}",
+        Convert.fromWei(gasPrice.toBigInteger().toString(), Convert.Unit.GWEI),
+        " GWEI");
     return gasPrice;
   }
 
@@ -46,13 +46,14 @@ public class ETHGasStation {
       URL url = new URL("https://ethgasstation.info/json/ethgasAPI.json");
       URLConnection hc = url.openConnection();
       hc.setRequestProperty(
-              "User-Agent",
-              "Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.4; en-US; rv:1.9.2.2) Gecko/20100316 Firefox/3.6.2");
+          "User-Agent",
+          "Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.4; en-US; rv:1.9.2.2) Gecko/20100316 Firefox/3.6.2");
       String out =
-              new Scanner(hc.getInputStream(), StandardCharsets.UTF_8).useDelimiter("\\A").next();
+          new Scanner(hc.getInputStream(), StandardCharsets.UTF_8).useDelimiter("\\A").next();
       String[] parts = out.split("\"");
       String clean = parts[i].replaceAll("[^\\d.]", "");
-      return new Wad18(Convert.toWei(clean, Convert.Unit.GWEI).toBigInteger().divide(BigInteger.TEN));
+      return new Wad18(
+          Convert.toWei(clean, Convert.Unit.GWEI).toBigInteger().divide(BigInteger.TEN));
     } catch (IOException e) {
       logger.error("IOException ", e);
       throw new GasPriceException("ETHGasStationException");

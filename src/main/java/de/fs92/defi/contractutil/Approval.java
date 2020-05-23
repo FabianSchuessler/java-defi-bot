@@ -38,8 +38,11 @@ public class Approval {
   public void check(AddressMethod toAllowContract) {
     try {
       String address = toAllowContract.getAddress();
-      Wad18 allowance = new Wad18(
-              contract.allowance(contractNeedsProvider.getCredentials().getAddress(), address).send());
+      Wad18 allowance =
+          new Wad18(
+              contract
+                  .allowance(contractNeedsProvider.getCredentials().getAddress(), address)
+                  .send());
       if (allowance.toBigInteger().compareTo(MINIMUM_APPROVAL_ALLOWANCE) < 0) {
         logger.warn("DAI ALLOWANCE IS TOO LOW {}", allowance);
         approve(address, toAllowContract.getClass().getName());

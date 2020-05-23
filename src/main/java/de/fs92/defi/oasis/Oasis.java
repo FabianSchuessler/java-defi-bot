@@ -62,14 +62,14 @@ public class Oasis implements AddressMethod {
   Map<String, Wad18> getOffer(Wad18 bestOffer) throws Exception {
     Map<String, Wad18> offerValues = new HashMap<>();
     Tuple4<BigInteger, String, BigInteger, String> getOffer =
-            uniswapContract.getOffer(bestOffer.toBigInteger()).send();
+        uniswapContract.getOffer(bestOffer.toBigInteger()).send();
 
     offerValues.put(getOffer.component2(), new Wad18(getOffer.component1()));
     offerValues.put(getOffer.component4(), new Wad18(getOffer.component3()));
 
     if (!(getOffer.component2().equalsIgnoreCase(Weth.ADDRESS)
             && getOffer.component4().equalsIgnoreCase(Dai.ADDRESS))
-            && (!(getOffer.component2().equalsIgnoreCase(Dai.ADDRESS)
+        && (!(getOffer.component2().equalsIgnoreCase(Dai.ADDRESS)
             && getOffer.component4().equalsIgnoreCase(Weth.ADDRESS)))) {
       logger.info("BIG INTEGER 1 {}", getOffer.component1());
       logger.info("CONTRACT ADDRESS 1 {}", getOffer.component2());
@@ -99,18 +99,20 @@ public class Oasis implements AddressMethod {
       logger.info("OASIS BUY DAI PROFIT CALCULATION");
       Wad18 medianEthereumPrice = Medianizer.getPrice();
       OasisOffer bestOffer =
-              buyDaiSellWethIsProfitable(
-                      medianEthereumPrice,
-                      balances,
-                      gasProvider.getPercentageOfProfitAsFee(
-                              gasProvider.getFailedTransactionsWithinTheLastTwelveHoursForGasPriceArrayList()));
+          buyDaiSellWethIsProfitable(
+              medianEthereumPrice,
+              balances,
+              gasProvider.getPercentageOfProfitAsFee(
+                  gasProvider.getFailedTransactionsWithinTheLastTwelveHoursForGasPriceArrayList()));
       if (bestOffer.offerId.compareTo(Wad18.ZERO) != 0) {
         String weiValue = "100000000"; // INFO: seems to be necessary due to rounding error
         Wad18 wethBalance = balances.weth.getAccount().getBalance();
-        Wad18 ethBalance =
-                balances.ethereum.getBalanceWithoutMinimumEthereumReserveUpperLimit();
+        Wad18 ethBalance = balances.ethereum.getBalanceWithoutMinimumEthereumReserveUpperLimit();
         Wad18 ownConstraint =
-                wethBalance.add(ethBalance).multiply(bestOffer.bestOfferDaiPerEth).subtract(new Wad18(new BigInteger(weiValue)));
+            wethBalance
+                .add(ethBalance)
+                .multiply(bestOffer.bestOfferDaiPerEth)
+                .subtract(new Wad18(new BigInteger(weiValue)));
         Wad18 offerConstraint = bestOffer.offerValues.get(Dai.ADDRESS);
         logger.debug("OWN CONSTRAINT {}", ownConstraint);
         logger.debug("OFFER CONSTRAINT {}", offerConstraint);
@@ -118,19 +120,19 @@ public class Oasis implements AddressMethod {
                 .ethereum
                 .getBalance()
                 .compareTo(balances.ethereum.minimumEthereumReserveUpperLimit)
-                > 0) {
+            > 0) {
           weth.eth2Weth(
-                  balances.ethereum.getBalanceWithoutMinimumEthereumReserveUpperLimit(),
-                  bestOffer.profit,
-                  medianEthereumPrice,
-                  balances);
+              balances.ethereum.getBalanceWithoutMinimumEthereumReserveUpperLimit(),
+              bestOffer.profit,
+              medianEthereumPrice,
+              balances);
         }
         takeOrder(
-                bestOffer.offerId,
-                ownConstraint.min(offerConstraint),
-                bestOffer.profit,
-                medianEthereumPrice,
-                balances);
+            bestOffer.offerId,
+            ownConstraint.min(offerConstraint),
+            bestOffer.profit,
+            medianEthereumPrice,
+            balances);
       }
     } catch (MedianException e) {
       logger.error(EXCEPTION, e);
@@ -147,25 +149,25 @@ public class Oasis implements AddressMethod {
       Wad18 medianEthereumPrice = Medianizer.getPrice();
       Wad18 maxDaiToSell = balances.getMaxDaiToSell();
       OasisOffer bestOffer =
-              sellDaiBuyWethIsProfitable(
-                      medianEthereumPrice,
-                      maxDaiToSell,
-                      balances,
-                      gasProvider.getPercentageOfProfitAsFee(
-                              gasProvider.getFailedTransactionsWithinTheLastTwelveHoursForGasPriceArrayList()));
+          sellDaiBuyWethIsProfitable(
+              medianEthereumPrice,
+              maxDaiToSell,
+              balances,
+              gasProvider.getPercentageOfProfitAsFee(
+                  gasProvider.getFailedTransactionsWithinTheLastTwelveHoursForGasPriceArrayList()));
       if (bestOffer.offerId.compareTo(Wad18.ZERO) != 0) {
         Wad18 ownConstraint = balances.getMaxDaiToSell().divide(bestOffer.bestOfferDaiPerEth);
         Wad18 offerConstraint = bestOffer.offerValues.get(Weth.ADDRESS);
         logger.debug("OWN CONSTRAINT {}", ownConstraint);
         logger.debug("OFFER CONSTRAINT {}", offerConstraint);
         if (compoundDai.canOtherProfitMethodsWorkWithoutCDaiConversion(
-                balances, bestOffer.profit, medianEthereumPrice)) {
+            balances, bestOffer.profit, medianEthereumPrice)) {
           takeOrder(
-                  bestOffer.offerId,
-                  ownConstraint.min(offerConstraint),
-                  bestOffer.profit,
-                  medianEthereumPrice,
-                  balances);
+              bestOffer.offerId,
+              ownConstraint.min(offerConstraint),
+              bestOffer.profit,
+              medianEthereumPrice,
+              balances);
         }
       }
     } catch (MedianException e) {
@@ -175,7 +177,7 @@ public class Oasis implements AddressMethod {
 
   @NotNull
   private OasisOffer buyDaiSellWethIsProfitable(
-          Wad18 medianEthereumPrice, Balances balances, double percentageOfProfitAsFee) {
+      Wad18 medianEthereumPrice, Balances balances, double percentageOfProfitAsFee) {
     Wad18 bestOffer = getBestOffer(Dai.ADDRESS, Weth.ADDRESS);
     logger.trace("BEST BUY-DAI-OFFER ID {}", bestOffer);
     Map<String, Wad18> offerValues;
@@ -186,22 +188,21 @@ public class Oasis implements AddressMethod {
       return new OasisOffer(new Wad18(), null, null, new Wad18());
     }
     logger.trace("BUYABLE DAI AMOUNT {}{}", offerValues.get(Dai.ADDRESS), " DAI");
-    logger.trace(
-            "SELLABLE WETH AMOUNT {}{}", offerValues.get(Weth.ADDRESS), " WETH");
+    logger.trace("SELLABLE WETH AMOUNT {}{}", offerValues.get(Weth.ADDRESS), " WETH");
     if (!offerValues.get(Weth.ADDRESS).toBigInteger().equals(BigInteger.ZERO)) {
       Wad18 bestOfferEthDaiRatioBuyDai =
-              offerValues.get(Dai.ADDRESS).divide(offerValues.get(Weth.ADDRESS));
+          offerValues.get(Dai.ADDRESS).divide(offerValues.get(Weth.ADDRESS));
       Wad18 bestOfferMedianRatio = medianEthereumPrice.divide(bestOfferEthDaiRatioBuyDai);
       logger.trace("DAI PER WETH {}{}", bestOfferEthDaiRatioBuyDai.toString(5), " WETH/DAI");
       logger.trace("MEDIAN-OFFER RATIO {}", bestOfferMedianRatio);
       Wad18 wethBalance = balances.weth.getAccount().getBalance();
       Wad18 ethBalance = balances.ethereum.getBalanceWithoutMinimumEthereumReserveUpperLimit();
       Wad18 potentialProfit =
-              getPotentialProfit(
-                      bestOfferMedianRatio,
-                      ((wethBalance.add(ethBalance)).min(offerValues.get(Weth.ADDRESS))).multiply(
-                              bestOfferEthDaiRatioBuyDai),
-                      percentageOfProfitAsFee);
+          getPotentialProfit(
+              bestOfferMedianRatio,
+              ((wethBalance.add(ethBalance)).min(offerValues.get(Weth.ADDRESS)))
+                  .multiply(bestOfferEthDaiRatioBuyDai),
+              percentageOfProfitAsFee);
       if (potentialProfit.compareTo(balances.getMinimumTradeProfitBuyDai()) > 0) {
         return new OasisOffer(bestOffer, offerValues, bestOfferEthDaiRatioBuyDai, potentialProfit);
       }
@@ -213,10 +214,10 @@ public class Oasis implements AddressMethod {
 
   @NotNull
   private OasisOffer sellDaiBuyWethIsProfitable(
-          Wad18 medianEthereumPrice,
-          Wad18 maxDaiToSell,
-          Balances balances,
-          double percentageOfProfitAsFee) {
+      Wad18 medianEthereumPrice,
+      Wad18 maxDaiToSell,
+      Balances balances,
+      double percentageOfProfitAsFee) {
     Wad18 bestOffer = getBestOffer(Weth.ADDRESS, Dai.ADDRESS);
     logger.trace("BEST SELL-DAI-OFFER ID {}", bestOffer);
     Map<String, Wad18> offerValues;
@@ -226,23 +227,20 @@ public class Oasis implements AddressMethod {
       logger.error(EXCEPTION, e);
       return new OasisOffer(new Wad18(), null, null, new Wad18());
     }
-    logger.trace(
-            "BUYABLE WETH AMOUNT {}{}", offerValues.get(Weth.ADDRESS), " WETH");
-    logger.trace(
-            "SELLABLE DAI AMOUNT {}{}", offerValues.get(Dai.ADDRESS), " DAI");
+    logger.trace("BUYABLE WETH AMOUNT {}{}", offerValues.get(Weth.ADDRESS), " WETH");
+    logger.trace("SELLABLE DAI AMOUNT {}{}", offerValues.get(Dai.ADDRESS), " DAI");
 
     if (!offerValues.get(Weth.ADDRESS).equals(Wad18.ZERO)) {
       Wad18 bestOfferEthDaiRatioSellDai =
-              offerValues.get(Dai.ADDRESS).divide(offerValues.get(Weth.ADDRESS));
+          offerValues.get(Dai.ADDRESS).divide(offerValues.get(Weth.ADDRESS));
       Wad18 bestOfferMedianRatio = bestOfferEthDaiRatioSellDai.divide(medianEthereumPrice);
-      logger.trace(
-              "OFFER ETH PRICE {}{}", bestOfferEthDaiRatioSellDai.toString(5), " WETH/DAI");
+      logger.trace("OFFER ETH PRICE {}{}", bestOfferEthDaiRatioSellDai.toString(5), " WETH/DAI");
       logger.trace("OFFER-MEDIAN RATIO {}", bestOfferMedianRatio.toString(5));
       Wad18 potentialProfit =
-              getPotentialProfit(
-                      bestOfferMedianRatio,
-                      maxDaiToSell.min(offerValues.get(Dai.ADDRESS)),
-                      percentageOfProfitAsFee);
+          getPotentialProfit(
+              bestOfferMedianRatio,
+              maxDaiToSell.min(offerValues.get(Dai.ADDRESS)),
+              percentageOfProfitAsFee);
       // TODO: do constraints already here
 
       if (potentialProfit.compareTo(balances.getMinimumTradeProfitSellDai()) > 0) {
@@ -255,20 +253,21 @@ public class Oasis implements AddressMethod {
   }
 
   private void takeOrder(
-          Wad18 offerId,
-          Wad18 amountToBuy,
-          Wad18 potentialProfit,
-          Wad18 medianEthereumPrice,
-          Balances balances) {
+      Wad18 offerId,
+      Wad18 amountToBuy,
+      Wad18 potentialProfit,
+      Wad18 medianEthereumPrice,
+      Balances balances) {
     if (permissions.check("OASIS BUY ORDER")) {
       try {
         gasProvider.updateFastGasPrice(medianEthereumPrice, potentialProfit);
-        TransactionReceipt transferReceipt = uniswapContract.buy(offerId.toBigInteger(), amountToBuy.toBigInteger()).send();
+        TransactionReceipt transferReceipt =
+            uniswapContract.buy(offerId.toBigInteger(), amountToBuy.toBigInteger()).send();
         logger.info(
-                "Transaction complete, view it at https://etherscan.io/tx/{}",
-                transferReceipt.getTransactionHash());
+            "Transaction complete, view it at https://etherscan.io/tx/{}",
+            transferReceipt.getTransactionHash());
         TimeUnit.SECONDS.sleep(
-                1); // for Balances to update, otherwise same (buy/sell) type of transaction happens,
+            1); // for Balances to update, otherwise same (buy/sell) type of transaction happens,
         // although not enough balance weth/dai
         balances.refreshLastSuccessfulTransaction();
         balances.addToSumEstimatedProfits(potentialProfit);

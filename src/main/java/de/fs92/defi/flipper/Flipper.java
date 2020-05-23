@@ -64,9 +64,9 @@ public class Flipper {
       try {
         flipperContract
             .tend(
-                    auction.id,
-                    auction.collateralForSale.toBigInteger(),
-                    auction.bidAmountInDai.multiply(getMinimumBidIncrease()).toBigInteger())
+                auction.id,
+                auction.collateralForSale.toBigInteger(),
+                auction.bidAmountInDai.multiply(getMinimumBidIncrease()).toBigInteger())
             .send();
       } catch (Exception e) {
         logger.error(EXCEPTION, e);
@@ -80,9 +80,9 @@ public class Flipper {
       try {
         flipperContract
             .dent(
-                    auction.id,
-                    auction.collateralForSale.divide(getMinimumBidIncrease()).toBigInteger(),
-                    auction.bidAmountInDai.toBigInteger())
+                auction.id,
+                auction.collateralForSale.divide(getMinimumBidIncrease()).toBigInteger(),
+                auction.bidAmountInDai.toBigInteger())
             .send();
       } catch (Exception e) {
         logger.error(EXCEPTION, e);
@@ -109,10 +109,7 @@ public class Flipper {
           && !auction.amIHighestBidder(credentials)
           && auction.isInDefinedBiddingPhase(startingBiddingBeforeEnd)) {
         balances.weth.checkIfWeth2EthConversionNecessaryThenDoIt(
-                auction.bidAmountInDai.multiply(minimumBidIncrease),
-                balances,
-                potentialProfit,
-                median);
+            auction.bidAmountInDai.multiply(minimumBidIncrease), balances, potentialProfit, median);
         bid(auction);
       }
     }
@@ -166,13 +163,13 @@ public class Flipper {
         if (auction.isCompleted()) {
           auctionIsCompleted = true;
         } else if (auction.isActive()
-                && auction.isAffordable(minimumBidIncrease, balances.getMaxDaiToSell())) {
+            && auction.isAffordable(minimumBidIncrease, balances.getMaxDaiToSell())) {
           activeAuctionList.add(auction);
         }
       }
       auctionCounter = auctionCounter.subtract(BigInteger.ONE);
     }
-    logger.trace("ACTIVE AUCTION LIST SIZE: {}", activeAuctionList.size());
+    logger.trace("ACTIVE AFFORDABLE AUCTION LIST SIZE: {}", activeAuctionList.size());
     if (!activeAuctionList.isEmpty())
       logger.trace("ACTIVE AUCTION LIST: {}", ArrayListUtil.toString(activeAuctionList));
     pastTotalAuctionCount = totalAuctionCount;

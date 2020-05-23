@@ -44,10 +44,10 @@ public class Weth {
   }
 
   public void weth2Eth(
-          Balances balances,
-          Wad18 potentialProfit,
-          Wad18 medianEthereumPrice,
-          Wad18 amountOfWethToUnwrap) {
+      Balances balances,
+      Wad18 potentialProfit,
+      Wad18 medianEthereumPrice,
+      Wad18 amountOfWethToUnwrap) {
     if (permissions.check("WETH2ETH")) {
       try {
         gasProvider.updateFastGasPrice(medianEthereumPrice, potentialProfit);
@@ -59,13 +59,13 @@ public class Weth {
 
         logger.warn("CONVERT {} WETH TO ETH", amountOfWethToUnwrap);
         TransactionReceipt transferReceipt =
-                wethContract.withdraw(amountOfWethToUnwrap.toBigInteger()).send();
+            wethContract.withdraw(amountOfWethToUnwrap.toBigInteger()).send();
         TimeUnit.SECONDS.sleep(
-                1); // for balances to update, otherwise same (buy/sell) type of transaction happens,
+            1); // for balances to update, otherwise same (buy/sell) type of transaction happens,
         // although not enough balance weth/dai
         logger.trace(
-                "Transaction complete, view it at https://etherscan.io/tx/{}",
-                transferReceipt.getTransactionHash());
+            "Transaction complete, view it at https://etherscan.io/tx/{}",
+            transferReceipt.getTransactionHash());
 
         balances.updateBalanceInformation(medianEthereumPrice); // not really necessary?
       } catch (Exception e) {
@@ -76,10 +76,10 @@ public class Weth {
   }
 
   public void eth2Weth(
-          Wad18 amountOfEthToWrap,
-          Wad18 potentialProfit,
-          Wad18 medianEthereumPrice,
-          Balances balances) {
+      Wad18 amountOfEthToWrap,
+      Wad18 potentialProfit,
+      Wad18 medianEthereumPrice,
+      Balances balances) {
     if (permissions.check("ETH2WETH")) {
       try {
         gasProvider.updateFastGasPrice(medianEthereumPrice, potentialProfit);
@@ -90,11 +90,11 @@ public class Weth {
 
         logger.warn("CONVERT {} ETH TO WETH", amountOfEthToWrap);
         TransactionReceipt transferReceipt =
-                wethContract.deposit(amountOfEthToWrap.toBigInteger()).send();
+            wethContract.deposit(amountOfEthToWrap.toBigInteger()).send();
         TimeUnit.SECONDS.sleep(1);
         logger.trace(
-                "Transaction complete, view it at https://etherscan.io/tx/{}",
-                transferReceipt.getTransactionHash());
+            "Transaction complete, view it at https://etherscan.io/tx/{}",
+            transferReceipt.getTransactionHash());
         balances.updateBalanceInformation(medianEthereumPrice); // not really necessary?
       } catch (Exception e) {
         logger.error(EXCEPTION, e);
@@ -112,14 +112,14 @@ public class Weth {
   }
 
   public void checkIfWeth2EthConversionNecessaryThenDoIt(
-          Wad18 requiredBalance, Balances balances, Wad18 potentialProfit, Wad18 medianEthereumPrice) {
+      Wad18 requiredBalance, Balances balances, Wad18 potentialProfit, Wad18 medianEthereumPrice) {
     if (account.getBalance().compareTo(requiredBalance) < 0) {
       logger.trace("WETH 2 ETH CONVERSION NECESSARY");
       weth2Eth(
-              balances,
-              potentialProfit,
-              medianEthereumPrice,
-              account.getBalance().subtract(requiredBalance));
+          balances,
+          potentialProfit,
+          medianEthereumPrice,
+          account.getBalance().subtract(requiredBalance));
     }
   }
 }

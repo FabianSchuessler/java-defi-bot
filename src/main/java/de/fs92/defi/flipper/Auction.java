@@ -17,7 +17,7 @@ import java.util.TimeZone;
 public class Auction {
   public static final DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy_MM_dd HH_mm_ss");
   private static final org.slf4j.Logger logger =
-          LoggerFactory.getLogger(MethodHandles.lookup().lookupClass().getSimpleName());
+      LoggerFactory.getLogger(MethodHandles.lookup().lookupClass().getSimpleName());
   public final Rad45 bidAmountInDai; // bid
   public final Wad18 collateralForSale; // lot
   public final String highestBidder; // guy
@@ -29,10 +29,10 @@ public class Auction {
   public final BigInteger id; // id
 
   Auction(
-          BigInteger id,
-          @NotNull
-                  Tuple8<BigInteger, BigInteger, String, BigInteger, BigInteger, String, String, BigInteger>
-                  auctionTuple) {
+      BigInteger id,
+      @NotNull
+          Tuple8<BigInteger, BigInteger, String, BigInteger, BigInteger, String, String, BigInteger>
+              auctionTuple) {
     this.id = id;
     this.bidAmountInDai = new Rad45(auctionTuple.component1());
     this.collateralForSale = new Wad18(auctionTuple.component2());
@@ -52,7 +52,7 @@ public class Auction {
   boolean isInDefinedBiddingPhase(BigInteger biddingPeriod) {
     long currentUnixTime = System.currentTimeMillis() / 1000L;
     return !isCompleted()
-            && (currentUnixTime + biddingPeriod.longValue())
+        && (currentUnixTime + biddingPeriod.longValue())
             >= bidExpiry.min(maxAuctionDuration).longValue();
   }
 
@@ -111,26 +111,26 @@ public class Auction {
   public String toString() {
     String timeZone = TimeZone.getDefault().getID();
     return "Auction{"
-            + "id="
-            + id
-            + ", bidAmountInDai="
-            + bidAmountInDai
-            + ", collateralForSale="
-            + collateralForSale
-            + ", highestBidder='"
-            + highestBidder
-            + ", bidExpiry="
-            + Instant.ofEpochSecond(bidExpiry.longValue()).atZone(ZoneId.of(timeZone)).format(dtf)
-            + ", maxAuctionDuration="
-            + Instant.ofEpochSecond(maxAuctionDuration.longValue())
+        + "id="
+        + id
+        + ", bidAmountInDai="
+        + bidAmountInDai
+        + ", collateralForSale="
+        + collateralForSale
+        + ", highestBidder='"
+        + highestBidder
+        + ", bidExpiry="
+        + Instant.ofEpochSecond(bidExpiry.longValue()).atZone(ZoneId.of(timeZone)).format(dtf)
+        + ", maxAuctionDuration="
+        + Instant.ofEpochSecond(maxAuctionDuration.longValue())
             .atZone(ZoneId.of(timeZone))
             .format(dtf)
-            + ", addressOfAuctionedVault='"
-            + addressOfAuctionedVault
-            + ", recipientOfAuctionIncome='"
-            + recipientOfAuctionIncome
-            + ", totalDaiWanted="
-            + totalDaiWanted
-            + '}';
+        + ", addressOfAuctionedVault='"
+        + addressOfAuctionedVault
+        + ", recipientOfAuctionIncome='"
+        + recipientOfAuctionIncome
+        + ", totalDaiWanted="
+        + totalDaiWanted
+        + '}';
   }
 }

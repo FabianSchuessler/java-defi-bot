@@ -9,7 +9,7 @@ public class EthToTokenSwapInput {
   public final Wad18 potentialProfit;
 
   public EthToTokenSwapInput(
-          Wad18 minTokens, Wad18 deadline, Wad18 ethSold, Wad18 potentialProfit) {
+      Wad18 minTokens, Wad18 deadline, Wad18 ethSold, Wad18 potentialProfit) {
     this.minTokens = minTokens;
     this.deadline = deadline;
     this.ethSold = ethSold;
