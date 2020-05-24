@@ -10,9 +10,6 @@
 - Add [Uniswap V2](https://uniswap.org/blog/uniswap-v2/)
 - Move wait time to config? private static final int WAIT_TIME = 60 * 60 * 1000; // 60 minutes
 - Compare oasis and uniswap profit in Main
-- Put BigNumberUtils into a BigInteger/BigDecimal Wrapper class
-- **Finish flip auctions**
-    - Bid on an auction if five minutes left and minimal profitable depending on tend or dend phase
 - **Add maker.borrowAndLendDai(balances)**
 - **Add dydx.lendDai()**
 - Add eth gas estimation per transaction
