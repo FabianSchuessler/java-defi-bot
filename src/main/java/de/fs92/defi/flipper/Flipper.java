@@ -13,6 +13,7 @@ import org.jetbrains.annotations.NotNull;
 import org.slf4j.LoggerFactory;
 import org.web3j.crypto.Credentials;
 import org.web3j.protocol.Web3j;
+import org.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.web3j.tuples.generated.Tuple8;
 
 import java.lang.invoke.MethodHandles;
@@ -51,8 +52,8 @@ public class Flipper {
     startingBiddingBeforeEnd = BigInteger.valueOf(300); // 5 minutes * 60 seconds
   }
 
-  private void bid(@NotNull Auction auction) {
-    if (auction.isDent(minimumBidIncrease)) {
+  private void bid(@NotNull Auction auction, boolean isDent) {
+    if (isDent) {
       dent(auction);
     } else {
       tend(auction);
@@ -62,12 +63,16 @@ public class Flipper {
   private void tend(@NotNull Auction auction) {
     if (permissions.check("TEND")) {
       try {
-        flipperContract
-            .tend(
-                auction.id,
-                auction.collateralForSale.toBigInteger(),
-                auction.bidAmountInDai.multiply(getMinimumBidIncrease()).toBigInteger())
-            .send();
+        TransactionReceipt transferReceipt =
+            flipperContract
+                .tend(
+                    auction.id,
+                    auction.collateralForSale.toBigInteger(),
+                    auction.bidAmountInDai.multiply(getMinimumBidIncrease()).toBigInteger())
+                .send();
+        logger.trace(
+            "Transaction complete, view it at https://etherscan.io/tx/{}",
+            transferReceipt.getTransactionHash());
       } catch (Exception e) {
         logger.error(EXCEPTION, e);
         circuitBreaker.addTransactionFailedNow();
@@ -78,12 +83,16 @@ public class Flipper {
   private void dent(@NotNull Auction auction) {
     if (permissions.check("DENT")) {
       try {
-        flipperContract
-            .dent(
-                auction.id,
-                auction.collateralForSale.divide(getMinimumBidIncrease()).toBigInteger(),
-                auction.bidAmountInDai.toBigInteger())
-            .send();
+        TransactionReceipt transferReceipt =
+            flipperContract
+                .dent(
+                    auction.id,
+                    auction.collateralForSale.divide(getMinimumBidIncrease()).toBigInteger(),
+                    auction.bidAmountInDai.toBigInteger())
+                .send();
+        logger.trace(
+            "Transaction complete, view it at https://etherscan.io/tx/{}",
+            transferReceipt.getTransactionHash());
       } catch (Exception e) {
         logger.error(EXCEPTION, e);
         circuitBreaker.addTransactionFailedNow();
@@ -92,6 +101,7 @@ public class Flipper {
   }
 
   public void checkIfThereAreProfitableFlipAuctions(Balances balances) {
+    logger.trace("");
     logger.trace("CHECKING IF THERE ARE ANY PROFITABLE FLIP AUCTIONS");
     BigInteger totalAuctionCount = getTotalAuctionCount();
     if (totalAuctionCount.compareTo(BigInteger.ZERO) == 0) return;
@@ -105,12 +115,13 @@ public class Flipper {
     }
     for (Auction auction : auctionList) {
       Wad18 potentialProfit = auction.getPotentialProfit(minimumBidIncrease, median);
+      boolean isDent = auction.isDent(minimumBidIncrease);
       if (potentialProfit.compareTo(minimumFlipAuctionProfit) > 0
           && !auction.amIHighestBidder(credentials)
-          && auction.isInDefinedBiddingPhase(startingBiddingBeforeEnd)) {
+          && auction.isInDefinedBiddingPhase(startingBiddingBeforeEnd, isDent)) {
         balances.weth.checkIfWeth2EthConversionNecessaryThenDoIt(
             auction.bidAmountInDai.multiply(minimumBidIncrease), balances, potentialProfit, median);
-        bid(auction);
+        bid(auction, isDent);
       }
     }
   }

@@ -47,6 +47,8 @@ public class Permissions {
         logger.info("TRANSACTION DENIED.");
         return false;
       }
+    } else {
+      logger.trace("TRANSACTION {} DOES NOT REQUIRE CONFIRMATION", transactionInformation);
     }
     return true;
   }

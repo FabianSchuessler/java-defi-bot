@@ -59,22 +59,22 @@ class OasisIT {
   @Test
   void getOffer_nonExistingOffer_DaiOrWethMissingException() {
     Exception exception =
-            assertThrows(DaiOrWethMissingException.class, () -> oasis.getOffer(new Wad18(0)));
+            assertThrows(DaiOrWethMissingException.class, () -> oasis.getOffer(BigInteger.ZERO));
     String actualMessage = exception.getMessage();
     assertTrue(actualMessage.contains("BOTH DAI AND WETH NEED TO BE PRESENT ONCE."));
   }
 
   @Test
   void getBestOffer_buyDai_returnOffer() {
-    Wad18 actual = oasis.getBestOffer(Dai.ADDRESS, Weth.ADDRESS);
-    assertNotEquals(BigInteger.ZERO, actual.toBigInteger());
+    BigInteger actual = oasis.getBestOffer(Dai.ADDRESS, Weth.ADDRESS);
+    assertNotEquals(BigInteger.ZERO, actual);
     assertNotNull(actual);
   }
 
   @Test
   void getBestOffer_sellDai_returnOffer() {
-    Wad18 actual = oasis.getBestOffer(Weth.ADDRESS, Dai.ADDRESS);
-    assertNotEquals(BigInteger.ZERO, actual.toBigInteger());
+    BigInteger actual = oasis.getBestOffer(Weth.ADDRESS, Dai.ADDRESS);
+    assertNotEquals(BigInteger.ZERO, actual);
     assertNotNull(actual);
   }
 

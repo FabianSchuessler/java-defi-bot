@@ -23,7 +23,7 @@ public class Web3jProvider {
       if (e instanceof ClientConnectionException) {
         logger.error("Check your infuraProjectId in the config.properties file.");
       }
-      logger.error("Exception", e);
+      logger.error("Exception -> Exit", e);
       System.exit(0);
     }
   }

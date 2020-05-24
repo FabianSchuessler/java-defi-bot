@@ -59,10 +59,10 @@ public class Oasis implements AddressMethod {
    * @throws Exception calling uniSwap Contract can cause Exception
    */
   @NotNull
-  Map<String, Wad18> getOffer(Wad18 bestOffer) throws Exception {
+  Map<String, Wad18> getOffer(BigInteger bestOffer) throws Exception {
     Map<String, Wad18> offerValues = new HashMap<>();
     Tuple4<BigInteger, String, BigInteger, String> getOffer =
-        uniswapContract.getOffer(bestOffer.toBigInteger()).send();
+        uniswapContract.getOffer(bestOffer).send();
 
     offerValues.put(getOffer.component2(), new Wad18(getOffer.component1()));
     offerValues.put(getOffer.component4(), new Wad18(getOffer.component3()));
@@ -81,16 +81,17 @@ public class Oasis implements AddressMethod {
   }
 
   // TODO: methods calling this method should check for BigInteger.ZERO to improve their performance
-  Wad18 getBestOffer(String buyAddress, String sellAddress) {
+  BigInteger getBestOffer(String buyAddress, String sellAddress) {
     try {
-      return new Wad18(uniswapContract.getBestOffer(buyAddress, sellAddress).send());
+      return uniswapContract.getBestOffer(buyAddress, sellAddress).send();
     } catch (Exception e) {
       logger.error(EXCEPTION, e);
-      return new Wad18();
+      return BigInteger.ZERO;
     }
   }
 
   public void checkIfBuyDaiIsProfitableThenDoIt(@NotNull Balances balances) {
+    logger.trace("");
     if (balances.isThereTooFewEthAndWethForSaleAndLending(balances.ethereum)) {
       logger.info("NOT ENOUGH WETH AND ETH TO BUY DAI ON OASIS");
       return;
@@ -104,7 +105,7 @@ public class Oasis implements AddressMethod {
               balances,
               gasProvider.getPercentageOfProfitAsFee(
                   gasProvider.getFailedTransactionsWithinTheLastTwelveHoursForGasPriceArrayList()));
-      if (bestOffer.offerId.compareTo(Wad18.ZERO) != 0) {
+      if (bestOffer.offerId.compareTo(BigInteger.ZERO) != 0) {
         String weiValue = "100000000"; // INFO: seems to be necessary due to rounding error
         Wad18 wethBalance = balances.weth.getAccount().getBalance();
         Wad18 ethBalance = balances.ethereum.getBalanceWithoutMinimumEthereumReserveUpperLimit();
@@ -140,6 +141,7 @@ public class Oasis implements AddressMethod {
   }
 
   public void checkIfSellDaiIsProfitableThenDoIt(@NotNull Balances balances) {
+    logger.trace("");
     if (balances.isThereTooFewDaiAndDaiInCompoundForSale()) {
       logger.info("NOT ENOUGH DAI TO SELL DAI ON OASIS");
       return;
@@ -155,7 +157,7 @@ public class Oasis implements AddressMethod {
               balances,
               gasProvider.getPercentageOfProfitAsFee(
                   gasProvider.getFailedTransactionsWithinTheLastTwelveHoursForGasPriceArrayList()));
-      if (bestOffer.offerId.compareTo(Wad18.ZERO) != 0) {
+      if (bestOffer.offerId.compareTo(BigInteger.ZERO) != 0) {
         Wad18 ownConstraint = balances.getMaxDaiToSell().divide(bestOffer.bestOfferDaiPerEth);
         Wad18 offerConstraint = bestOffer.offerValues.get(Weth.ADDRESS);
         logger.debug("OWN CONSTRAINT {}", ownConstraint);
@@ -178,14 +180,14 @@ public class Oasis implements AddressMethod {
   @NotNull
   private OasisOffer buyDaiSellWethIsProfitable(
       Wad18 medianEthereumPrice, Balances balances, double percentageOfProfitAsFee) {
-    Wad18 bestOffer = getBestOffer(Dai.ADDRESS, Weth.ADDRESS);
+    BigInteger bestOffer = getBestOffer(Dai.ADDRESS, Weth.ADDRESS);
     logger.trace("BEST BUY-DAI-OFFER ID {}", bestOffer);
     Map<String, Wad18> offerValues;
     try {
       offerValues = getOffer(bestOffer);
     } catch (Exception e) {
       logger.error(EXCEPTION, e);
-      return new OasisOffer(new Wad18(), null, null, new Wad18());
+      return new OasisOffer(BigInteger.ZERO, null, null, new Wad18());
     }
     logger.trace("BUYABLE DAI AMOUNT {}{}", offerValues.get(Dai.ADDRESS), " DAI");
     logger.trace("SELLABLE WETH AMOUNT {}{}", offerValues.get(Weth.ADDRESS), " WETH");
@@ -209,7 +211,7 @@ public class Oasis implements AddressMethod {
     } else {
       logger.trace("OFFER TAKEN DURING PROCESSING!");
     }
-    return new OasisOffer(new Wad18(), null, null, new Wad18());
+    return new OasisOffer(BigInteger.ZERO, null, null, new Wad18());
   }
 
   @NotNull
@@ -218,14 +220,14 @@ public class Oasis implements AddressMethod {
       Wad18 maxDaiToSell,
       Balances balances,
       double percentageOfProfitAsFee) {
-    Wad18 bestOffer = getBestOffer(Weth.ADDRESS, Dai.ADDRESS);
+    BigInteger bestOffer = getBestOffer(Weth.ADDRESS, Dai.ADDRESS);
     logger.trace("BEST SELL-DAI-OFFER ID {}", bestOffer);
     Map<String, Wad18> offerValues;
     try {
       offerValues = getOffer(bestOffer);
     } catch (Exception e) {
       logger.error(EXCEPTION, e);
-      return new OasisOffer(new Wad18(), null, null, new Wad18());
+      return new OasisOffer(BigInteger.ZERO, null, null, new Wad18());
     }
     logger.trace("BUYABLE WETH AMOUNT {}{}", offerValues.get(Weth.ADDRESS), " WETH");
     logger.trace("SELLABLE DAI AMOUNT {}{}", offerValues.get(Dai.ADDRESS), " DAI");
@@ -249,11 +251,11 @@ public class Oasis implements AddressMethod {
     } else {
       logger.trace("OFFER TAKEN DURING PROCESSING!");
     }
-    return new OasisOffer(new Wad18(), null, null, new Wad18());
+    return new OasisOffer(BigInteger.ZERO, null, null, new Wad18());
   }
 
   private void takeOrder(
-      Wad18 offerId,
+      BigInteger offerId,
       Wad18 amountToBuy,
       Wad18 potentialProfit,
       Wad18 medianEthereumPrice,
@@ -262,7 +264,7 @@ public class Oasis implements AddressMethod {
       try {
         gasProvider.updateFastGasPrice(medianEthereumPrice, potentialProfit);
         TransactionReceipt transferReceipt =
-            uniswapContract.buy(offerId.toBigInteger(), amountToBuy.toBigInteger()).send();
+            uniswapContract.buy(offerId, amountToBuy.toBigInteger()).send();
         logger.info(
             "Transaction complete, view it at https://etherscan.io/tx/{}",
             transferReceipt.getTransactionHash());

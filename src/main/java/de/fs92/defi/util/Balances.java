@@ -185,6 +185,7 @@ public class Balances {
   }
 
   public void checkEnoughEthereumForGas(CircuitBreaker circuitBreaker, @NotNull Ethereum ethereum) {
+    logger.trace("");
     logger.trace("CHECKING IF ENOUGH ETHEREUM FOR GAS");
     // TODO: test this method (might unwrap without updating the gas fee to eth balance from
     // previous transaction)

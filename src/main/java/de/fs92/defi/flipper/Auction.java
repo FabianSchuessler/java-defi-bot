@@ -42,18 +42,22 @@ public class Auction {
     this.addressOfAuctionedVault = auctionTuple.component6();
     this.recipientOfAuctionIncome = auctionTuple.component7();
     this.totalDaiWanted = new Rad45(auctionTuple.component8());
-    logger.trace("AUCTION CREATED {}", this);
+    logger.trace("AUCTION CONSTRUCTED {}", this);
   }
 
   boolean isDent(Wad18 minimumBidIncrease) {
     return totalDaiWanted.compareTo(bidAmountInDai.multiply(minimumBidIncrease)) <= 0;
   }
 
-  boolean isInDefinedBiddingPhase(BigInteger biddingPeriod) {
+  boolean isInDefinedBiddingPhase(BigInteger biddingPeriod, boolean isDent) {
     long currentUnixTime = System.currentTimeMillis() / 1000L;
+    if (isDent) {
+      return !isCompleted()
+          && bidExpiry.min(maxAuctionDuration).longValue() - biddingPeriod.longValue()
+              < currentUnixTime;
+    }
     return !isCompleted()
-        && (currentUnixTime + biddingPeriod.longValue())
-            >= bidExpiry.min(maxAuctionDuration).longValue();
+        && maxAuctionDuration.longValue() - biddingPeriod.longValue() < currentUnixTime;
   }
 
   boolean amIHighestBidder(@NotNull Credentials credentials) {
@@ -95,6 +99,7 @@ public class Auction {
   }
 
   boolean isCompleted() {
+    // TODO: auction is also completed if tic is in the past if isDent
     String timeZone = TimeZone.getDefault().getID();
     String formattedBidExpiry =
         Instant.ofEpochSecond(maxAuctionDuration.longValue())

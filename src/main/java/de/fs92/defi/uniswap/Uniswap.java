@@ -72,6 +72,7 @@ public class Uniswap implements AddressMethod {
   }
 
   public void checkIfBuyDaiIsProfitableThenDoIt(@NotNull Balances balances) {
+    logger.trace("");
     if (balances.isThereTooFewEthAndWethForSaleAndLending(balances.ethereum)) {
       logger.trace("NOT ENOUGH WETH AND ETH TO BUY DAI ON UNISWAP");
       return;
@@ -92,11 +93,11 @@ public class Uniswap implements AddressMethod {
   }
 
   public void checkIfSellDaiIsProfitableThenDoIt(@NotNull Balances balances) {
+    logger.trace("");
     if (balances.isThereTooFewDaiAndDaiInCompoundForSale()) {
       logger.trace("NOT ENOUGH DAI TO SELL DAI ON UNISWAP");
       return;
     }
-
     try {
       logger.trace("UNISWAP SELL DAI PROFIT CALCULATION");
       Wad18 medianEthereumPrice = Medianizer.getPrice();

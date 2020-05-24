@@ -139,6 +139,7 @@ public class CompoundDai implements AddressMethod {
    * @param balances provides access to all balances
    */
   public void lendDai(@NotNull Balances balances) {
+    logger.trace("");
     logger.trace("CHECKING IF LENDING DAI IS PROFITABLE");
     if (balances.dai.isThereEnoughDaiForLending()) {
       Wad18 slowGasPrice = gasProvider.updateSlowGasPrice();

@@ -21,12 +21,18 @@ public class CircuitBreaker {
   }
 
   public void stopRunning() {
+    logger.trace("BOT WILL STOP RUNNING");
     continueRunning = false;
   }
 
   public boolean isAllowingOperations(int number) {
-    return failedTransactionsWithinTheLastTenMinutesForErrorBlockingArrayList.size() < number;
+    boolean isAllowingOperations = failedTransactionsWithinTheLastTenMinutesForErrorBlockingArrayList.size() < number;
+    if(!isAllowingOperations) {
+      logger.trace("ALL TRANSACTIONS ARE CURRENTLY NOT ALLOWED BECAUSE THERE HAVE BEEN TOO MANY FAILED TRANSACTIONS RECENTLY");
+    }
+    return isAllowingOperations;
   }
+// TODO: having no dai -> auction is not affordable -> getting dai -> auction is affordable again
 
   public void addTransactionFailedNow() {
     logger.trace("ADD A FAILED TRANSACTION");

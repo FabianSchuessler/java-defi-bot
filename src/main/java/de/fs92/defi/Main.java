@@ -27,7 +27,6 @@ public class Main {
       LoggerFactory.getLogger(MethodHandles.lookup().lookupClass().getSimpleName());
   private static final boolean IS_DEVELOPMENT_ENVIRONMENT = true;
 
-  // todo: fix log output, then fix readme, then add gif here
   public static void main(String[] args) {
     logger.trace("NEW START");
     JavaProperties javaProperties = new JavaProperties(IS_DEVELOPMENT_ENVIRONMENT);

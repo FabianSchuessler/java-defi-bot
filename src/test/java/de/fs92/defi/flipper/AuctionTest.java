@@ -218,7 +218,7 @@ class AuctionTest {
                     "0xA950524441892A31ebddF91d3cEEFa04Bf454466",
                     new BigInteger("37299123089429162514476831876850683361693243730"));
     Auction auction = new Auction(BigInteger.ONE, auctionTuple);
-    assertFalse(auction.isInDefinedBiddingPhase(BigInteger.valueOf(300)));
+    assertFalse(auction.isInDefinedBiddingPhase(BigInteger.valueOf(300), true));
   }
 
   @Test
@@ -236,7 +236,7 @@ class AuctionTest {
                     "0xA950524441892A31ebddF91d3cEEFa04Bf454466",
                     new BigInteger("37299123089429162514476831876850683361693243730"));
     Auction auction = new Auction(BigInteger.ONE, auctionTuple);
-    assertFalse(auction.isInDefinedBiddingPhase(BigInteger.valueOf(300)));
+    assertFalse(auction.isInDefinedBiddingPhase(BigInteger.valueOf(300), true));
   }
 
   @Test
@@ -255,7 +255,7 @@ class AuctionTest {
                     "0xA950524441892A31ebddF91d3cEEFa04Bf454466",
                     new BigInteger("37299123089429162514476831876850683361693243730"));
     Auction auction = new Auction(BigInteger.ONE, auctionTuple);
-    assertTrue(auction.isInDefinedBiddingPhase(BigInteger.valueOf(300)));
+    assertTrue(auction.isInDefinedBiddingPhase(BigInteger.valueOf(300), true));
   }
 
   @Test
@@ -274,6 +274,6 @@ class AuctionTest {
                     "0xA950524441892A31ebddF91d3cEEFa04Bf454466",
                     new BigInteger("37299123089429162514476831876850683361693243730"));
     Auction auction = new Auction(BigInteger.ONE, auctionTuple);
-    assertTrue(auction.isInDefinedBiddingPhase(BigInteger.valueOf(300)));
-  }
+    assertTrue(auction.isInDefinedBiddingPhase(BigInteger.valueOf(300), true));
+  } // TODO: test isDent false
 }

@@ -2,6 +2,7 @@ package de.fs92.defi.gasprovider;
 
 import de.fs92.defi.compounddai.CompoundDaiContract;
 import de.fs92.defi.dai.DaiContract;
+import de.fs92.defi.flipper.FlipperContract;
 import de.fs92.defi.numberutil.Wad18;
 import de.fs92.defi.oasis.OasisContract;
 import de.fs92.defi.uniswap.UniswapContract;
@@ -67,6 +68,9 @@ public class GasProvider implements ContractGasProvider {
       case WethContract.FUNC_DEPOSIT:
       case DaiContract.FUNC_APPROVE:
         return BigInteger.valueOf(50_000);
+      case FlipperContract.FUNC_TEND:
+      case FlipperContract.FUNC_DENT:
+        return BigInteger.valueOf(150_000);
       default:
         logger.trace("{} FUNCTION HAS NO CUSTOMIZED GAS LIMIT YET", contractFunc);
         return BigInteger.valueOf(500_000);
@@ -105,7 +109,7 @@ public class GasProvider implements ContractGasProvider {
       logger.error(GAS_PRICE_EXCEPTION, e);
     }
     gasPrice = fastGasPrice.min(maximumGasPrice);
-    logger.trace("GAS PRICE {}{}", Convert.fromWei(gasPrice.toString(), Convert.Unit.GWEI), GWEI);
+    logger.trace("GAS PRICE {}{}", Convert.fromWei(gasPrice.toBigDecimal(), Convert.Unit.GWEI), GWEI);
     return gasPrice;
   }
 
@@ -128,7 +132,7 @@ public class GasProvider implements ContractGasProvider {
       logger.error("IOException", e);
     }
     gasPrice = slowGasPrice;
-    logger.trace("GAS PRICE {}{}", Convert.fromWei(gasPrice.toString(), Convert.Unit.GWEI), GWEI);
+    logger.trace("GAS PRICE {}{}", Convert.fromWei(gasPrice.toBigDecimal(), Convert.Unit.GWEI), GWEI);
     return gasPrice;
   }
 
@@ -173,14 +177,14 @@ public class GasProvider implements ContractGasProvider {
 
   /** @deprecated in the interface       */
   @Override
-  @Deprecated(since = "0.0.1", forRemoval = false)
+  @Deprecated(since = "0.0.1")
   public BigInteger getGasPrice() {
     return null;
   }
 
   /** @deprecated in the interface       */
   @Override
-  @Deprecated(since = "0.0.1", forRemoval = false)
+  @Deprecated(since = "0.0.1")
   public BigInteger getGasLimit() {
     return null;
   }

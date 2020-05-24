@@ -81,9 +81,8 @@ You will find the logs in ```./logs```.
 - buys DAI, if DAI < $1.00 on Oasis ```oasis.checkIfBuyDaiIsProfitableThenDoIt(balances);```
 - sells DAI, if DAI > $1.00 on Uniswap ```uniswap.checkIfSellDaiIsProfitableThenDoIt(balances);```
 - buys DAI, if DAI < $1.00 on Uniswap ```uniswap.checkIfBuyDaiIsProfitableThenDoIt(balances);```
-- earns interest on Compound, if there is no market action ```compoundDai.lendDai(balances);```
-- bids on flip auctions ```flipper.checkIfThereAreProfitableFlipAuctions(balances);```
-
+- earns interest on Compound, if there has been no market action for a while ```compoundDai.lendDai(balances);```
+- bids on flip auctions, if the auctions offer cheaper ETH```flipper.checkIfThereAreProfitableFlipAuctions(balances);```
 
 ## Contribute
 
