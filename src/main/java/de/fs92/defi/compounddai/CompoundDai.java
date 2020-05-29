@@ -179,7 +179,7 @@ public class CompoundDai implements AddressMethod {
       }
       logger.trace(
           "SLOW GAS PRICE {}{}",
-          Convert.fromWei(slowGasPrice.toString(), Convert.Unit.GWEI),
+          Convert.fromWei(slowGasPrice.toBigDecimal(), Convert.Unit.GWEI),
           " GWEI");
       logger.trace("TRANSACTION COSTS {}{}", transactionCosts.toString(2), " DAI");
     } else {

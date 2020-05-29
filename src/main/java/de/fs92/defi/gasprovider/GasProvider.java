@@ -125,7 +125,7 @@ public class GasProvider implements ContractGasProvider {
       Wad18 web3jResult = new Wad18(web3j.ethGasPrice().send().getGasPrice());
       logger.trace(
           "WEB3J SUGGESTS GP {}{}",
-          Convert.fromWei(web3jResult.toString(), Convert.Unit.GWEI),
+          Convert.fromWei(web3jResult.toBigDecimal(), Convert.Unit.GWEI),
           GWEI);
       slowGasPrice = slowGasPrice.min(web3jResult);
     } catch (IOException e) {
@@ -169,7 +169,7 @@ public class GasProvider implements ContractGasProvider {
     Wad18 gasPriceBasedOnProfit = feeInEth.divide(new Wad18(getMachineReadable(gasLimit)));
     logger.trace(
         "PROFIT SUGGESTS GP {}{}",
-        Convert.fromWei(gasPriceBasedOnProfit.toBigInteger().toString(), Convert.Unit.GWEI),
+        Convert.fromWei(gasPriceBasedOnProfit.toBigDecimal(), Convert.Unit.GWEI),
         GWEI);
 
     return gasPriceBasedOnProfit;

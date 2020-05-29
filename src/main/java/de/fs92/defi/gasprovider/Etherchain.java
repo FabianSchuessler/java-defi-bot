@@ -35,7 +35,7 @@ public class Etherchain {
 
       logger.trace(
           "ETHERCHAIN SUGGESTS GP {}{}",
-          Convert.fromWei(gasPrice.toBigInteger().toString(), Convert.Unit.GWEI),
+          Convert.fromWei(gasPrice.toBigDecimal(), Convert.Unit.GWEI),
           " GWEI");
       return gasPrice;
     } catch (IOException e) {
