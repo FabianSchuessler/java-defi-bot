@@ -82,7 +82,7 @@ public class Ethereum {
                   .getBalance());
     } catch (IOException e) {
       logger.error("IOException", e);
-      balance = new Wad18();
+      balance = new Wad18(); // todo: if timeout, then shutdown -> BETTER: retry getting eth balance
     }
     if (oldBalance != null && oldBalance.compareTo(balance) != 0) {
       logger.trace("OLD BALANCE {} ETH", oldBalance);

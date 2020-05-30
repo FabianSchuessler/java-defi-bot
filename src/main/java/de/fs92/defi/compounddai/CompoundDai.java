@@ -195,7 +195,7 @@ public class CompoundDai implements AddressMethod {
     } catch (Exception e) {
       logger.error(EXCEPTION, e);
     }
-    logger.info("SUPPLY RATE {}{}", supplyRate, " %");
+    logger.info("SUPPLY RATE {}{}", supplyRate, " %"); // TODO: test this function: Wad18 introduced a bug here
     return supplyRate;
   }
 
