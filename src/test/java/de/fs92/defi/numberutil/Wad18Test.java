@@ -96,6 +96,15 @@ class Wad18Test {
   }
 
   @Test
+  void multiply_Wad18MultpliedBySth28_Result() {
+    Wad18 wad18 = new Wad18(new BigInteger("10000000000000000000")); // 10.000000000000000000
+    Sth28 sth28 = new Sth28(new BigInteger("204721618847438310000000000")); // 0.0204721618847438310000000000
+    BigDecimal expected = new BigDecimal("204721618847438310");
+    BigDecimal actual = wad18.multiply(sth28).toBigDecimal();
+    assertEquals(0, expected.compareTo(actual));
+  }
+
+  @Test
   void toBigInteger() {
     BigInteger expected = new BigInteger("204120000000000000000");
     BigInteger actual = new Wad18(expected).toBigInteger();

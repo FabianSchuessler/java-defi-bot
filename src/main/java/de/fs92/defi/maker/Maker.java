@@ -31,7 +31,7 @@ public class Maker {
   private Wad18 drawableDai;
 
   public Maker(ContractNeedsProvider contractNeedsProvider) {
-    drawableDai = new Wad18();
+    drawableDai = Wad18.ZERO;
     Web3j web3j = contractNeedsProvider.getWeb3j();
     Credentials credentials = contractNeedsProvider.getCredentials();
     GasProvider gasProvider = contractNeedsProvider.getGasProvider();
@@ -56,7 +56,7 @@ public class Maker {
       drawableDai = drawableDai.divide(liquidationRatio);
       drawableDai = drawableDai.subtract(outstandingDaiDebt);
     } else {
-      drawableDai = new Wad18();
+      drawableDai = Wad18.ZERO;
     }
     logger.trace("CDP INFORMATION");
     logger.trace("LOCKED ETH (INK) {}", lockedEth);

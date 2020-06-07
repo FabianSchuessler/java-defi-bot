@@ -46,22 +46,26 @@ public class NumberWrapper implements Comparable<NumberWrapper> {
   }
 
   public NumberWrapper divide(@NotNull NumberWrapper divisorWrapper) {
+    if (decimals != divisorWrapper.decimals)
+      throw new IllegalArgumentException("Not yet implemented");
     BigDecimal divisor = divisorWrapper.toBigDecimal();
     if (divisor.compareTo(BigDecimal.ZERO) == 0)
       throw new IllegalArgumentException("Argument 'divisor' is 0");
     return new NumberWrapper(
-        bigDecimal
-            .multiply(BigDecimal.valueOf(Math.pow(10, decimals)))
-            .divide(divisor, 0, RoundingMode.DOWN)
-            .stripTrailingZeros(),
+            bigDecimal
+                    .multiply(BigDecimal.valueOf(Math.pow(10, decimals)))
+                    .divide(divisor, 0, RoundingMode.DOWN)
+                    .stripTrailingZeros(),
             decimals);
   }
 
   public NumberWrapper multiply(@NotNull NumberWrapper multiplicand) {
+    if (decimals != multiplicand.decimals)
+      throw new IllegalArgumentException("Not yet implemented");
     return new NumberWrapper(
-        bigDecimal
-            .multiply(multiplicand.toBigDecimal())
-            .divide(BigDecimal.valueOf(Math.pow(10, decimals)), RoundingMode.DOWN),
+            bigDecimal
+                    .multiply(multiplicand.toBigDecimal())
+                    .divide(BigDecimal.valueOf(Math.pow(10, decimals)), RoundingMode.DOWN),
             decimals);
   }
 

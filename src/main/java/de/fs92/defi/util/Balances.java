@@ -49,9 +49,9 @@ public class Balances {
   private long pastTime;
 
   public Balances(Dai dai, Weth weth, CompoundDai compoundDai, Ethereum ethereum) {
-    usd = new Wad18();
-    sumEstimatedProfits = new Wad18();
-    sumEstimatedMissedProfits = new Wad18();
+    usd = Wad18.ZERO;
+    sumEstimatedProfits = Wad18.ZERO;
+    sumEstimatedMissedProfits = Wad18.ZERO;
     pastTime = System.currentTimeMillis();
     totalDaiRatio = 0.0;
     totalEthRatio = 0.0;
@@ -60,7 +60,7 @@ public class Balances {
     minimumTradeProfitBuyDai = new Wad18(getMachineReadable(1.0));
     minimumTradeProfitSellDai = new Wad18(getMachineReadable(1.0));
 
-    initialTotalUSD = new Wad18();
+    initialTotalUSD = Wad18.ZERO;
     initialTotalUSDCounter = 0;
     lastSuccessfulTransaction = System.currentTimeMillis();
 
@@ -202,7 +202,7 @@ public class Balances {
       logger.info("UNWRAP {}", toUnwrap);
       try {
         Wad18 medianEthereumPrice = Medianizer.getPrice();
-        weth.weth2Eth(this, new Wad18(), medianEthereumPrice, toUnwrap);
+        weth.weth2Eth(this, Wad18.ZERO, medianEthereumPrice, toUnwrap);
       } catch (MedianException e) {
         logger.error("MedianIsZeroException", e);
       }

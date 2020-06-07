@@ -34,7 +34,7 @@ public class Account {
       balance = new Wad18(contract.balanceOf(credentials.getAddress()).send());
     } catch (Exception e) {
       logger.error(EXCEPTION, e);
-      balance = new Wad18();
+      balance = Wad18.ZERO;
     }
     if (oldBalance != null && oldBalance.compareTo(balance) != 0) {
       logger.trace("OLD BALANCE {} {}", oldBalance, name);

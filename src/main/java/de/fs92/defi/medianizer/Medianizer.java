@@ -85,7 +85,7 @@ public class Medianizer {
   }
 
   private static Wad18 getMakerDAOEthPrice() {
-    Wad18 ethPrice = new Wad18();
+    Wad18 ethPrice = Wad18.ZERO;
     try {
       byte[] result = medianizerContract.read().send();
       ethPrice = new Wad18(new BigInteger(result));
@@ -106,7 +106,7 @@ public class Medianizer {
    * @return BigInteger
    */
   private static Wad18 getCryptocompareEthPrice() {
-    Wad18 ethPrice = new Wad18();
+    Wad18 ethPrice = Wad18.ZERO;
     try (Scanner scanner =
         new Scanner(
             new URL("https://min-api.cryptocompare.com/data/price?fsym=ETH&tsyms=USD").openStream(),
@@ -130,7 +130,7 @@ public class Medianizer {
    * @return BigInteger
    */
   private static Wad18 getKrakenEthPrice() {
-    Wad18 ethPrice = new Wad18();
+    Wad18 ethPrice = Wad18.ZERO;
     try (Scanner scanner =
         new Scanner(
             new URL("https://api.kraken.com/0/public/Ticker?pair=ETHUSD").openStream(),
@@ -154,7 +154,7 @@ public class Medianizer {
    * @return BigInteger
    */
   static Wad18 getCoinbaseProEthPrice() {
-    Wad18 ethPrice = new Wad18();
+    Wad18 ethPrice = Wad18.ZERO;
     try (Scanner scanner =
         new Scanner(
             new URL("https://api.coinbase.com/v2/prices/ETH-USD/spot").openStream(),

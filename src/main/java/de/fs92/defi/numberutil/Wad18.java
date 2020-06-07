@@ -53,7 +53,24 @@ public class Wad18 extends NumberWrapper {
   }
 
   @Override
-  public Wad18 multiply(@NotNull NumberWrapper multiplicand) {
+  public Wad18 multiply(@NotNull NumberWrapper multiplicandNumberWrapper) {
+    Wad18 multiplicand = new Wad18(multiplicandNumberWrapper.toBigDecimal());
+    int decimalsDifference = multiplicandNumberWrapper.decimals - decimals;
+    if (decimalsDifference > 0) {
+      multiplicand =
+              new Wad18(
+                      multiplicandNumberWrapper
+                              .toBigDecimal()
+                              .divide(
+                                      BigDecimal.valueOf(Math.pow(10, decimalsDifference)),
+                                      RoundingMode.HALF_EVEN));
+    } else if (decimalsDifference < 0) {
+      throw new IllegalArgumentException("Not yet implemented");
+    }
+    return multiply(multiplicand);
+  }
+
+  public Wad18 multiply(@NotNull Wad18 multiplicand) {
     return new Wad18(
             bigDecimal
                     .multiply(multiplicand.toBigDecimal())

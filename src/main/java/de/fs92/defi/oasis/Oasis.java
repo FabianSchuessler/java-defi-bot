@@ -187,7 +187,7 @@ public class Oasis implements AddressMethod {
       offerValues = getOffer(bestOffer);
     } catch (Exception e) {
       logger.error(EXCEPTION, e);
-      return new OasisOffer(BigInteger.ZERO, null, null, new Wad18());
+      return new OasisOffer(BigInteger.ZERO, null, null, Wad18.ZERO);
     }
     logger.trace("BUYABLE DAI AMOUNT {}{}", offerValues.get(Dai.ADDRESS), " DAI");
     logger.trace("SELLABLE WETH AMOUNT {}{}", offerValues.get(Weth.ADDRESS), " WETH");
@@ -211,7 +211,7 @@ public class Oasis implements AddressMethod {
     } else {
       logger.trace("OFFER TAKEN DURING PROCESSING!");
     }
-    return new OasisOffer(BigInteger.ZERO, null, null, new Wad18());
+    return new OasisOffer(BigInteger.ZERO, null, null, Wad18.ZERO);
   }
 
   @NotNull
@@ -227,7 +227,7 @@ public class Oasis implements AddressMethod {
       offerValues = getOffer(bestOffer);
     } catch (Exception e) {
       logger.error(EXCEPTION, e);
-      return new OasisOffer(BigInteger.ZERO, null, null, new Wad18());
+      return new OasisOffer(BigInteger.ZERO, null, null, Wad18.ZERO);
     }
     logger.trace("BUYABLE WETH AMOUNT {}{}", offerValues.get(Weth.ADDRESS), " WETH");
     logger.trace("SELLABLE DAI AMOUNT {}{}", offerValues.get(Dai.ADDRESS), " DAI");
@@ -251,7 +251,7 @@ public class Oasis implements AddressMethod {
     } else {
       logger.trace("OFFER TAKEN DURING PROCESSING!");
     }
-    return new OasisOffer(BigInteger.ZERO, null, null, new Wad18());
+    return new OasisOffer(BigInteger.ZERO, null, null, Wad18.ZERO);
   }
 
   private void takeOrder(

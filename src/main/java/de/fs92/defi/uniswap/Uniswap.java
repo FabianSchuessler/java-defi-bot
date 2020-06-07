@@ -262,7 +262,7 @@ public class Uniswap implements AddressMethod {
 
     if (potentialProfit.compareTo(balances.getMinimumTradeProfitBuyDai()) > 0)
       return new UniswapOffer(buyableDaiAmount, potentialProfit);
-    return new UniswapOffer(new Wad18(), new Wad18());
+    return new UniswapOffer(Wad18.ZERO, Wad18.ZERO);
   }
 
   @NotNull
@@ -287,12 +287,12 @@ public class Uniswap implements AddressMethod {
 
       if (potentialProfit.compareTo(balances.getMinimumTradeProfitSellDai()) > 0)
         return new UniswapOffer(buyableEthAmount, potentialProfit);
-      return new UniswapOffer(new Wad18(), potentialProfit);
+      return new UniswapOffer(Wad18.ZERO, potentialProfit);
     } catch (Exception e) {
       logger.error(EXCEPTION, e);
     }
     logger.info("POTENTIAL PROFIT 0 DAI");
-    return new UniswapOffer(new Wad18(), new Wad18());
+    return new UniswapOffer(Wad18.ZERO, Wad18.ZERO);
   }
 
   private void buyDaiTransaction(

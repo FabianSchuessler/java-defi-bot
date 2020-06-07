@@ -30,7 +30,6 @@ public class Main {
   public static void main(String[] args) {
     logger.trace("NEW START");
     JavaProperties javaProperties = new JavaProperties(IS_DEVELOPMENT_ENVIRONMENT);
-
     String password = javaProperties.getValue("password");
     String infuraProjectId = javaProperties.getValue("infuraProjectId");
     String wallet = javaProperties.getValue("wallet");
@@ -84,6 +83,7 @@ public class Main {
       try {
         balances.updateBalance(60);
         if (circuitBreaker.isAllowingOperations(3)) {
+          // TODO: if infura backoff exception, then backoff
           balances.checkEnoughEthereumForGas(circuitBreaker, ethereum);
           oasis.checkIfSellDaiIsProfitableThenDoIt(balances);
           oasis.checkIfBuyDaiIsProfitableThenDoIt(balances);
