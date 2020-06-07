@@ -104,7 +104,7 @@ public class Main {
       }
 
       try {
-        TimeUnit.MILLISECONDS.sleep(4500);
+        TimeUnit.MILLISECONDS.sleep(6375);
       } catch (InterruptedException e) {
         logger.error("Exception", e);
         Thread.currentThread().interrupt();

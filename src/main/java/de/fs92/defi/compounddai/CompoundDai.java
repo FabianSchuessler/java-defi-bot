@@ -184,7 +184,7 @@ public class CompoundDai implements AddressMethod {
       }
       logger.trace(
           "SLOW GAS PRICE {}{}",
-          Convert.fromWei(slowGasPrice.toString(), Convert.Unit.GWEI),
+          Convert.fromWei(slowGasPrice.toBigDecimal(), Convert.Unit.GWEI),
           " GWEI");
       logger.trace("TRANSACTION COSTS {}{}", transactionCosts.toString(2), " DAI");
     } else {
@@ -200,7 +200,7 @@ public class CompoundDai implements AddressMethod {
     } catch (Exception e) {
       logger.error(EXCEPTION, e);
     }
-    logger.info("SUPPLY RATE {}{}", supplyRate, " %");
+    logger.info("SUPPLY RATE {}{}", supplyRate, " %"); // TODO: test this function: Wad18 introduced a bug here
     return supplyRate;
   }
 

@@ -26,7 +26,7 @@ public class ETHGasStation {
     Wad18 gasPrice = getGasPrice(4);
     logger.trace(
         "ETHERGASSTATION SUGGESTS GP {}{}",
-        Convert.fromWei(gasPrice.toBigInteger().toString(), Convert.Unit.GWEI),
+        Convert.fromWei(gasPrice.toBigDecimal(), Convert.Unit.GWEI),
         " GWEI");
     return gasPrice;
   }
@@ -36,7 +36,7 @@ public class ETHGasStation {
     Wad18 gasPrice = getGasPrice(6);
     logger.trace(
         "ETHERGASSTATION SUGGESTS GP {}{}",
-        Convert.fromWei(gasPrice.toBigInteger().toString(), Convert.Unit.GWEI),
+        Convert.fromWei(gasPrice.toBigDecimal(), Convert.Unit.GWEI),
         " GWEI");
     return gasPrice;
   }
