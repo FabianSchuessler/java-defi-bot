@@ -51,8 +51,24 @@ class CompoundDaiIT {
 
   @Test
   void getExchangeRate_isBiggerThanHistoricRate_true() {
-    Sth28 exchangeRate = compoundDai.getExchangeRate();
+    Sth28 actual = compoundDai.getExchangeRate();
     Sth28 expected = new Sth28("204721828221871910000000000");
-    assertTrue(exchangeRate.compareTo(expected) > 0);
+    assertTrue(actual.compareTo(expected) > 0);
+  }
+
+  @Test
+  void getSupplyRate_isBiggerThanHistoricRate_true() {
+    Wad18 actual = compoundDai.getSupplyRate();
+    Wad18 expected = new Wad18("4035852335128320");
+    assertTrue(actual.compareTo(expected) > 0);
+  }
+
+  @Test
+  void getDailyInterest_isBiggerThanHistoricRate_true() {
+    Wad18 daiSupplied = new Wad18("5000000000000000000000");
+    Wad18 actual = compoundDai.getDailyInterest(daiSupplied);
+    System.out.println(actual);
+    Wad18 expected = new Wad18("4035852335128320");
+    assertTrue(actual.compareTo(expected) > 0);
   }
 }

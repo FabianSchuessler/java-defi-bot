@@ -57,7 +57,7 @@ public class Rad45 extends NumberWrapper {
     return new Wad18(
             bigDecimal
                     .multiply(multiplicand.toBigDecimal())
-                    .divide(BigDecimal.valueOf(Math.pow(10, RAD45_DECIMALS)), RoundingMode.DOWN));
+                    .divide(BigDecimal.valueOf(Math.pow(10, RAD45_DECIMALS)), 0, RoundingMode.DOWN));
   }
 
   @Override

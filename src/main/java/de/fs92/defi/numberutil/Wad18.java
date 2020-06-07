@@ -74,7 +74,7 @@ public class Wad18 extends NumberWrapper {
     return new Wad18(
             bigDecimal
                     .multiply(multiplicand.toBigDecimal())
-                    .divide(BigDecimal.valueOf(Math.pow(10, WAD18_DECIMALS)), RoundingMode.DOWN));
+                    .divide(BigDecimal.valueOf(Math.pow(10, WAD18_DECIMALS)), 0, RoundingMode.DOWN));
   }
 
   @Override

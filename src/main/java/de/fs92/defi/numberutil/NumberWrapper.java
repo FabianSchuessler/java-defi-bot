@@ -65,7 +65,7 @@ public class NumberWrapper implements Comparable<NumberWrapper> {
     return new NumberWrapper(
             bigDecimal
                     .multiply(multiplicand.toBigDecimal())
-                    .divide(BigDecimal.valueOf(Math.pow(10, decimals)), RoundingMode.DOWN),
+                    .divide(BigDecimal.valueOf(Math.pow(10, decimals)), 0, RoundingMode.DOWN),
             decimals);
   }
 

@@ -21,17 +21,19 @@ import java.lang.invoke.MethodHandles;
 import java.math.BigInteger;
 import java.util.concurrent.TimeUnit;
 
+import static de.fs92.defi.numberutil.NumberUtil.getMachineReadable;
+
 public class CompoundDai implements AddressMethod {
   public static final String ADDRESS = "0x5d3a536E4D6DbD6114cc1Ead35777bAB948E3643";
   public static final Wad18 gasLimit =
-      new Wad18(BigInteger.valueOf(200000)); // https://compound.finance/developers#gas-costs
+          new Wad18(BigInteger.valueOf(200000)); // https://compound.finance/developers#gas-costs
   private static final org.slf4j.Logger logger =
-      LoggerFactory.getLogger(MethodHandles.lookup().lookupClass().getSimpleName());
-  private static final Wad18 secondsPerYear = new Wad18(BigInteger.valueOf(31557600));
-  private static final Wad18 timeBetweenBlocks = new Wad18(BigInteger.valueOf(15));
+          LoggerFactory.getLogger(MethodHandles.lookup().lookupClass().getSimpleName());
+  private static final Wad18 secondsPerYear = new Wad18(getMachineReadable(31557600.0));
+  private static final Wad18 timeBetweenBlocks = new Wad18(getMachineReadable(15.0));
   private static final int WAIT_TIME = 60 * 60 * 1000; // 60 minutes
   private static final Wad18 supplyRatePerYearMultiplicand =
-      secondsPerYear.divide(timeBetweenBlocks);
+          secondsPerYear.divide(timeBetweenBlocks);
   private static final String EXCEPTION = "Exception";
   private final CompoundDaiContract compoundDaiContract;
   private final GasProvider gasProvider;
@@ -192,7 +194,7 @@ public class CompoundDai implements AddressMethod {
     }
   }
 
-  private Wad18 getSupplyRate() {
+  Wad18 getSupplyRate() {
     Wad18 supplyRate = Wad18.ZERO;
     try {
       Wad18 supplyRatePerBlock = new Wad18(compoundDaiContract.supplyRatePerBlock().send());
@@ -200,7 +202,7 @@ public class CompoundDai implements AddressMethod {
     } catch (Exception e) {
       logger.error(EXCEPTION, e);
     }
-    logger.info("SUPPLY RATE {}{}", supplyRate, " %"); // TODO: test this function: Wad18 introduced a bug here
+    logger.info("SUPPLY RATE {}{}", supplyRate, " %");
     return supplyRate;
   }
 
@@ -209,10 +211,10 @@ public class CompoundDai implements AddressMethod {
     return getDailyInterest(daiSupplied);
   }
 
-  private Wad18 getDailyInterest(Wad18 amount) {
+  Wad18 getDailyInterest(Wad18 amount) {
     logger.info("DAI OR SUPPLIED DAI BALANCE {}{}", amount, " DAI");
     Wad18 dailyInterest =
-        amount.multiply(getSupplyRate()).divide(new Wad18(BigInteger.valueOf(365)));
+            amount.multiply(getSupplyRate()).divide(new Wad18(getMachineReadable(365.0)));
     logger.info("DAILY INTEREST {}{}", dailyInterest, " DAI");
     return dailyInterest;
   }
