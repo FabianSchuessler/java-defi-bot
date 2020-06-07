@@ -218,13 +218,17 @@ public class Balances {
             .getBalance()
             .add(compoundDai.getBalanceInDai())
             .compareTo(dai.minimumDaiNecessaryForSaleAndLending)
-        <= 0;
+            <= 0;
   }
 
   public Wad18 getMaxDaiToSell() { // todo: test this method
     Wad18 maxDaiToSell = dai.getAccount().getBalance().add(compoundDai.getBalanceInDai());
     logger.trace("MAX DAI TO SELL {}", maxDaiToSell);
     return maxDaiToSell;
+  }
+
+  public Wad18 getTotalBalanceInUSD() {
+    return usd;
   }
 
   public void addToSumEstimatedProfits(Wad18 potentialProfit) {

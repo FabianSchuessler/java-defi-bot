@@ -120,8 +120,12 @@ public class Flipper {
           && !auction.amIHighestBidder(credentials)
           && auction.isInDefinedBiddingPhase(startingBiddingBeforeEnd, isDent)) {
         balances.weth.checkIfWeth2EthConversionNecessaryThenDoIt(
-            auction.bidAmountInDai.multiply(minimumBidIncrease), balances, potentialProfit, median);
-        bid(auction, isDent);
+                auction.bidAmountInDai.multiply(minimumBidIncrease), balances, potentialProfit, median);
+        if (auction.isAffordable(minimumBidIncrease, balances.getMaxDaiToSell())) {
+          bid(auction, isDent);
+        } else {
+          logger.trace("THERE IS A PROFITABLE FLIP AUCTION, BUT CONVERSION IS NOT YET IMPLEMENTED");
+        }
       }
     }
   }
@@ -174,7 +178,7 @@ public class Flipper {
         if (auction.isCompleted()) {
           auctionIsCompleted = true;
         } else if (auction.isActive()
-            && auction.isAffordable(minimumBidIncrease, balances.getMaxDaiToSell())) {
+                && auction.isAffordable(minimumBidIncrease, balances.getTotalBalanceInUSD())) {
           activeAuctionList.add(auction);
         }
       }
@@ -192,8 +196,8 @@ public class Flipper {
     for (Auction value : activeAuctionList) {
       Auction auction = getAuction(value.id);
       if (auction != null
-          && auction.isActive()
-          && auction.isAffordable(minimumBidIncrease, balances.getMaxDaiToSell()))
+              && auction.isActive()
+              && auction.isAffordable(minimumBidIncrease, balances.getTotalBalanceInUSD()))
         newActiveAuctionList.add(auction);
       logger.trace("UPDATED AUCTION {}", auction);
     }
