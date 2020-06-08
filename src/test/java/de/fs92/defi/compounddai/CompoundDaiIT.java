@@ -17,8 +17,11 @@ class CompoundDaiIT {
   private static final String TRAVIS_WALLET = "TRAVIS_WALLET";
   private static final String TRAVIS_PASSWORD = "TRAVIS_PASSWORD";
 
-  private static final Wad18 minimumGasPrice = new Wad18(1_000000000);
-  private static final Wad18 maximumGasPrice = new Wad18(200_000000000L);
+  private static final String TOO_HIGH = "Error, value is too high";
+  private static final String TOO_LOW = "Error, value is too low";
+
+  private static final Wad18 MINIMUM_GAS_PRICE = new Wad18(1_000000000);
+  private static final Wad18 MAXIMUM_GAS_PRICE = new Wad18(200_000000000L);
   CompoundDai compoundDai;
 
   @BeforeEach
@@ -42,7 +45,7 @@ class CompoundDaiIT {
     CircuitBreaker circuitBreaker = new CircuitBreaker();
     Web3j web3j = new Web3jProvider(infuraProjectId).web3j;
     Credentials credentials = new Wallet(password, wallet).getCredentials();
-    GasProvider gasProvider = new GasProvider(web3j, minimumGasPrice, maximumGasPrice);
+    GasProvider gasProvider = new GasProvider(web3j, MINIMUM_GAS_PRICE, MAXIMUM_GAS_PRICE);
     Permissions permissions = new Permissions(true, true);
     ContractNeedsProvider contractNeedsProvider =
             new ContractNeedsProvider(web3j, credentials, gasProvider, permissions, circuitBreaker);
@@ -57,18 +60,21 @@ class CompoundDaiIT {
   }
 
   @Test
-  void getSupplyRate_isBiggerThanHistoricRate_true() {
+  void getSupplyRate_betweenRealisticBounds_true() {
     Wad18 actual = compoundDai.getSupplyRate();
-    Wad18 expected = new Wad18("4035852335128320");
-    assertTrue(actual.compareTo(expected) > 0);
+    Wad18 lowerBound = new Wad18("100000000000000"); // 0.001% = 0.0001
+    Wad18 higherBound = new Wad18("500000000000000000"); // 50% = 0.5
+    assertTrue(actual.compareTo(higherBound) < 0, TOO_LOW);
+    assertTrue(actual.compareTo(lowerBound) > 0, TOO_HIGH);
   }
 
   @Test
-  void getDailyInterest_isBiggerThanHistoricRate_true() {
+  void getDailyInterest_betweenRealisticBounds_true() {
     Wad18 daiSupplied = new Wad18("5000000000000000000000");
     Wad18 actual = compoundDai.getDailyInterest(daiSupplied);
-    System.out.println(actual);
-    Wad18 expected = new Wad18("4035852335128320");
-    assertTrue(actual.compareTo(expected) > 0);
+    Wad18 lowerBound = new Wad18("1360000000000000"); // 0.001% = 0.0001 / 365 * 5000
+    Wad18 higherBound = new Wad18("6840000000000000000"); // 50% = 0.5 / 365 * 5000
+    assertTrue(actual.compareTo(higherBound) < 0, TOO_LOW);
+    assertTrue(actual.compareTo(lowerBound) > 0, TOO_HIGH);
   }
 }

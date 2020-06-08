@@ -185,10 +185,10 @@ public class CompoundDai implements AddressMethod {
             possibleDailyInterest);
       }
       logger.trace(
-          "SLOW GAS PRICE {}{}",
-          Convert.fromWei(slowGasPrice.toBigDecimal(), Convert.Unit.GWEI),
-          " GWEI");
-      logger.trace("TRANSACTION COSTS {}{}", transactionCosts.toString(2), " DAI");
+              "SLOW GAS PRICE {}{}",
+              Convert.fromWei(slowGasPrice.toBigDecimal(), Convert.Unit.GWEI),
+              " GWEI");
+      logger.trace("TRANSACTION COSTS {} DAI", transactionCosts.toString(2));
     } else {
       logger.info("NOT ENOUGH DAI TO LEND DAI ON COMPOUND");
     }
@@ -202,7 +202,7 @@ public class CompoundDai implements AddressMethod {
     } catch (Exception e) {
       logger.error(EXCEPTION, e);
     }
-    logger.info("SUPPLY RATE {}{}", supplyRate, " %");
+    logger.info("SUPPLY RATE {}", supplyRate);
     return supplyRate;
   }
 
@@ -212,17 +212,17 @@ public class CompoundDai implements AddressMethod {
   }
 
   Wad18 getDailyInterest(Wad18 amount) {
-    logger.info("DAI OR SUPPLIED DAI BALANCE {}{}", amount, " DAI");
+    logger.info("DAI OR SUPPLIED DAI BALANCE {} DAI", amount);
     Wad18 dailyInterest =
             amount.multiply(getSupplyRate()).divide(new Wad18(getMachineReadable(365.0)));
-    logger.info("DAILY INTEREST {}{}", dailyInterest, " DAI");
+    logger.info("DAILY INTEREST {} DAI", dailyInterest);
     return dailyInterest;
   }
 
   private boolean isAlternativeMoreProfitableThanLendingDai(
-      Balances balances, Wad18 profitComparator, Wad18 medianEthereumPrice) {
+          @NotNull Balances balances, Wad18 profitComparator, Wad18 medianEthereumPrice) {
     Wad18 dailyInterest = getCurrentDailyInterest();
-    logger.info("PROFIT COMPARATOR {}{}", profitComparator, " DAI");
+    logger.info("PROFIT COMPARATOR {} DAI", profitComparator);
     if (profitComparator.compareTo(dailyInterest.add(balances.minimumTradeProfit)) > 0) {
       logger.info("ALTERNATIVE IS MORE PROFITABLE");
       redeemAll(balances, profitComparator, medianEthereumPrice);
