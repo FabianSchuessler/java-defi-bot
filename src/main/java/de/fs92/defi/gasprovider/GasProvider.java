@@ -99,17 +99,18 @@ public class GasProvider implements ContractGasProvider {
     try {
       double percentageOfProfitAsFee =
           getPercentageOfProfitAsFee(
-              failedTransactionsWithinTheLastTwelveHoursForGasPriceArrayList.size());
+                  failedTransactionsWithinTheLastTwelveHoursForGasPriceArrayList.size());
       Wad18 gasPriceBasedOnProfit =
-          calculateGasPriceAsAPercentageOfProfit(
-              medianEthereumPrice, potentialProfit, 300000.0, percentageOfProfitAsFee);
+              calculateGasPriceAsAPercentageOfProfit(
+                      medianEthereumPrice, potentialProfit, 300000.0, percentageOfProfitAsFee);
       // instead of fixed
       fastGasPrice = fastGasPrice.max(gasPriceBasedOnProfit);
     } catch (GasPriceException e) {
       logger.error(GAS_PRICE_EXCEPTION, e);
     }
     gasPrice = fastGasPrice.min(maximumGasPrice);
-    logger.trace("GAS PRICE {}{}", Convert.fromWei(gasPrice.toBigDecimal(), Convert.Unit.GWEI), GWEI);
+    logger.trace(
+            "GAS PRICE {}{}", Convert.fromWei(gasPrice.toBigDecimal(), Convert.Unit.GWEI), GWEI);
     return gasPrice;
   }
 
@@ -124,15 +125,16 @@ public class GasProvider implements ContractGasProvider {
     try {
       Wad18 web3jResult = new Wad18(web3j.ethGasPrice().send().getGasPrice());
       logger.trace(
-          "WEB3J SUGGESTS GP {}{}",
-          Convert.fromWei(web3jResult.toBigDecimal(), Convert.Unit.GWEI),
-          GWEI);
+              "WEB3J SUGGESTS GP {}{}",
+              Convert.fromWei(web3jResult.toBigDecimal(), Convert.Unit.GWEI),
+              GWEI);
       slowGasPrice = slowGasPrice.min(web3jResult);
     } catch (IOException e) {
       logger.error("IOException", e);
     }
     gasPrice = slowGasPrice;
-    logger.trace("GAS PRICE {}{}", Convert.fromWei(gasPrice.toBigDecimal(), Convert.Unit.GWEI), GWEI);
+    logger.trace(
+            "GAS PRICE {}{}", Convert.fromWei(gasPrice.toBigDecimal(), Convert.Unit.GWEI), GWEI);
     return gasPrice;
   }
 

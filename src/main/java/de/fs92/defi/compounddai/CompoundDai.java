@@ -23,11 +23,12 @@ import java.math.BigInteger;
 import java.util.concurrent.TimeUnit;
 
 import static de.fs92.defi.numberutil.NumberUtil.getMachineReadable;
+import static de.fs92.defi.util.TransactionUtil.getTransactionCosts;
 
 public class CompoundDai implements AddressMethod {
   public static final String ADDRESS = "0x5d3a536E4D6DbD6114cc1Ead35777bAB948E3643";
-  public static final Wad18 gasLimit =
-          new Wad18(BigInteger.valueOf(200000)); // https://compound.finance/developers#gas-costs
+  public static final BigInteger gasLimit =
+          BigInteger.valueOf(200000); // https://compound.finance/developers#gas-costs
   private static final org.slf4j.Logger logger =
           LoggerFactory.getLogger(MethodHandles.lookup().lookupClass().getSimpleName());
   private static final Wad18 secondsPerYear = new Wad18(getMachineReadable(31557600.0));
@@ -93,7 +94,9 @@ public class CompoundDai implements AddressMethod {
   }
 
   private void afterTransaction(
-          @NotNull Balances balances, Wad18 medianEthereumPrice, @NotNull TransactionReceipt transferReceipt)
+          @NotNull Balances balances,
+          Wad18 medianEthereumPrice,
+          @NotNull TransactionReceipt transferReceipt)
       throws InterruptedException {
     TimeUnit.SECONDS.sleep(1);
     balances.updateBalanceInformation(medianEthereumPrice);
@@ -168,12 +171,8 @@ public class CompoundDai implements AddressMethod {
         logger.error(EXCEPTION, e);
         return;
       }
+      Wad18 transactionCosts = getTransactionCosts(slowGasPrice, medianEthereumPrice, gasLimit, 2);
 
-      // 2 * 222.53 * 300,000 * 0.00000001 = 1.33518
-      Wad18 transactionCosts =
-          new Wad18(getMachineReadable(2.0))
-              .multiply(gasLimit)
-              .multiply(slowGasPrice.multiply(medianEthereumPrice)); // in USD
       Wad18 possibleDailyInterest = getDailyInterest(balances.dai.getAccount().getBalance());
       if (transactionCosts.compareTo(possibleDailyInterest) < 0) {
         logger.trace("SUFFICIENT INTEREST TO LEND DAI ON COMPOUND");

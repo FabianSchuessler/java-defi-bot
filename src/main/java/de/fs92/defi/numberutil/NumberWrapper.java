@@ -112,8 +112,7 @@ public class NumberWrapper implements Comparable<NumberWrapper> {
   @Override
   public int compareTo(@NotNull NumberWrapper val) {
     // TODO: check if this can be better
-    BigDecimal bigDecimal1 =
-            bigDecimal.multiply(BigDecimal.valueOf(Math.pow(10, val.decimals)));
+    BigDecimal bigDecimal1 = bigDecimal.multiply(BigDecimal.valueOf(Math.pow(10, val.decimals)));
     BigDecimal bigDecimal2 =
             val.toBigDecimal().multiply(BigDecimal.valueOf(Math.pow(10, decimals)));
     return bigDecimal1.compareTo(bigDecimal2);

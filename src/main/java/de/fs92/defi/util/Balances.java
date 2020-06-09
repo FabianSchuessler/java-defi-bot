@@ -18,7 +18,7 @@ import static de.fs92.defi.numberutil.NumberUtil.getMachineReadable;
 
 public class Balances {
   private static final org.slf4j.Logger logger =
-      LoggerFactory.getLogger(MethodHandles.lookup().lookupClass().getSimpleName());
+          LoggerFactory.getLogger(MethodHandles.lookup().lookupClass().getSimpleName());
 
   // contracts
   public final Dai dai;
@@ -27,11 +27,10 @@ public class Balances {
   public final Ethereum ethereum;
 
   public final Wad18 minimumTradeProfit;
-  private Wad18 minimumTradeProfitBuyDai;
-  private Wad18 minimumTradeProfitSellDai;
-
   // profit and loss calculation
   Wad18 usd;
+  private Wad18 minimumTradeProfitBuyDai;
+  private Wad18 minimumTradeProfitSellDai;
   private Wad18 initialTotalUSD;
   private Wad18 sumEstimatedProfits;
   private Wad18 sumEstimatedMissedProfits;
@@ -197,7 +196,7 @@ public class Balances {
             && wethBalance.compareTo(new Wad18(10000000000000000L)) > 0) {
 
       Wad18 toUnwrap =
-          (ethereum.getBalanceWithoutMinimumEthereumReserveUpperLimit()).min(wethBalance);
+              (ethereum.getBalanceWithoutMinimumEthereumReserveUpperLimit()).min(wethBalance);
 
       logger.info("UNWRAP {}", toUnwrap);
       try {

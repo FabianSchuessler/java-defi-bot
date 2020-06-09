@@ -25,9 +25,11 @@ public class CircuitBreaker {
   }
 
   public boolean isAllowingOperations(int number) {
-    boolean isAllowingOperations = failedTransactionsWithinTheLastTenMinutesForErrorBlockingArrayList.size() < number;
-    if(!isAllowingOperations) {
-      logger.trace("ALL TRANSACTIONS ARE CURRENTLY NOT ALLOWED BECAUSE THERE HAVE BEEN TOO MANY FAILED TRANSACTIONS RECENTLY");
+    boolean isAllowingOperations =
+            failedTransactionsWithinTheLastTenMinutesForErrorBlockingArrayList.size() < number;
+    if (!isAllowingOperations) {
+      logger.trace(
+              "ALL TRANSACTIONS ARE CURRENTLY NOT ALLOWED BECAUSE THERE HAVE BEEN TOO MANY FAILED TRANSACTIONS RECENTLY");
     }
     return isAllowingOperations;
   }

@@ -54,10 +54,10 @@ public class Rad45 extends NumberWrapper {
 
   @Override
   public Wad18 multiply(@NotNull NumberWrapper multiplicand) {
-    return new Wad18(
-            bigDecimal
-                    .multiply(multiplicand.toBigDecimal())
-                    .divide(BigDecimal.valueOf(Math.pow(10, RAD45_DECIMALS)), 0, RoundingMode.DOWN));
+      return new Wad18(
+              bigDecimal
+                      .multiply(multiplicand.toBigDecimal())
+                      .divide(BigDecimal.valueOf(Math.pow(10, RAD45_DECIMALS)), 0, RoundingMode.DOWN));
   }
 
   @Override
