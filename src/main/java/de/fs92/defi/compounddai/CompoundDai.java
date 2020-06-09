@@ -1,5 +1,6 @@
 package de.fs92.defi.compounddai;
 
+import de.fs92.defi.contractneedsprovider.CircuitBreaker;
 import de.fs92.defi.contractneedsprovider.ContractNeedsProvider;
 import de.fs92.defi.contractneedsprovider.Permissions;
 import de.fs92.defi.contractuserutil.AddressMethod;
@@ -38,6 +39,7 @@ public class CompoundDai implements AddressMethod {
   private final CompoundDaiContract compoundDaiContract;
   private final GasProvider gasProvider;
   private final Permissions permissions;
+  private final CircuitBreaker circuitBreaker;
   private final Credentials credentials;
   private final Account account;
 
@@ -46,6 +48,7 @@ public class CompoundDai implements AddressMethod {
     credentials = contractNeedsProvider.getCredentials();
     gasProvider = contractNeedsProvider.getGasProvider();
     permissions = contractNeedsProvider.getPermissions();
+    circuitBreaker = contractNeedsProvider.getCircuitBreaker();
     compoundDaiContract = CompoundDaiContract.load(ADDRESS, web3j, credentials, gasProvider);
     account = new Account(compoundDaiContract, credentials, "CDAI");
   }
@@ -60,8 +63,10 @@ public class CompoundDai implements AddressMethod {
             compoundDaiContract.mint(mintAmount.toBigInteger()).send();
         afterTransaction(balances, medianEthereumPrice, transferReceipt);
       } catch (Exception e) {
+        circuitBreaker.addTransactionFailedNow();
         logger.error(EXCEPTION, e);
       }
+      balances.updateBalanceInformation(medianEthereumPrice);
     }
   }
 
@@ -80,13 +85,15 @@ public class CompoundDai implements AddressMethod {
             compoundDaiContract.redeem(redeemAmount.toBigInteger()).send();
         afterTransaction(balances, medianEthereumPrice, transferReceipt);
       } catch (Exception e) {
+        circuitBreaker.addTransactionFailedNow();
         logger.error(EXCEPTION, e);
       }
+      balances.updateBalanceInformation(medianEthereumPrice);
     }
   }
 
   private void afterTransaction(
-      @NotNull Balances balances, Wad18 medianEthereumPrice, TransactionReceipt transferReceipt)
+          @NotNull Balances balances, Wad18 medianEthereumPrice, @NotNull TransactionReceipt transferReceipt)
       throws InterruptedException {
     TimeUnit.SECONDS.sleep(1);
     balances.updateBalanceInformation(medianEthereumPrice);

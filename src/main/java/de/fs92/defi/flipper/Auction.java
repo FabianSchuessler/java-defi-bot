@@ -72,9 +72,9 @@ public class Auction {
     return potentialProfit;
   }
 
-  boolean isAffordable(Wad18 minimumBidIncrease, @NotNull Wad18 maxDaiToSell) {
+  boolean isAffordable(Wad18 minimumBidIncrease, @NotNull Wad18 val) {
     Wad18 auctionPrice = bidAmountInDai.multiply(minimumBidIncrease);
-    boolean isAffordable = auctionPrice.compareTo(maxDaiToSell) < 0;
+    boolean isAffordable = auctionPrice.compareTo(val) < 0;
     logger.trace("AUCTION IS AFFORDABLE {}", isAffordable);
     return isAffordable;
   }

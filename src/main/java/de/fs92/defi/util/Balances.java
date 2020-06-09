@@ -1,7 +1,6 @@
 package de.fs92.defi.util;
 
 import de.fs92.defi.compounddai.CompoundDai;
-import de.fs92.defi.contractneedsprovider.CircuitBreaker;
 import de.fs92.defi.dai.Dai;
 import de.fs92.defi.medianizer.MedianException;
 import de.fs92.defi.medianizer.Medianizer;
@@ -14,6 +13,7 @@ import java.lang.invoke.MethodHandles;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
+import static de.fs92.defi.Main.shutdown;
 import static de.fs92.defi.numberutil.NumberUtil.getMachineReadable;
 
 public class Balances {
@@ -31,7 +31,7 @@ public class Balances {
   private Wad18 minimumTradeProfitSellDai;
 
   // profit and loss calculation
-  private Wad18 usd;
+  Wad18 usd;
   private Wad18 initialTotalUSD;
   private Wad18 sumEstimatedProfits;
   private Wad18 sumEstimatedMissedProfits;
@@ -127,7 +127,6 @@ public class Balances {
       // update.
       if (usd.compareTo(initialTotalUSD.multiply(new Wad18(getMachineReadable(0.5)))) < 1) {
         logger.warn("USD BALANCE MIGHT BE ZERO EXCEPTION");
-
         updateBalanceInformation(Medianizer.getPrice());
       }
 
@@ -145,33 +144,34 @@ public class Balances {
 
   /**
    * @return 0 if no dai/cdai was owned during the execution of the program, 100 if no eth/weth was
-   *     owned
+   * owned
    */
-  private double currentOwnershipRatio(
-      Wad18 medianEthereumPrice,
-      @NotNull Wad18 ethBalance,
-      @NotNull Wad18 daiBalance,
-      Wad18 wethBalance) {
-    // TODO: add tests for this method
+  double currentOwnershipRatio(
+          Wad18 medianEthereumPrice,
+          @NotNull Wad18 ethBalance,
+          @NotNull Wad18 daiBalance,
+          Wad18 wethBalance) {
 
     long timeDifference = System.currentTimeMillis() - pastTime;
     pastTime = System.currentTimeMillis();
 
     totalDaiRatio +=
-        timeDifference * daiBalance.add(compoundDai.getBalanceInDai()).multiply(usd).longValue();
+            timeDifference * (daiBalance.add(compoundDai.getBalanceInDai())).divide(usd).doubleValue();
 
     totalEthRatio +=
-        timeDifference
-            * ethBalance.add(wethBalance).multiply(medianEthereumPrice).divide(usd).longValue();
+            timeDifference
+                    * (ethBalance.add(wethBalance).multiply(medianEthereumPrice)).divide(usd).doubleValue();
 
     if (totalDaiRatio == 0.0) return 0.0;
-    return (totalDaiRatio * 10000) / ((totalEthRatio + totalDaiRatio) * 100);
+    return Math.round(totalDaiRatio / (totalEthRatio + totalDaiRatio) * 10000.0) / 100.0;
   }
 
   public void updateBalance(int duration) {
+    logger.trace("");
+    logger.trace("UPDATING BALANCE EVERY {} SECONDS", duration);
     long currentTime = System.currentTimeMillis();
     if (currentTime
-        >= (pastTimeBalances
+            >= (pastTimeBalances
             + duration * 1000)) { // multiply by 1000 to getMedianEthereumPrice milliseconds
       try {
         Wad18 medianEthereumPrice = Medianizer.getPrice();
@@ -184,7 +184,7 @@ public class Balances {
     }
   }
 
-  public void checkEnoughEthereumForGas(CircuitBreaker circuitBreaker, @NotNull Ethereum ethereum) {
+  public void checkEnoughEthereumForGas(@NotNull Ethereum ethereum) {
     logger.trace("");
     logger.trace("CHECKING IF ENOUGH ETHEREUM FOR GAS");
     // TODO: test this method (might unwrap without updating the gas fee to eth balance from
@@ -194,7 +194,7 @@ public class Balances {
     Wad18 ethereumAndWethBalance = wethBalance.add(ethereumBalance);
 
     if (ethereumBalance.compareTo(ethereum.minimumEthereumReserveLowerLimit) < 0
-        && wethBalance.compareTo(new Wad18(10000000000000000L)) > 0) {
+            && wethBalance.compareTo(new Wad18(10000000000000000L)) > 0) {
 
       Wad18 toUnwrap =
           (ethereum.getBalanceWithoutMinimumEthereumReserveUpperLimit()).min(wethBalance);
@@ -208,8 +208,8 @@ public class Balances {
       }
     } else if (ethereumAndWethBalance.compareTo(ethereum.minimumEthereumReserveLowerLimit) < 0) {
       logger.error(
-          "ETH + WETH ARE LOWER THAN MINIMUM ETHEREUM RESERVE LOWER LIMIT, THEREFORE SHUTDOWN");
-      circuitBreaker.stopRunning();
+              "ETH + WETH ARE LOWER THAN MINIMUM ETHEREUM RESERVE LOWER LIMIT, THEREFORE SHUTDOWN");
+      shutdown();
     }
   }
 

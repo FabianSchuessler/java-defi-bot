@@ -6,6 +6,9 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.RoundingMode;
 
+/**
+ * Immutable
+ */
 public class Wad18 extends NumberWrapper {
   public static final Wad18 ZERO = new Wad18(0);
   public static final Wad18 ONE = new Wad18(1);

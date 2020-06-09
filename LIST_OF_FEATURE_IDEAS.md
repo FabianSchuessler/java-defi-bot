@@ -1,7 +1,4 @@
 # Bug fixes
-- Fix negative ratio:
-    - ```HOLDING -55.39% DAI + CDAI AS A PERCENTAGE OVER TIME OF TOTAL ASSET VALUE```
-    - ```HOLDING 110.44% DAI + CDAI AS A PERCENTAGE OVER TIME OF TOTAL ASSET VALUE```
 - Have a look at MakerDao Auction Keep and their API usage about Price Feeds
 
 # New Features
@@ -75,10 +72,6 @@
 12:02:55.755 TRACE GasProvider - GP PERCENTAGE OF PROFIT 0.1
 12:02:55.755 TRACE GasProvider - EST. TRANSACTION FEE 20.3935 DAI
 12:02:55.755 TRACE GasProvider - PROFIT SUGGESTS GP 31006.81311057 GWEI
-```
-- **Fix ETH SOLD bug**
-```
-12:02:46.701 TRACE Uniswap - ETH SOLD 0.0-9192729000000000
 ```
 - Create TimeUtils and put all the unixTime and timeZone stuff into it
 - Fix all to dos

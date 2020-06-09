@@ -21,7 +21,6 @@ public class CircuitBreaker {
   }
 
   public void stopRunning() {
-    logger.trace("BOT WILL STOP RUNNING");
     continueRunning = false;
   }
 
@@ -32,7 +31,6 @@ public class CircuitBreaker {
     }
     return isAllowingOperations;
   }
-// TODO: having no dai -> auction is not affordable -> getting dai -> auction is affordable again
 
   public void addTransactionFailedNow() {
     logger.trace("ADD A FAILED TRANSACTION");

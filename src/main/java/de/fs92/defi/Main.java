@@ -26,6 +26,7 @@ public class Main {
   private static final org.slf4j.Logger logger =
       LoggerFactory.getLogger(MethodHandles.lookup().lookupClass().getSimpleName());
   private static final boolean IS_DEVELOPMENT_ENVIRONMENT = true;
+  private static Web3j web3j;
 
   public static void main(String[] args) {
     logger.trace("NEW START");
@@ -39,7 +40,7 @@ public class Main {
             Boolean.parseBoolean(javaProperties.getValue("transactionsRequireConfirmation"));
 
     CircuitBreaker circuitBreaker = new CircuitBreaker();
-    Web3j web3j = new Web3jProvider(infuraProjectId).web3j;
+    web3j = new Web3jProvider(infuraProjectId).web3j;
     Credentials credentials = new Wallet(password, wallet).getCredentials();
     GasProvider gasProvider =
             new GasProvider(
@@ -84,7 +85,7 @@ public class Main {
         balances.updateBalance(60);
         if (circuitBreaker.isAllowingOperations(3)) {
           // TODO: if infura backoff exception, then backoff
-          balances.checkEnoughEthereumForGas(circuitBreaker, ethereum);
+          balances.checkEnoughEthereumForGas(ethereum);
           oasis.checkIfSellDaiIsProfitableThenDoIt(balances);
           oasis.checkIfBuyDaiIsProfitableThenDoIt(balances);
           uniswap.checkIfSellDaiIsProfitableThenDoIt(balances);
@@ -94,7 +95,7 @@ public class Main {
         }
       } catch (Exception e) {
         logger.error("Exception", e);
-        circuitBreaker.stopRunning();
+        shutdown();
       }
 
       List<Long> failedTransactions = circuitBreaker.getFailedTransactions();
@@ -110,8 +111,11 @@ public class Main {
         Thread.currentThread().interrupt();
       }
     }
+    shutdown();
+  }
 
-    logger.trace("Exit");
+  public static void shutdown() {
+    logger.trace("EXIT");
     web3j.shutdown();
     System.exit(0);
   }

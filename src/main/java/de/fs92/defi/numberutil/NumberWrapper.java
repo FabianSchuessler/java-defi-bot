@@ -110,12 +110,12 @@ public class NumberWrapper implements Comparable<NumberWrapper> {
   }
 
   @Override
-  public int compareTo(@NotNull NumberWrapper compareObject) {
+  public int compareTo(@NotNull NumberWrapper val) {
     // TODO: check if this can be better
     BigDecimal bigDecimal1 =
-        bigDecimal.multiply(BigDecimal.valueOf(Math.pow(10, compareObject.decimals)));
+            bigDecimal.multiply(BigDecimal.valueOf(Math.pow(10, val.decimals)));
     BigDecimal bigDecimal2 =
-        compareObject.toBigDecimal().multiply(BigDecimal.valueOf(Math.pow(10, decimals)));
+            val.toBigDecimal().multiply(BigDecimal.valueOf(Math.pow(10, decimals)));
     return bigDecimal1.compareTo(bigDecimal2);
   }
 
@@ -143,5 +143,9 @@ public class NumberWrapper implements Comparable<NumberWrapper> {
 
   public long longValue() {
     return bigDecimal.longValue();
+  }
+
+  public double doubleValue() {
+    return bigDecimal.doubleValue();
   }
 }

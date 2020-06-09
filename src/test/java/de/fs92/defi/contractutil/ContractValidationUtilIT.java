@@ -58,7 +58,7 @@ class ContractValidationUtilIT {
         WethContract.load(
             "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2", web3j, credentials, gasProvider);
     CircuitBreaker circuitBreaker = new CircuitBreaker();
-    assertDoesNotThrow(() -> ContractValidationUtil.isContractValid(contract, circuitBreaker));
+    assertDoesNotThrow(() -> ContractValidationUtil.isContractValid(contract));
     assertTrue(circuitBreaker.getContinueRunning());
   }
 
@@ -68,7 +68,7 @@ class ContractValidationUtilIT {
         DaiContract.load(
             "0x0000000000000000000000000000000000000000", web3j, credentials, gasProvider);
     CircuitBreaker circuitBreaker = new CircuitBreaker();
-    assertDoesNotThrow(() -> ContractValidationUtil.isContractValid(contract, circuitBreaker));
+    assertDoesNotThrow(() -> ContractValidationUtil.isContractValid(contract));
     assertFalse(circuitBreaker.getContinueRunning());
   }
 }

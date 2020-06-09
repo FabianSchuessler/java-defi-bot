@@ -53,6 +53,7 @@ public class Flipper {
   }
 
   private void bid(@NotNull Auction auction, boolean isDent) {
+    logger.trace("BIDDING ON {} DURING {} PHASE", auction, isDent ? "DENT" : "TEND");
     if (isDent) {
       dent(auction);
     } else {
@@ -116,17 +117,25 @@ public class Flipper {
     for (Auction auction : auctionList) {
       Wad18 potentialProfit = auction.getPotentialProfit(minimumBidIncrease, median);
       boolean isDent = auction.isDent(minimumBidIncrease);
-      if (potentialProfit.compareTo(minimumFlipAuctionProfit) > 0
-          && !auction.amIHighestBidder(credentials)
-          && auction.isInDefinedBiddingPhase(startingBiddingBeforeEnd, isDent)) {
-        balances.weth.checkIfWeth2EthConversionNecessaryThenDoIt(
-                auction.bidAmountInDai.multiply(minimumBidIncrease), balances, potentialProfit, median);
-        if (auction.isAffordable(minimumBidIncrease, balances.getMaxDaiToSell())) {
-          bid(auction, isDent);
-        } else {
-          logger.trace("THERE IS A PROFITABLE FLIP AUCTION, BUT CONVERSION IS NOT YET IMPLEMENTED");
-        }
+      if (!auction.isInDefinedBiddingPhase(startingBiddingBeforeEnd, isDent)) {
+        logger.trace("AUCTION IS NOT IN DEFINED BIDDING PHASE");
+        return;
       }
+      if (potentialProfit.compareTo(minimumFlipAuctionProfit) < 0) {
+        logger.trace("FLIP AUCTION IS LESS PROFITABLE THAN MINIMUM PROFIT");
+        return;
+      }
+      if (auction.amIHighestBidder(credentials)) {
+        logger.trace("I AM THE HIGHEST BIDDER");
+        return;
+      }
+      if (!auction.isAffordable(minimumBidIncrease, balances.getMaxDaiToSell())) {
+        logger.trace("THERE IS A PROFITABLE FLIP AUCTION, BUT CONVERSION IS NOT YET IMPLEMENTED");
+        return;
+      }
+      balances.weth.checkIfWeth2EthConversionNecessaryThenDoIt(
+              auction.bidAmountInDai.multiply(minimumBidIncrease), balances, potentialProfit, median);
+      bid(auction, isDent);
     }
   }
 

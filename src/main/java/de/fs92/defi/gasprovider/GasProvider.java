@@ -58,7 +58,7 @@ public class GasProvider implements ContractGasProvider {
     switch (contractFunc) {
       case CompoundDaiContract.FUNC_MINT:
       case CompoundDaiContract.FUNC_REDEEM:
-        return BigInteger.valueOf(200_000);
+        return BigInteger.valueOf(400_000);
       case UniswapContract.FUNC_TOKENTOETHSWAPINPUT:
       case UniswapContract.FUNC_ETHTOTOKENSWAPINPUT:
         return BigInteger.valueOf(65_000);
