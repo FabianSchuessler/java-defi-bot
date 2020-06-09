@@ -171,7 +171,7 @@ public class CompoundDai implements AddressMethod {
 
       // 2 * 222.53 * 300,000 * 0.00000001 = 1.33518
       Wad18 transactionCosts =
-          new Wad18(BigInteger.TWO)
+          new Wad18(getMachineReadable(2.0))
               .multiply(gasLimit)
               .multiply(slowGasPrice.multiply(medianEthereumPrice)); // in USD
       Wad18 possibleDailyInterest = getDailyInterest(balances.dai.getAccount().getBalance());
