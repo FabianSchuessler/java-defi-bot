@@ -182,8 +182,8 @@ public class CompoundDai implements AddressMethod {
           mint(balances, medianEthereumPrice);
         } else {
           logger.warn(
-              "CURRENT CODE REQUIRES {} MINUTES BETWEEN LAST SUCCESSFUL TRANSACTION AND MINTING CDAI",
-              WAIT_TIME);
+                  "CURRENT CODE REQUIRES {} MINUTES BETWEEN LAST SUCCESSFUL TRANSACTION AND MINTING CDAI",
+                  WAIT_TIME / 60 / 1000);
         }
       } else {
         logger.warn(

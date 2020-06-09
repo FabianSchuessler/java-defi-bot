@@ -38,7 +38,7 @@ public class Weth {
     Credentials credentials = contractNeedsProvider.getCredentials();
     circuitBreaker = contractNeedsProvider.getCircuitBreaker();
     wethContract = WethContract.load(ADDRESS, web3j, credentials, gasProvider);
-    ContractValidationUtil.isContractValid(wethContract);
+    ContractValidationUtil.isContractValid(wethContract, circuitBreaker);
     account = new Account(wethContract, credentials, "WETH");
     approval = new Approval(wethContract, contractNeedsProvider);
   }
