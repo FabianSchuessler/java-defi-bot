@@ -92,12 +92,12 @@ public class Oasis implements AddressMethod {
 
   public void checkIfBuyDaiIsProfitableThenDoIt(@NotNull Balances balances) {
     logger.trace("");
+    logger.info("OASIS BUY DAI PROFIT CALCULATION");
     if (balances.isThereTooFewEthAndWethForSaleAndLending(balances.ethereum)) {
       logger.info("NOT ENOUGH WETH AND ETH TO BUY DAI ON OASIS");
       return;
     }
     try {
-      logger.info("OASIS BUY DAI PROFIT CALCULATION");
       Wad18 medianEthereumPrice = Medianizer.getPrice();
       OasisOffer bestOffer =
           buyDaiSellWethIsProfitable(
@@ -142,12 +142,12 @@ public class Oasis implements AddressMethod {
 
   public void checkIfSellDaiIsProfitableThenDoIt(@NotNull Balances balances) {
     logger.trace("");
+    logger.trace("OASIS SELL DAI PROFIT CALCULATION");
     if (balances.isThereTooFewDaiAndDaiInCompoundForSale()) {
       logger.info("NOT ENOUGH DAI TO SELL DAI ON OASIS");
       return;
     }
     try {
-      logger.trace("OASIS SELL DAI PROFIT CALCULATION");
       Wad18 medianEthereumPrice = Medianizer.getPrice();
       Wad18 maxDaiToSell = balances.getMaxDaiToSell();
       OasisOffer bestOffer =
